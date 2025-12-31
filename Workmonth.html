@@ -3,351 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026全年度值班表 - 本地儲存版</title>
+    <title>2026值班表 - 除錯診斷版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --milk-tea-bg: #f8f1ed;
-            --milk-tea-card: #ffffff;
             --milk-tea-accent: #e6ccb2;
             --milk-tea-dark: #b08968;
             --coffee-text: #5d534a;
-            --weekend-soft: #f5ebe0;
-            --edit-highlight: #d4a373;
         }
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: var(--milk-tea-bg);
-            color: var(--coffee-text);
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .nordic-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .header-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-            gap: 15px;
-        }
-
-        .header-section h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--milk-tea-dark);
-            letter-spacing: 0.05em;
-        }
-
-        .month-select {
-            background-color: var(--milk-tea-card);
-            border: 2px solid var(--milk-tea-accent);
-            color: var(--milk-tea-dark);
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.3s;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b08968'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 18px;
-            padding-right: 45px;
-        }
-
-        .table-card {
-            background: var(--milk-tea-card);
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(93, 83, 74, 0.08);
-            border: 1px solid var(--milk-tea-accent);
-            overflow: hidden;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        th {
-            background-color: var(--milk-tea-accent);
-            color: var(--coffee-text);
-            font-weight: 700;
-            padding: 16px 12px;
-            text-align: center;
-            border-bottom: 1px solid var(--milk-tea-dark);
-            border-right: 1px solid var(--milk-tea-dark);
-            white-space: nowrap;
-        }
-
-        th:last-child { border-right: none; }
-
-        td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid var(--milk-tea-accent);
-            border-right: 1px solid var(--milk-tea-accent);
-            background-color: #fff;
-        }
-
-        td:last-child { border-right: none; }
-
-        .editable {
-            min-width: 120px;
-            border-radius: 0 !important;
-            transition: background 0.2s;
-        }
-
-        .editable:hover { background-color: #faf7f2; cursor: pointer; }
-        .editable:focus { outline: 2px solid var(--edit-highlight); background-color: #fff; }
-
-        .weekend { background-color: var(--weekend-soft); }
-        .weekend td { background-color: var(--weekend-soft); }
-
-        .date-col { 
-            font-weight: 700; 
-            color: var(--milk-tea-dark); 
-            width: 70px; 
-            background-color: #fdfaf8 !important; 
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary { 
-            background-color: var(--milk-tea-dark); 
-            color: white; 
-            box-shadow: 0 4px 15px rgba(176, 137, 104, 0.2); 
-        }
-        .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
-
-        .btn-outline { 
-            border: 1.5px solid var(--milk-tea-accent); 
-            color: var(--milk-tea-dark); 
-            background: white; 
-        }
-        .btn-outline:hover { background: var(--milk-tea-bg); }
-
-        #toast {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: #5d534a;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transform: translateX(200%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
-        }
-        #toast.show { transform: translateX(0); }
-
-        .table-responsive::-webkit-scrollbar { height: 6px; }
-        .table-responsive::-webkit-scrollbar-thumb { background: var(--milk-tea-accent); border-radius: 10px; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--milk-tea-bg); color: var(--coffee-text); padding: 20px; }
+        .nordic-container { max-width: 1000px; margin: 0 auto; }
+        .sync-panel { background: white; border: 2px dashed var(--milk-tea-accent); border-radius: 20px; padding: 20px; margin-bottom: 25px; }
+        .url-input { border: 1px solid var(--milk-tea-accent); border-radius: 50px; padding: 10px 20px; width: 100%; max-width: 500px; outline: none; margin-bottom: 10px; }
+        .btn { padding: 10px 20px; border-radius: 50px; font-weight: 500; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .btn-primary { background: var(--milk-tea-dark); color: white; }
+        .btn-test { background: #6d8e7f; color: white; }
+        .error-box { background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 20px; overflow: hidden; border: 1px solid var(--milk-tea-accent); }
+        th { background: var(--milk-tea-accent); padding: 15px; border-bottom: 1px solid var(--milk-tea-dark); }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid var(--milk-tea-accent); border-right: 1px solid var(--milk-tea-accent); }
+        .editable:focus { outline: 2px solid var(--milk-tea-dark); }
     </style>
 </head>
 <body>
 
     <div class="nordic-container">
-        <div class="header-section">
-            <p class="text-sm opacity-50 tracking-widest">LOCAL STORAGE MODE</p>
-            <h1>2026 年值班表</h1>
-            <select id="monthSelect" class="month-select" onchange="changeMonth(this.value)">
-                <option value="0">January 一月</option>
-                <option value="1">February 二月</option>
-                <option value="2">March 三月</option>
-                <option value="3">April 四月</option>
-                <option value="4">May 五月</option>
-                <option value="5">June 六月</option>
-                <option value="6">July 七月</option>
-                <option value="7">August 八月</option>
-                <option value="8">September 九月</option>
-                <option value="9">October 十月</option>
-                <option value="10">November 十一月</option>
-                <option value="11">December 十二月</option>
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-[#b08968]">2026 年值班表系統</h1>
+            <p class="opacity-50 text-sm mt-2">診斷工具已啟動，請協助定位錯誤</p>
+        </header>
+
+        <div class="sync-panel">
+            <h3 class="font-bold mb-3">📡 第一步：連線設定</h3>
+            <input type="text" id="gasUrl" class="url-input" placeholder="貼上 Google Script URL (以 /exec 結尾)" onchange="saveConfig()">
+            <div class="flex gap-3">
+                <button onclick="testConnection()" id="btnTest" class="btn btn-test">1. 測試連線狀態</button>
+                <button onclick="syncFromCloud()" id="btnLoad" class="btn btn-outline border border-[#ccc]">2. 從雲端下載</button>
+                <button onclick="syncToCloud()" id="btnSave" class="btn btn-primary">3. 儲存至雲端</button>
+            </div>
+            <div id="debugInfo" class="error-box"></div>
+        </div>
+
+        <div class="mb-4">
+            <select id="monthSelect" class="p-2 border rounded-full bg-white text-sm" onchange="changeMonth(this.value)">
+                <!-- JS 會填入月份 -->
             </select>
         </div>
 
-        <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <span class="w-3 h-3 rounded-full bg-[#b08968]"></span>
-                <span class="text-sm opacity-70">資料將儲存在此瀏覽器中</span>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-500">清空當月</button>
-                <button onclick="saveToLocal()" class="btn btn-primary">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                    儲存班表
-                </button>
-            </div>
-        </div>
-
-        <div class="table-card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>日期</th>
-                            <th>星期</th>
-                            <th>開店</th>
-                            <th>當天值班</th>
-                            <th>20:00</th>
-                            <th>關帳</th>
-                        </tr>
-                    </thead>
-                    <tbody id="scheduleBody">
-                        <!-- 由 JS 生成 -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <footer class="mt-10 mb-20 flex flex-col md:flex-row justify-between items-center opacity-40 text-xs px-4">
-            <div>最後儲存時間：<span id="lastSaved">尚未存檔</span></div>
-            <div class="mt-2 md:mt-0 italic">Nordic Style Shift Planner v2.1</div>
-        </footer>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>星期</th>
+                    <th>開店</th>
+                    <th>值班</th>
+                    <th>20:00</th>
+                    <th>關帳</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+        </table>
     </div>
 
-    <div id="toast">已成功儲存到本地！</div>
-
     <script>
-        const year = 2026;
-        const weekNames = ["日", "一", "二", "三", "四", "五", "六"];
-        const storageKey = 'nordic_shift_data_2026_full';
-        
-        let currentMonth = 0;
+        const storageKey = 'nordic_shift_full_v4';
+        let currentMonth = new Date().getMonth();
         let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-        const scheduleBody = document.getElementById('scheduleBody');
-        const monthSelect = document.getElementById('monthSelect');
-        const lastSavedDisplay = document.getElementById('lastSaved');
-
         function init() {
-            const now = new Date();
-            if (now.getFullYear() === 2026) {
-                currentMonth = now.getMonth();
-                monthSelect.value = currentMonth;
+            const select = document.getElementById('monthSelect');
+            for(let i=0; i<12; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = (i+1) + "月";
+                select.appendChild(opt);
             }
+            select.value = currentMonth;
+            document.getElementById('gasUrl').value = localStorage.getItem('gas_url') || '';
             renderTable();
-            updateLastSaved();
-        }
-
-        function changeMonth(m) {
-            currentMonth = parseInt(m);
-            renderTable();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function getDaysInMonth(y, m) {
-            return new Date(y, m + 1, 0).getDate();
         }
 
         function renderTable() {
-            scheduleBody.innerHTML = '';
-            const daysCount = getDaysInMonth(year, currentMonth);
-            
-            if (!fullYearData[currentMonth]) {
-                fullYearData[currentMonth] = {};
-            }
+            const body = document.getElementById('scheduleBody');
+            body.innerHTML = '';
+            const daysCount = new Date(2026, currentMonth + 1, 0).getDate();
+            const weekNames = ["日", "一", "二", "三", "四", "五", "六"];
 
             for (let i = 1; i <= daysCount; i++) {
-                const date = new Date(year, currentMonth, i);
-                const dayIdx = date.getDay();
-                const dayName = weekNames[dayIdx];
-                const isWeekend = (dayIdx === 0 || dayIdx === 6);
-
+                const d = new Date(2026, currentMonth, i);
+                const dayData = (fullYearData[currentMonth] && fullYearData[currentMonth][i]) || {open:"", shift:"", t20:"", close:""};
                 const tr = document.createElement('tr');
-                if (isWeekend) tr.className = "weekend";
-
-                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", close: "" };
-
                 tr.innerHTML = `
-                    <td class="date-col">${i}</td>
-                    <td class="${isWeekend ? 'font-bold' : ''}">${dayName}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'open', this.innerText)">${dayData.open}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close}</td>
+                    <td class="font-bold">${i}</td>
+                    <td>${weekNames[d.getDay()]}</td>
+                    <td contenteditable="true" class="editable" onblur="updateData(${i}, 'open', this.innerText)">${dayData.open || ""}</td>
+                    <td contenteditable="true" class="editable" onblur="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ""}</td>
+                    <td contenteditable="true" class="editable" onblur="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ""}</td>
+                    <td contenteditable="true" class="editable" onblur="updateData(${i}, 'close', this.innerText)">${dayData.close || ""}</td>
                 `;
-                scheduleBody.appendChild(tr);
+                body.appendChild(tr);
             }
         }
 
         function updateData(day, field, val) {
-            if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
-            if (!fullYearData[currentMonth][day]) {
-                fullYearData[currentMonth][day] = { open: "", shift: "", t20: "", close: "" };
-            }
+            if(!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
+            if(!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
             fullYearData[currentMonth][day][field] = val.trim();
-        }
-
-        function saveToLocal() {
-            const now = new Date().toLocaleString();
             localStorage.setItem(storageKey, JSON.stringify(fullYearData));
-            localStorage.setItem(storageKey + '_time', now);
-            updateLastSaved();
-            showToast("班表資料已儲存成功！");
         }
 
-        function updateLastSaved() {
-            const time = localStorage.getItem(storageKey + '_time');
-            if (time) lastSavedDisplay.innerText = time;
+        function saveConfig() { localStorage.setItem('gas_url', document.getElementById('gasUrl').value); }
+
+        function showDebug(msg, isError = true) {
+            const box = document.getElementById('debugInfo');
+            box.style.display = 'block';
+            box.style.background = isError ? '#fee2e2' : '#f0fdf4';
+            box.style.borderColor = isError ? '#ef4444' : '#22c55e';
+            box.style.color = isError ? '#b91c1c' : '#15803d';
+            box.innerText = msg;
         }
 
-        function clearCurrentMonth() {
-            const monthName = monthSelect.options[monthSelect.selectedIndex].text;
-            if (confirm(`確定要清空 ${monthName} 的所有排班資料嗎？`)) {
-                fullYearData[currentMonth] = {};
-                renderTable();
-                showToast("當月資料已清空");
+        async function testConnection() {
+            const url = document.getElementById('gasUrl').value;
+            if(!url) return showDebug("請輸入網址！");
+            showDebug("正在測試連線...", false);
+            try {
+                const res = await fetch(url);
+                if(res.ok) {
+                    showDebug("✅ 連線成功！試算表 API 已就緒。", false);
+                } else {
+                    showDebug("❌ 連線失敗：伺服器回應錯誤 (" + res.status + ")。請檢查部署是否設為「所有人」。");
+                }
+            } catch (e) {
+                showDebug("❌ 無法連接：請檢查網址是否正確，且結尾為 /exec。");
             }
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+        async function syncToCloud() {
+            const url = document.getElementById('gasUrl').value;
+            showDebug("正在傳送資料...", false);
+            try {
+                // 使用 POST 存檔
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: "save", data: fullYearData })
+                });
+                showDebug("✅ 資料已發送！請去試算表查看。若沒變動，請重新部署 GAS 並選「新版本」。", false);
+            } catch (e) {
+                showDebug("❌ 傳送失敗：" + e.message);
+            }
         }
 
-        
+        async function syncFromCloud() {
+            const url = document.getElementById('gasUrl').value;
+            showDebug("正在抓取資料...", false);
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                fullYearData = data;
+                localStorage.setItem(storageKey, JSON.stringify(fullYearData));
+                renderTable();
+                showDebug("✅ 載入成功！", false);
+            } catch (e) {
+                showDebug("❌ 讀取失敗。請確認 GAS 部署權限為「所有人」。");
+            }
+        }
+
+        function changeMonth(v) { currentMonth = parseInt(v); renderTable(); }
+
         init();
     </script>
 </body>
