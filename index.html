@@ -31,12 +31,21 @@
             body { padding: 40px 20px; }
         }
 
+        /* 列印最佳化：隱藏不需要的元件 */
+        @media print {
+            .header-section select, .cloud-status, .mb-6, .btn, #autoSaveIndicator, #toast {
+                display: none !important;
+            }
+            body { background: white; padding: 0; }
+            .table-card { box-shadow: none; border: 1px solid #eee; }
+            .nordic-container { max-width: 100%; }
+        }
+
         .nordic-container {
             max-width: 1000px;
             margin: 0 auto;
         }
 
-        /* 標題區域響應式佈局 */
         .header-section {
             display: flex;
             flex-direction: column;
@@ -89,16 +98,13 @@
             padding-right: 45px;
             transition: all 0.3s;
         }
-        .month-select:hover { border-color: var(--milk-tea-dark); }
 
-        /* 狀態指示燈 */
         .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--status-offline); }
         .status-dot.online { background: var(--status-online); animation: pulse 2s infinite; }
         .status-dot.syncing { background: #d4a373; animation: spin 1s infinite linear; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 表格響應式核心邏輯 */
         .table-card {
             background: var(--milk-tea-card);
             border-radius: 24px;
@@ -108,58 +114,14 @@
         }
 
         @media (max-width: 767px) {
-            /* 手機版：將表格轉為垂直疊加的卡片 */
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
-            
-            tr {
-                border-bottom: 12px solid var(--milk-tea-bg);
-                padding: 15px 0;
-                background: white;
-            }
-            
-            td {
-                border: none;
-                position: relative;
-                padding: 10px 15px 10px 40% !important;
-                text-align: left !important;
-                min-height: 45px;
-                display: flex;
-                align-items: center;
-                font-size: 0.95rem;
-            }
-
-            td:before {
-                position: absolute;
-                left: 20px;
-                width: 35%;
-                padding-right: 10px;
-                white-space: nowrap;
-                content: attr(data-label);
-                font-weight: 700;
-                color: var(--milk-tea-dark);
-                font-size: 0.8rem;
-                text-transform: uppercase;
-            }
-
-            /* 手機版日期標頭加強 */
-            .date-col-row {
-                background-color: var(--milk-tea-accent);
-                color: var(--coffee-text);
-                font-weight: 700;
-                padding-left: 15px !important;
-                justify-content: center;
-                margin-bottom: 10px;
-            }
+            tr { border-bottom: 12px solid var(--milk-tea-bg); padding: 15px 0; background: white; }
+            td { border: none; position: relative; padding: 10px 15px 10px 40% !important; text-align: left !important; min-height: 45px; display: flex; align-items: center; font-size: 0.95rem; }
+            td:before { position: absolute; left: 20px; width: 35%; padding-right: 10px; white-space: nowrap; content: attr(data-label); font-weight: 700; color: var(--milk-tea-dark); font-size: 0.8rem; }
+            .date-col-row { background-color: var(--milk-tea-accent); color: var(--coffee-text); font-weight: 700; padding-left: 15px !important; justify-content: center; margin-bottom: 10px; }
             .date-col-row:before { content: ""; }
-            
-            .editable {
-                background: #fffcf9;
-                margin: 4px 15px;
-                border-radius: 10px;
-                border: 1px solid #f0e6dc;
-                min-height: 50px;
-            }
+            .editable { background: #fffcf9; margin: 4px 15px; border-radius: 10px; border: 1px solid #f0e6dc; min-height: 50px; }
         }
 
         @media (min-width: 768px) {
@@ -174,11 +136,10 @@
 
         .weekend { background-color: var(--weekend-soft); }
 
-        /* 按鈕樣式 */
         .btn {
             padding: 10px 20px;
             border-radius: 50px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             transition: all 0.3s;
             cursor: pointer;
@@ -189,6 +150,7 @@
         }
         .btn-primary { background-color: var(--milk-tea-dark); color: white; box-shadow: 0 4px 12px rgba(176,137,104,0.2); }
         .btn-outline { border: 1.5px solid var(--milk-tea-accent); color: var(--milk-tea-dark); background: white; }
+        .btn-success { background-color: #8fa18e; color: white; }
         .btn:active { transform: scale(0.98); }
 
         #toast {
@@ -200,10 +162,8 @@
             color: white;
             padding: 12px 30px;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #toast.show { transform: translate(-50%, 0); }
     </style>
@@ -211,7 +171,6 @@
 <body>
 
     <div class="nordic-container">
-        <!-- 標題與月份選擇 -->
         <header class="header-section">
             <div class="cloud-status">
                 <div id="statusDot" class="status-dot online"></div>
@@ -235,25 +194,33 @@
             </select>
         </header>
 
-        <!-- 工具列 -->
-        <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
-            <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs opacity-60">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span>系統已開啟全自動同步模式</span>
-            </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <button onclick="fetchFromCloud()" class="btn btn-outline flex-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    重新讀取
-                </button>
-                <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-400 flex-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    清空當月
-                </button>
+        <div class="mb-6 flex flex-col gap-4 px-2">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs opacity-60">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span>系統已開啟全自動同步模式</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                    <button onclick="exportToCSV()" class="btn btn-success flex-1 md:flex-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        匯出 CSV
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline flex-1 md:flex-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        列印
+                    </button>
+                    <button onclick="fetchFromCloud()" class="btn btn-outline flex-1 md:flex-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        重新讀取
+                    </button>
+                    <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-400 flex-1 md:flex-none">
+                        清空當月
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- 表格容器 -->
         <div class="table-card">
             <div class="table-responsive">
                 <table>
@@ -272,22 +239,18 @@
             </div>
         </div>
 
-        <!-- 頁尾資訊 -->
         <footer class="mt-12 mb-24 flex flex-col items-center opacity-40 text-[10px] gap-3">
             <div class="flex items-center gap-2">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
                 最後同步：<span id="lastSaved">尚未存檔</span>
             </div>
-            <div class="tracking-[0.2em] font-medium">CLOUD SYNC VERSION 2.0 • RESPONSIVE</div>
+            <div class="tracking-[0.2em] font-medium">CLOUD SYNC VERSION 2.1 • EXPORT ENABLED</div>
         </footer>
     </div>
 
     <div id="toast">已儲存至雲端</div>
 
     <script>
-        // 配置區 (請確保您的 GAS API URL 正確)
         const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbzsG9p587hAofHfgCoCy6-WNZmd4o4E-R00eY6LXtMnSaHB3Kv4U9MpQ5Cg_MHY1--s5g/exec"; 
-        
         const year = 2026;
         const weekNames = ["日", "一", "二", "三", "四", "五", "六"];
         const storageKey = 'nordic_shift_v2026_rwd';
@@ -306,7 +269,6 @@
             monthSelect.value = currentMonth;
             renderTable();
             updateLastSaved();
-            // 初始自動載入
             fetchFromCloud();
         }
 
@@ -334,7 +296,6 @@
                     updateStatus('online', '雲端尚無資料');
                 }
             } catch (error) {
-                console.error("Fetch Error:", error);
                 updateStatus('offline', '離線模式 (連結失效)');
             }
         }
@@ -344,16 +305,12 @@
             localStorage.setItem(storageKey, JSON.stringify(fullYearData));
             localStorage.setItem(storageKey + '_time', now);
             updateLastSaved();
-
             if (CLOUD_API_URL.includes("YOUR_GAS")) return;
             updateStatus('syncing', '同步數據中...');
-
             try {
-                // 使用 no-cors 模式發送 POST 給 GAS
                 await fetch(CLOUD_API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
                     body: JSON.stringify(fullYearData)
                 });
                 updateStatus('online', '數據已安全存入雲端');
@@ -377,7 +334,6 @@
                 const tr = document.createElement('tr');
                 if (isWeekend) tr.className = "weekend";
 
-                // 利用 data-label 讓手機版顯示標籤
                 tr.innerHTML = `
                     <td class="date-col-row" data-label="日期">${i} 號 (週${weekNames[dayIdx]})</td>
                     <td class="hidden md:table-cell font-bold">${weekNames[dayIdx]}</td>
@@ -390,6 +346,39 @@
             }
         }
 
+        // 2. 新增匯出 CSV 函數
+        function exportToCSV() {
+            const daysCount = new Date(year, currentMonth + 1, 0).getDate();
+            // \ufeff 是為了讓 Excel 正確辨識 UTF-8 編碼中的中文字
+            let csvContent = "\ufeff日期,星期,開店,當天值班,20:00,關帳\n";
+
+            for (let i = 1; i <= daysCount; i++) {
+                const date = new Date(year, currentMonth, i);
+                const dayIdx = date.getDay();
+                const dayData = (fullYearData[currentMonth] && fullYearData[currentMonth][i]) ? fullYearData[currentMonth][i] : {};
+                
+                const row = [
+                    `${i}號`,
+                    `週${weekNames[dayIdx]}`,
+                    `"${dayData.open || ''}"`,
+                    `"${dayData.shift || ''}"`,
+                    `"${dayData.t20 || ''}"`,
+                    `"${dayData.close || ''}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${year}_${currentMonth + 1}月值班表_匯出.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("CSV 檔案已下載");
+        }
+
         function updateData(day, field, val) {
             if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
             if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
@@ -399,7 +388,7 @@
             updateStatus('syncing', '正在紀錄修改...');
             autoSaveTimer = setTimeout(() => {
                 saveAllToCloud();
-            }, 1000); // 停止輸入後 1 秒自動存檔
+            }, 1000);
         }
 
         function changeMonth(m) {
@@ -413,7 +402,7 @@
         }
 
         function clearCurrentMonth() {
-            if (confirm(`確定要完全清空 2026年 ${currentMonth+1}月 的所有紀錄嗎？此動作將同步至雲端。`)) {
+            if (confirm(`確定要完全清空 2026年 ${currentMonth+1}月 的所有紀錄嗎？`)) {
                 fullYearData[currentMonth] = {};
                 renderTable();
                 saveAllToCloud();
