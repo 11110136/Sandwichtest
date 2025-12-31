@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026全年度值班表 - 響應式預覽版</title>
+    <title>2026全年度值班表 - 專業列印版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -31,14 +31,70 @@
             body { padding: 40px 20px; }
         }
 
-        /* 列印最佳化：隱藏不需要的元件 */
+        /* ============================================================
+           列印最佳化 (強制電腦版表格)
+           ============================================================ */
         @media print {
-            .header-section select, .cloud-status, .mb-6, .btn, #autoSaveIndicator, #toast {
+            /* 1. 隱藏不必要的 UI 元件 */
+            .header-section select, 
+            .cloud-status, 
+            .mb-6, 
+            .btn, 
+            #autoSaveIndicator, 
+            #toast,
+            footer {
                 display: none !important;
             }
-            body { background: white; padding: 0; }
-            .table-card { box-shadow: none; border: 1px solid #eee; }
-            .nordic-container { max-width: 100%; }
+
+            /* 2. 強制恢復表格佈局 */
+            table { 
+                display: table !important; 
+                width: 100% !important; 
+                border-collapse: collapse !important;
+                background-color: white !important;
+            }
+            thead { display: table-header-group !important; }
+            tbody { display: table-row-group !important; }
+            tr { 
+                display: table-row !important; 
+                page-break-inside: avoid; /* 防止日期被切斷到兩頁 */
+            }
+            th, td { 
+                display: table-cell !important; 
+                border: 1px solid #b08968 !important; /* 加入列印格線 */
+                padding: 10px 5px !important;
+                color: #000 !important;
+                text-align: center !important;
+            }
+            
+            /* 3. 恢復隱藏的星期欄位 */
+            .hidden.md\:table-cell { 
+                display: table-cell !important; 
+            }
+
+            /* 4. 清除手機版專用的 data-label 內容 */
+            td:before { 
+                content: none !important; 
+            }
+
+            /* 5. 頁面外觀重置 */
+            body { 
+                background: white !important; 
+                padding: 0 !important; 
+            }
+            .table-card { 
+                box-shadow: none !important; 
+                border: none !important; 
+                overflow: visible !important; 
+            }
+            .nordic-container { 
+                max-width: 100% !important; 
+                width: 100% !important; 
+            }
+            h1 {
+                font-size: 24pt !important;
+                margin-bottom: 20px !important;
+            }
         }
 
         .nordic-container {
@@ -113,7 +169,8 @@
             overflow: hidden;
         }
 
-        @media (max-width: 767px) {
+        /* 這裡加上了 screen 限制，確保只在螢幕顯示時變成手機版卡片 */
+        @media screen and (max-width: 767px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
             tr { border-bottom: 12px solid var(--milk-tea-bg); padding: 15px 0; background: white; }
@@ -243,7 +300,7 @@
             <div class="flex items-center gap-2">
                 最後同步：<span id="lastSaved">尚未存檔</span>
             </div>
-            <div class="tracking-[0.2em] font-medium">CLOUD SYNC VERSION 2.1 • EXPORT ENABLED</div>
+            <div class="tracking-[0.2em] font-medium">CLOUD SYNC VERSION 2.2 • PRINT OPTIMIZED</div>
         </footer>
     </div>
 
@@ -278,10 +335,7 @@
         }
 
         async function fetchFromCloud() {
-            if (CLOUD_API_URL.includes("YOUR_GAS")) {
-                updateStatus('offline', '未設定 API');
-                return;
-            }
+            if (CLOUD_API_URL.includes("YOUR_GAS")) return;
             updateStatus('syncing', '正在載入雲端數據...');
             try {
                 const response = await fetch(CLOUD_API_URL);
@@ -291,7 +345,6 @@
                     localStorage.setItem(storageKey, JSON.stringify(fullYearData));
                     renderTable();
                     updateStatus('online', '雲端同步中');
-                    showToast("已載入最新值班表");
                 } else {
                     updateStatus('online', '雲端尚無資料');
                 }
@@ -346,49 +399,32 @@
             }
         }
 
-        // 2. 新增匯出 CSV 函數
         function exportToCSV() {
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            // \ufeff 是為了讓 Excel 正確辨識 UTF-8 編碼中的中文字
             let csvContent = "\ufeff日期,星期,開店,當天值班,20:00,關帳\n";
-
             for (let i = 1; i <= daysCount; i++) {
                 const date = new Date(year, currentMonth, i);
                 const dayIdx = date.getDay();
                 const dayData = (fullYearData[currentMonth] && fullYearData[currentMonth][i]) ? fullYearData[currentMonth][i] : {};
-                
-                const row = [
-                    `${i}號`,
-                    `週${weekNames[dayIdx]}`,
-                    `"${dayData.open || ''}"`,
-                    `"${dayData.shift || ''}"`,
-                    `"${dayData.t20 || ''}"`,
-                    `"${dayData.close || ''}"`
-                ];
+                const row = [`${i}號`, `週${weekNames[dayIdx]}`, `"${dayData.open || ''}"`, `"${dayData.shift || ''}"`, `"${dayData.t20 || ''}"`, `"${dayData.close || ''}"`];
                 csvContent += row.join(",") + "\n";
             }
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `${year}_${currentMonth + 1}月值班表_匯出.csv`);
-            document.body.appendChild(link);
+            link.href = url;
+            link.download = `${year}_${currentMonth + 1}月值班表.csv`;
             link.click();
-            document.body.removeChild(link);
-            showToast("CSV 檔案已下載");
+            showToast("CSV 已下載");
         }
 
         function updateData(day, field, val) {
             if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
             if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
             fullYearData[currentMonth][day][field] = val.trim();
-            
             clearTimeout(autoSaveTimer);
             updateStatus('syncing', '正在紀錄修改...');
-            autoSaveTimer = setTimeout(() => {
-                saveAllToCloud();
-            }, 1000);
+            autoSaveTimer = setTimeout(() => { saveAllToCloud(); }, 1000);
         }
 
         function changeMonth(m) {
@@ -402,7 +438,7 @@
         }
 
         function clearCurrentMonth() {
-            if (confirm(`確定要完全清空 2026年 ${currentMonth+1}月 的所有紀錄嗎？`)) {
+            if (confirm(`確定要完全清空當月紀錄嗎？`)) {
                 fullYearData[currentMonth] = {};
                 renderTable();
                 saveAllToCloud();
