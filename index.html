@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026全年度值班表 - 全自動同步版</title>
+    <title>2026全年度值班表 - 響應式預覽版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -23,8 +23,12 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: var(--milk-tea-bg);
             color: var(--coffee-text);
-            padding: 20px;
+            padding: 10px;
             min-height: 100vh;
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 40px 20px; }
         }
 
         .nordic-container {
@@ -32,46 +36,41 @@
             margin: 0 auto;
         }
 
+        /* 標題區域響應式佈局 */
         .header-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 30px;
-            gap: 15px;
+            margin-bottom: 25px;
+            gap: 12px;
             position: relative;
         }
 
-        /* 雲端狀態指示燈 */
         .cloud-status {
-            position: absolute;
-            top: 0;
-            right: 0;
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 0.75rem;
-            padding: 6px 12px;
+            padding: 5px 12px;
             border-radius: 20px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.7);
             border: 1px solid var(--milk-tea-accent);
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--status-offline);
+
+        @media (min-width: 768px) {
+            .cloud-status {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+            .header-section h1 { font-size: 2.5rem; }
         }
-        .status-dot.online { background: var(--status-online); animation: pulse 2s infinite; }
-        .status-dot.syncing { background: #d4a373; animation: spin 1s infinite linear; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .header-section h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
+        .header-section h1 { 
+            font-size: 1.8rem; 
+            font-weight: 700; 
             color: var(--milk-tea-dark);
-            letter-spacing: 0.05em;
+            letter-spacing: 2px;
         }
 
         .month-select {
@@ -81,62 +80,103 @@
             padding: 10px 25px;
             border-radius: 50px;
             font-size: 1.1rem;
-            font-weight: 500;
             cursor: pointer;
-            outline: none;
-            transition: all 0.3s;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23b08968'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 15px center;
             background-size: 18px;
             padding-right: 45px;
+            transition: all 0.3s;
         }
+        .month-select:hover { border-color: var(--milk-tea-dark); }
 
+        /* 狀態指示燈 */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--status-offline); }
+        .status-dot.online { background: var(--status-online); animation: pulse 2s infinite; }
+        .status-dot.syncing { background: #d4a373; animation: spin 1s infinite linear; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* 表格響應式核心邏輯 */
         .table-card {
             background: var(--milk-tea-card);
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(93, 83, 74, 0.06);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(93, 83, 74, 0.08);
             border: 1px solid var(--milk-tea-accent);
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 767px) {
+            /* 手機版：將表格轉為垂直疊加的卡片 */
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; } 
+            
+            tr {
+                border-bottom: 12px solid var(--milk-tea-bg);
+                padding: 15px 0;
+                background: white;
+            }
+            
+            td {
+                border: none;
+                position: relative;
+                padding: 10px 15px 10px 40% !important;
+                text-align: left !important;
+                min-height: 45px;
+                display: flex;
+                align-items: center;
+                font-size: 0.95rem;
+            }
 
-        /* 移除最大高度限制，完整顯示所有日期 */
-        .table-responsive { 
-            overflow-x: auto; 
-            max-height: none; 
+            td:before {
+                position: absolute;
+                left: 20px;
+                width: 35%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--milk-tea-dark);
+                font-size: 0.8rem;
+                text-transform: uppercase;
+            }
+
+            /* 手機版日期標頭加強 */
+            .date-col-row {
+                background-color: var(--milk-tea-accent);
+                color: var(--coffee-text);
+                font-weight: 700;
+                padding-left: 15px !important;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            .date-col-row:before { content: ""; }
+            
+            .editable {
+                background: #fffcf9;
+                margin: 4px 15px;
+                border-radius: 10px;
+                border: 1px solid #f0e6dc;
+                min-height: 50px;
+            }
         }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        thead { position: sticky; top: 0; z-index: 10; }
-        th {
-            background-color: var(--milk-tea-accent);
-            color: var(--coffee-text);
-            font-weight: 500;
-            padding: 18px 12px;
-            text-align: center;
-            border-bottom: 2px solid var(--milk-tea-bg);
-            white-space: nowrap;
+        @media (min-width: 768px) {
+            .table-responsive { overflow-x: auto; }
+            table { width: 100%; border-collapse: separate; border-spacing: 0; }
+            th { background-color: var(--milk-tea-accent); color: var(--coffee-text); padding: 20px 15px; text-align: center; }
+            td { padding: 15px; border-bottom: 1px solid var(--milk-tea-bg); text-align: center; }
+            .editable { min-width: 120px; cursor: pointer; border-radius: 4px; }
+            .editable:hover { background-color: #faf7f2; }
+            .editable:focus { outline: 2px solid var(--edit-highlight); background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
         }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid var(--milk-tea-bg); transition: all 0.2s; }
-
-        /* 移除內部儲存格圓角 */
-        .editable { 
-            min-width: 120px; 
-            border-radius: 0; 
-            transition: background 0.2s; 
-        }
-        .editable:hover { background-color: #faf7f2; cursor: pointer; }
-        .editable:focus { outline: 2px solid var(--edit-highlight); background-color: #fff; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
 
         .weekend { background-color: var(--weekend-soft); }
-        .date-col { font-weight: 700; color: var(--milk-tea-dark); width: 70px; }
 
+        /* 按鈕樣式 */
         .btn {
-            padding: 10px 24px;
+            padding: 10px 20px;
             border-radius: 50px;
             font-size: 0.9rem;
             font-weight: 500;
@@ -144,38 +184,41 @@
             cursor: pointer;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
-        .btn-primary { background-color: var(--milk-tea-dark); color: white; box-shadow: 0 4px 15px rgba(176, 137, 104, 0.2); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background-color: var(--milk-tea-dark); color: white; box-shadow: 0 4px 12px rgba(176,137,104,0.2); }
         .btn-outline { border: 1.5px solid var(--milk-tea-accent); color: var(--milk-tea-dark); background: white; }
+        .btn:active { transform: scale(0.98); }
 
         #toast {
             position: fixed;
-            top: 30px;
-            right: 30px;
-            background: #5d534a;
+            bottom: 40px;
+            left: 50%;
+            transform: translate(-50%, 200%);
+            background: rgba(93, 83, 74, 0.95);
             color: white;
             padding: 12px 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transform: translateX(200%);
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
-        #toast.show { transform: translateX(0); }
+        #toast.show { transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
 
     <div class="nordic-container">
-        <div class="header-section">
+        <!-- 標題與月份選擇 -->
+        <header class="header-section">
             <div class="cloud-status">
-                <div id="statusDot" class="status-dot"></div>
-                <span id="statusText">正在檢查連線...</span>
+                <div id="statusDot" class="status-dot online"></div>
+                <span id="statusText">已連線至雲端資料庫</span>
             </div>
-            <p class="text-sm opacity-50 tracking-widest">2026 ANNUAL PLANNER - FULL AUTO</p>
-            <h1>2026 年值班表</h1>
+            <p class="text-[10px] opacity-40 tracking-[0.3em] uppercase font-bold">Shift Schedule System</p>
+            <h1>2026 年值班規劃</h1>
             <select id="monthSelect" class="month-select" onchange="changeMonth(this.value)">
                 <option value="0">January 一月</option>
                 <option value="1">February 二月</option>
@@ -190,28 +233,34 @@
                 <option value="10">November 十一月</option>
                 <option value="11">December 十二月</option>
             </select>
+        </header>
+
+        <!-- 工具列 -->
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+            <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs opacity-60">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span>系統已開啟全自動同步模式</span>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="fetchFromCloud()" class="btn btn-outline flex-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    重新讀取
+                </button>
+                <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-400 flex-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    清空當月
+                </button>
+            </div>
         </div>
 
-        <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div id="autoSaveIndicator" class="flex items-center gap-2 text-sm opacity-70">
-                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
-                    <span>自動同步已啟動：修改內容後會自動儲存至雲端</span>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="fetchFromCloud()" class="btn btn-outline">強制手動重新整理</button>
-                <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-400">清空當月</button>
-            </div>
-        </div>
-
+        <!-- 表格容器 -->
         <div class="table-card">
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>日期</th>
-                            <th>星期</th>
+                            <th class="hidden md:table-cell">星期</th>
                             <th>開店</th>
                             <th>當天值班</th>
                             <th>20:00</th>
@@ -223,21 +272,25 @@
             </div>
         </div>
 
-        <footer class="mt-10 mb-20 flex flex-col md:flex-row justify-between items-center opacity-40 text-xs px-4">
-            <div>最後存檔：<span id="lastSaved">尚未存檔</span></div>
-            <div class="mt-2 md:mt-0 italic">System Auto-detect Month | Auto-sync Active</div>
+        <!-- 頁尾資訊 -->
+        <footer class="mt-12 mb-24 flex flex-col items-center opacity-40 text-[10px] gap-3">
+            <div class="flex items-center gap-2">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                最後同步：<span id="lastSaved">尚未存檔</span>
+            </div>
+            <div class="tracking-[0.2em] font-medium">CLOUD SYNC VERSION 2.0 • RESPONSIVE</div>
         </footer>
     </div>
 
-    <div id="toast">已儲存！</div>
+    <div id="toast">已儲存至雲端</div>
 
     <script>
-        /** * 請在此處填入你的 Google Apps Script 網頁應用程式 URL */
+        // 配置區 (請確保您的 GAS API URL 正確)
         const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbyzpEEA8SnJB-t2euMi30HcbayGKV4sSd7lRO8-yGEEWDFFE_0wo8KazIQZCLmHKG7hSw/exec"; 
         
         const year = 2026;
         const weekNames = ["日", "一", "二", "三", "四", "五", "六"];
-        const storageKey = 'nordic_shift_v2026_auto';
+        const storageKey = 'nordic_shift_v2026_rwd';
         
         let currentMonth = new Date().getMonth(); 
         let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
@@ -253,12 +306,8 @@
             monthSelect.value = currentMonth;
             renderTable();
             updateLastSaved();
-            
-            if (CLOUD_API_URL !== "YOUR_GAS_WEB_APP_URL_HERE") {
-                fetchFromCloud();
-            } else {
-                updateStatus('offline', '未設定雲端連結');
-            }
+            // 初始自動載入
+            fetchFromCloud();
         }
 
         function updateStatus(state, message) {
@@ -267,76 +316,75 @@
         }
 
         async function fetchFromCloud() {
-            if (CLOUD_API_URL.includes("YOUR_GAS")) return;
-            
-            updateStatus('syncing', '正在讀取雲端資料...');
+            if (CLOUD_API_URL.includes("YOUR_GAS")) {
+                updateStatus('offline', '未設定 API');
+                return;
+            }
+            updateStatus('syncing', '正在載入雲端數據...');
             try {
                 const response = await fetch(CLOUD_API_URL);
                 const cloudData = await response.json();
-                
                 if (cloudData && Object.keys(cloudData).length > 0) {
                     fullYearData = cloudData;
                     localStorage.setItem(storageKey, JSON.stringify(fullYearData));
                     renderTable();
-                    updateStatus('online', '雲端同步中 (已載入)');
+                    updateStatus('online', '雲端同步中');
+                    showToast("已載入最新值班表");
                 } else {
-                    updateStatus('online', '雲端目前無資料');
+                    updateStatus('online', '雲端尚無資料');
                 }
             } catch (error) {
-                console.error("Fetch error:", error);
-                updateStatus('offline', '離線模式 (無法連接雲端)');
+                console.error("Fetch Error:", error);
+                updateStatus('offline', '離線模式 (連結失效)');
             }
         }
 
         async function saveAllToCloud() {
-            const now = new Date().toLocaleString();
+            const now = new Date().toLocaleString('zh-TW', { hour12: false });
             localStorage.setItem(storageKey, JSON.stringify(fullYearData));
             localStorage.setItem(storageKey + '_time', now);
             updateLastSaved();
 
             if (CLOUD_API_URL.includes("YOUR_GAS")) return;
-
-            updateStatus('syncing', '自動同步中...');
+            updateStatus('syncing', '同步數據中...');
 
             try {
+                // 使用 no-cors 模式發送 POST 給 GAS
                 await fetch(CLOUD_API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(fullYearData)
                 });
-
-                updateStatus('online', '所有更改已存至雲端');
+                updateStatus('online', '數據已安全存入雲端');
+                showToast("變更已自動同步");
             } catch (error) {
-                console.error("Auto-save error:", error);
-                updateStatus('offline', '自動同步失敗');
+                updateStatus('offline', '同步失敗');
             }
         }
 
         function renderTable() {
             scheduleBody.innerHTML = '';
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            
             if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
 
             for (let i = 1; i <= daysCount; i++) {
                 const date = new Date(year, currentMonth, i);
                 const dayIdx = date.getDay();
                 const isWeekend = (dayIdx === 0 || dayIdx === 6);
+                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", close: "" };
 
                 const tr = document.createElement('tr');
                 if (isWeekend) tr.className = "weekend";
 
-                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", close: "" };
-
+                // 利用 data-label 讓手機版顯示標籤
                 tr.innerHTML = `
-                    <td class="date-col">${i}</td>
-                    <td class="${isWeekend ? 'font-bold' : ''}">${weekNames[dayIdx]}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'open', this.innerText)">${dayData.open || ''}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ''}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
-                    <td contenteditable="true" class="editable" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
+                    <td class="date-col-row" data-label="日期">${i} 號 (週${weekNames[dayIdx]})</td>
+                    <td class="hidden md:table-cell font-bold">${weekNames[dayIdx]}</td>
+                    <td contenteditable="true" class="editable" data-label="開店" oninput="updateData(${i}, 'open', this.innerText)">${dayData.open || ''}</td>
+                    <td contenteditable="true" class="editable" data-label="當天值班" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ''}</td>
+                    <td contenteditable="true" class="editable" data-label="20:00" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
+                    <td contenteditable="true" class="editable" data-label="關帳" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
                 `;
                 scheduleBody.appendChild(tr);
             }
@@ -348,10 +396,10 @@
             fullYearData[currentMonth][day][field] = val.trim();
             
             clearTimeout(autoSaveTimer);
-            updateStatus('syncing', '正在輸入...');
+            updateStatus('syncing', '正在紀錄修改...');
             autoSaveTimer = setTimeout(() => {
                 saveAllToCloud();
-            }, 1500);
+            }, 1000); // 停止輸入後 1 秒自動存檔
         }
 
         function changeMonth(m) {
@@ -365,11 +413,11 @@
         }
 
         function clearCurrentMonth() {
-            if (confirm(`確定要清空 2026年 ${currentMonth+1}月 的資料嗎？（將自動同步清空結果）`)) {
+            if (confirm(`確定要完全清空 2026年 ${currentMonth+1}月 的所有紀錄嗎？此動作將同步至雲端。`)) {
                 fullYearData[currentMonth] = {};
                 renderTable();
                 saveAllToCloud();
-                showToast("當月資料已清空並同步");
+                showToast("當月紀錄已清空");
             }
         }
 
