@@ -32,21 +32,18 @@
         }
 
         /* ============================================================
-           列印最佳化 (強制電腦版表格)
+           列印最佳化
            ============================================================ */
         @media print {
-            /* 1. 隱藏不必要的 UI 元件 */
             .header-section select, 
             .cloud-status, 
-            .mb-6, 
-            .btn, 
+            .btn-container, /* 隱藏按鈕區塊 */
             #autoSaveIndicator, 
             #toast,
             footer {
                 display: none !important;
             }
 
-            /* 2. 強制恢復表格佈局 */
             table { 
                 display: table !important; 
                 width: 100% !important; 
@@ -57,28 +54,25 @@
             tbody { display: table-row-group !important; }
             tr { 
                 display: table-row !important; 
-                page-break-inside: avoid; /* 防止日期被切斷到兩頁 */
+                page-break-inside: avoid; 
             }
             th, td { 
                 display: table-cell !important; 
-                border: 1px solid #b08968 !important; /* 加入列印格線 */
+                border: 1px solid #b08968 !important; 
                 padding: 10px 5px !important;
                 color: #000 !important;
                 text-align: center !important;
                 font-size: 10pt !important;
             }
             
-            /* 3. 恢復隱藏的星期欄位 */
             .hidden.md\:table-cell { 
                 display: table-cell !important; 
             }
 
-            /* 4. 清除手機版專用的 data-label 內容 */
             td:before { 
                 content: none !important; 
             }
 
-            /* 5. 頁面外觀重置 */
             body { 
                 background: white !important; 
                 padding: 0 !important; 
@@ -95,6 +89,10 @@
             h1 {
                 font-size: 24pt !important;
                 margin-bottom: 20px !important;
+            }
+            .multiline-col {
+                text-align: left !important;
+                white-space: pre-wrap !important;
             }
         }
 
@@ -170,6 +168,14 @@
             overflow: hidden;
         }
 
+        .multiline-col {
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: left !important;
+            min-width: 150px;
+            line-height: 1.6;
+        }
+
         /* 手機版卡片樣式 */
         @media screen and (max-width: 767px) {
             table, thead, tbody, th, td, tr { display: block; }
@@ -180,6 +186,14 @@
             .date-col-row { background-color: var(--milk-tea-accent); color: var(--coffee-text); font-weight: 700; padding-left: 15px !important; justify-content: center; margin-bottom: 10px; }
             .date-col-row:before { content: ""; }
             .editable { background: #fffcf9; margin: 4px 15px; border-radius: 10px; border: 1px solid #f0e6dc; min-height: 50px; }
+            
+            .multiline-col {
+                align-items: flex-start !important;
+                padding-top: 15px !important;
+                padding-bottom: 15px !important;
+                height: auto !important;
+            }
+            .multiline-col:before { top: 15px !important; }
         }
 
         @media (min-width: 768px) {
@@ -194,22 +208,61 @@
 
         .weekend { background-color: var(--weekend-soft); }
 
-        .btn {
-            padding: 10px 20px;
-            border-radius: 50px;
+        /* ============================================================
+           全新按鈕樣式 (圓形/圓角)
+           ============================================================ */
+        .round-btn {
+            width: 75px; 
+            height: 75px;
+            border-radius: 50px; /* 變成圓形或圓角 */
             font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            cursor: pointer;
-            display: inline-flex;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column; /* 垂直排列 */
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            line-height: 1.2;
+            text-align: center;
         }
-        .btn-primary { background-color: var(--milk-tea-dark); color: white; box-shadow: 0 4px 12px rgba(176,137,104,0.2); }
-        .btn-outline { border: 1.5px solid var(--milk-tea-accent); color: var(--milk-tea-dark); background: white; }
-        .btn-success { background-color: #8fa18e; color: white; }
-        .btn:active { transform: scale(0.98); }
+
+        .round-btn svg {
+            width: 18px;
+            height: 18px;
+            margin-bottom: 2px;
+        }
+
+        .round-btn:active { transform: scale(0.95); }
+
+        /* 綠色實心按鈕 */
+        .round-btn.filled-green {
+            background-color: #8fa18e;
+            color: white;
+            border-color: #8fa18e;
+        }
+
+        /* 白色空心按鈕 */
+        .round-btn.outline {
+            background-color: white;
+            color: var(--milk-tea-dark); /* 咖啡色字 */
+            border-color: var(--milk-tea-accent);
+        }
+
+        /* 紅色文字按鈕 (清空) */
+        .round-btn.danger {
+            background-color: white;
+            color: #d97777; /* 柔和紅 */
+            border-color: #f0d4d4;
+        }
+        
+        .round-btn.danger:hover {
+            border-color: #d97777;
+            background-color: #fff5f5;
+        }
 
         #toast {
             position: fixed;
@@ -250,32 +303,35 @@
                 <option value="10">November 十一月</option>
                 <option value="11">December 十二月</option>
             </select>
+            
+            <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs opacity-60 mt-1">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span>系統已開啟全自動同步模式</span>
+            </div>
         </header>
 
-        <div class="mb-6 flex flex-col gap-4 px-2">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs opacity-60">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <span>系統已開啟全自動同步模式</span>
-                </div>
+        <div class="mb-8 px-2 btn-container">
+            <div class="flex flex-wrap justify-center items-center gap-4">
                 
-                <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                    <button onclick="exportToCSV()" class="btn btn-success flex-1 md:flex-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        匯出 CSV
-                    </button>
-                    <button onclick="window.print()" class="btn btn-outline flex-1 md:flex-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        列印
-                    </button>
-                    <button onclick="fetchFromCloud()" class="btn btn-outline flex-1 md:flex-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        重新讀取
-                    </button>
-                    <button onclick="clearCurrentMonth()" class="btn btn-outline text-red-400 flex-1 md:flex-none">
-                        清空當月
-                    </button>
-                </div>
+                <button onclick="exportToCSV()" class="round-btn filled-green">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>匯出<br>CSV</span>
+                </button>
+
+                <button onclick="window.print()" class="round-btn outline">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    <span>列<br>印</span>
+                </button>
+
+                <button onclick="fetchFromCloud()" class="round-btn outline">
+                    <svg class="opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span>重新<br>讀取</span>
+                </button>
+
+                <button onclick="clearCurrentMonth()" class="round-btn danger">
+                    <span>清空<br>當月</span>
+                </button>
+
             </div>
         </div>
 
@@ -390,7 +446,6 @@
                 const tr = document.createElement('tr');
                 if (isWeekend) tr.className = "weekend";
 
-                // 調整了 td 的生成順序：先關帳，再洗餐具、清潔
                 tr.innerHTML = `
                     <td class="date-col-row" data-label="日期">${i} 號 (週${weekNames[dayIdx]})</td>
                     <td class="hidden md:table-cell font-bold">${weekNames[dayIdx]}</td>
@@ -399,7 +454,7 @@
                     <td contenteditable="true" class="editable" data-label="20:00" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
                     <td contenteditable="true" class="editable" data-label="關帳" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
                     <td contenteditable="true" class="editable" data-label="洗餐具" oninput="updateData(${i}, 'dish', this.innerText)">${dayData.dish || ''}</td>
-                    <td contenteditable="true" class="editable" data-label="清潔" oninput="updateData(${i}, 'clean', this.innerText)">${dayData.clean || ''}</td>
+                    <td contenteditable="true" class="editable multiline-col" data-label="清潔" oninput="updateData(${i}, 'clean', this.innerText)">${dayData.clean || ''}</td>
                 `;
                 scheduleBody.appendChild(tr);
             }
@@ -407,13 +462,11 @@
 
         function exportToCSV() {
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            // CSV 標頭順序也一併調整：... -> 關帳 -> 洗餐具 -> 清潔
             let csvContent = "\ufeff日期,星期,開店,當天值班,20:00,關帳,洗餐具,清潔\n";
             for (let i = 1; i <= daysCount; i++) {
                 const date = new Date(year, currentMonth, i);
                 const dayIdx = date.getDay();
                 const dayData = (fullYearData[currentMonth] && fullYearData[currentMonth][i]) ? fullYearData[currentMonth][i] : {};
-                // CSV 內容順序調整
                 const row = [
                     `${i}號`, 
                     `週${weekNames[dayIdx]}`, 
@@ -438,7 +491,7 @@
         function updateData(day, field, val) {
             if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
             if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
-            fullYearData[currentMonth][day][field] = val.trim();
+            fullYearData[currentMonth][day][field] = val; 
             clearTimeout(autoSaveTimer);
             updateStatus('syncing', '正在紀錄修改...');
             autoSaveTimer = setTimeout(() => { saveAllToCloud(); }, 1000);
