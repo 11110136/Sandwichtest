@@ -65,6 +65,7 @@
                 padding: 10px 5px !important;
                 color: #000 !important;
                 text-align: center !important;
+                font-size: 10pt !important;
             }
             
             /* 3. 恢復隱藏的星期欄位 */
@@ -98,7 +99,7 @@
         }
 
         .nordic-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -169,7 +170,7 @@
             overflow: hidden;
         }
 
-        /* 這裡加上了 screen 限制，確保只在螢幕顯示時變成手機版卡片 */
+        /* 手機版卡片樣式 */
         @media screen and (max-width: 767px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
@@ -184,9 +185,9 @@
         @media (min-width: 768px) {
             .table-responsive { overflow-x: auto; }
             table { width: 100%; border-collapse: separate; border-spacing: 0; }
-            th { background-color: var(--milk-tea-accent); color: var(--coffee-text); padding: 20px 15px; text-align: center; }
-            td { padding: 15px; border-bottom: 1px solid var(--milk-tea-bg); text-align: center; }
-            .editable { min-width: 120px; cursor: pointer; border-radius: 4px; }
+            th { background-color: var(--milk-tea-accent); color: var(--coffee-text); padding: 20px 10px; text-align: center; white-space: nowrap; }
+            td { padding: 15px 10px; border-bottom: 1px solid var(--milk-tea-bg); text-align: center; }
+            .editable { min-width: 80px; cursor: pointer; border-radius: 4px; }
             .editable:hover { background-color: #faf7f2; }
             .editable:focus { outline: 2px solid var(--edit-highlight); background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
         }
@@ -289,6 +290,8 @@
                             <th>當天值班</th>
                             <th>20:00</th>
                             <th>關帳</th>
+                            <th>洗餐具</th>
+                            <th>清潔</th>
                         </tr>
                     </thead>
                     <tbody id="scheduleBody"></tbody>
@@ -382,11 +385,12 @@
                 const date = new Date(year, currentMonth, i);
                 const dayIdx = date.getDay();
                 const isWeekend = (dayIdx === 0 || dayIdx === 6);
-                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", close: "" };
+                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", dish: "", clean: "", close: "" };
 
                 const tr = document.createElement('tr');
                 if (isWeekend) tr.className = "weekend";
 
+                // 調整了 td 的生成順序：先關帳，再洗餐具、清潔
                 tr.innerHTML = `
                     <td class="date-col-row" data-label="日期">${i} 號 (週${weekNames[dayIdx]})</td>
                     <td class="hidden md:table-cell font-bold">${weekNames[dayIdx]}</td>
@@ -394,6 +398,8 @@
                     <td contenteditable="true" class="editable" data-label="當天值班" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ''}</td>
                     <td contenteditable="true" class="editable" data-label="20:00" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
                     <td contenteditable="true" class="editable" data-label="關帳" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
+                    <td contenteditable="true" class="editable" data-label="洗餐具" oninput="updateData(${i}, 'dish', this.innerText)">${dayData.dish || ''}</td>
+                    <td contenteditable="true" class="editable" data-label="清潔" oninput="updateData(${i}, 'clean', this.innerText)">${dayData.clean || ''}</td>
                 `;
                 scheduleBody.appendChild(tr);
             }
@@ -401,12 +407,23 @@
 
         function exportToCSV() {
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            let csvContent = "\ufeff日期,星期,開店,當天值班,20:00,關帳\n";
+            // CSV 標頭順序也一併調整：... -> 關帳 -> 洗餐具 -> 清潔
+            let csvContent = "\ufeff日期,星期,開店,當天值班,20:00,關帳,洗餐具,清潔\n";
             for (let i = 1; i <= daysCount; i++) {
                 const date = new Date(year, currentMonth, i);
                 const dayIdx = date.getDay();
                 const dayData = (fullYearData[currentMonth] && fullYearData[currentMonth][i]) ? fullYearData[currentMonth][i] : {};
-                const row = [`${i}號`, `週${weekNames[dayIdx]}`, `"${dayData.open || ''}"`, `"${dayData.shift || ''}"`, `"${dayData.t20 || ''}"`, `"${dayData.close || ''}"`];
+                // CSV 內容順序調整
+                const row = [
+                    `${i}號`, 
+                    `週${weekNames[dayIdx]}`, 
+                    `"${dayData.open || ''}"`, 
+                    `"${dayData.shift || ''}"`, 
+                    `"${dayData.t20 || ''}"`, 
+                    `"${dayData.close || ''}"`,
+                    `"${dayData.dish || ''}"`, 
+                    `"${dayData.clean || ''}"`
+                ];
                 csvContent += row.join(",") + "\n";
             }
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
