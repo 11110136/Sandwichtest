@@ -41,6 +41,8 @@
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             border: 1px solid white;
+            /* 讓表格在寬度不足時可以橫向滾動，而不是擠壓 */
+            overflow-x: auto; 
         }
 
         /* 視圖切換器按鈕 (底部) */
@@ -95,6 +97,8 @@
             font-size: 0.95rem; 
             letter-spacing: 0.05em;
             border-bottom: 2px solid var(--nordic-bg);
+            /* 防止標題換行，確保寬度被撐開 */
+            white-space: nowrap; 
         }
 
         /* 表格內容字體放大 (約 17px) */
@@ -124,10 +128,11 @@
             box-shadow: 0 0 0 2px var(--nordic-accent); 
         }
 
-        /* 週末與今日高亮 */
+        /* 週末高亮 */
         .is-weekend { background-color: var(--weekend-bg); }
+        
+        /* 移除今日綠色背景 */
         .is-today { 
-            background-color: #f0fdf4; /* 極淡綠 */
             position: relative;
         }
         .is-today::after {
@@ -152,7 +157,7 @@
             transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
-        /* --- 手機響應式優化 (Card View) - 關鍵修正 --- */
+        /* --- 手機響應式優化 (Card View) --- */
         @media screen and (max-width: 768px) {
             thead { display: none; }
             tr { 
@@ -162,22 +167,19 @@
                 border: 1px solid var(--nordic-border) !important;
             }
             
-            /* --- 這裡進行了 Grid 佈局修正 --- */
+            /* Grid 佈局：左標題右內容 */
             td { 
                 padding: 12px 0; 
                 border-bottom: 1px solid var(--nordic-bg); 
-                /* 使用 Grid 將標題與內容強制分為兩欄 */
                 display: grid; 
-                /* 左欄固定 85px (標題)，右欄 1fr (內容) */
-                grid-template-columns: 85px 1fr; 
-                align-items: center; /* 垂直置中 */
-                gap: 10px; /* 欄位間距 */
-                /* 手機版字體放大 */
+                grid-template-columns: 85px 1fr; /* 左欄固定 85px，右欄自動填滿 */
+                align-items: center; 
+                gap: 10px; 
                 font-size: 1.1rem; 
             }
             td:last-child { border-bottom: none; }
 
-            /* 第一個 TD (日期) 保持原本 Flex 佈局 */
+            /* 日期列保持原樣 */
             td:first-child {
                 font-size: 1.35rem; font-weight: 700; color: var(--nordic-text-main);
                 border-bottom: 2px solid var(--nordic-bg); padding-bottom: 12px; margin-bottom: 8px;
@@ -185,31 +187,25 @@
                 background-color: transparent !important;
             }
 
-            /* 標題 (Label) 設定 */
             td::before {
                 content: attr(data-label); 
                 font-weight: 500; 
                 color: var(--nordic-text-sub);
                 font-size: 0.95rem; 
                 text-transform: uppercase; 
-                /* 強制標題靠左 */
                 text-align: left;
-                /* 標題不換行 */
                 white-space: nowrap;
             }
             td[data-label="Day"] { display: none; }
             
-            /* 內容輸入框設定 */
+            /* 手機版內容輸入框：靠左對齊 */
             .editable { 
                 width: 100%; 
                 min-height: 20px; 
                 color: var(--nordic-text-main); 
-                /* --- 關鍵修正：內容改為靠左對齊 --- */
-                /* 這樣多行文字（如清單）才會整齊排在右側欄位，不會置中導致參差不齊 */
                 text-align: left; 
             }
             
-            /* 特定欄位樣式 */
             td[data-label="當天值班"] .editable { font-weight: 700; color: var(--nordic-accent); }
             .is-today::after { display: none; }
             .is-today { border: 2px solid var(--nordic-accent) !important; }
@@ -297,15 +293,13 @@
                 <table id="mainTable">
                     <thead>
                         <tr>
-                            <th class="w-24 text-center">Date</th>
-                            <th class="w-20 text-center">Day</th>
-                            <th class="w-24">開店</th>
-                            <th class="w-24">當天值班</th>
-                            <th class="w-24">20:00</th>
-                            <th class="w-24">關帳</th>
-                            <th class="w-24">洗餐具</th>
-                            <th class="w-24">清潔事項</th>
-                        </tr>
+                            <th class="min-w-[70px] text-center">Date</th>
+                            <th class="min-w-[50px] text-center">Day</th>
+                            <th class="min-w-[70px]">開店</th>
+                            <th class="min-w-[150px]">當天值班</th> <th class="min-w-[100px]">20:00</th>
+                            <th class="min-w-[70px]">關帳</th>
+                            <th class="min-w-[100px]">洗餐具</th>
+                            <th class="min-w-[150px]">清潔事項</th> </tr>
                     </thead>
                     <tbody id="scheduleBody">
                     </tbody>
@@ -424,8 +418,10 @@
         lucide.createIcons();
 
         // --- 配置與變數 ---
+        // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
         // 請將下方的 "YOUR_GOOGLE_SCRIPT_URL_HERE" 換成您的 Google Apps Script 網頁應用程式網址
         const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbzsG9p587hAofHfgCoCy6-WNZmd4o4E-R00eY6LXtMnSaHB3Kv4U9MpQ5Cg_MHY1--s5g/exec"; 
+        // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
         
         const year = 2026;
         const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
