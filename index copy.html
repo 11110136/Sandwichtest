@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 北歐風值班管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* 北歐風配色 Nordic Palette */
+            --nordic-bg: #F3F4F6;        /* 冷灰背景 */
+            --nordic-card: #FFFFFF;      /* 純白卡片 */
+            --nordic-text-main: #2C3E50; /* 深藍灰文字 */
+            --nordic-text-sub: #64748B;  /* 次要文字 */
+            --nordic-accent: #7E9F9F;    /* 鼠尾草綠 (強調色) */
+            --nordic-accent-hover: #607D7D;
+            --nordic-border: #E2E8F0;    /* 淺灰邊框 */
+            --weekend-bg: #F8FAFC;       /* 週末極淺灰底 */
+            --highlight-bg: #EFF6F6;     /* 編輯或選中時的底色 */
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--nordic-bg);
+            color: var(--nordic-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+        }
+
+        /* 隱藏滾動條但保持功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* --- UI 元件設計 --- */
+        
+        .nordic-card {
+            background: var(--nordic-card);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid white; /* 微妙的邊框 */
+        }
+
+        /* 視圖切換器 (Segmented Control) */
+        .view-switcher {
+            background: #E2E8F0;
+            padding: 4px;
+            border-radius: 12px;
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--nordic-text-sub);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-btn.active {
+            background: var(--nordic-card);
+            color: var(--nordic-text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            font-weight: 700;
+        }
+
+        /* 月份選擇器美化 */
+        .modern-select {
+            appearance: none;
+            background-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--nordic-text-main);
+            border: none;
+            cursor: pointer;
+            padding-right: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232C3E50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: 16px;
+            text-align: center;
+        }
+        .modern-select:focus { outline: none; }
+
+        /* 表格樣式 */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        
+        th {
+            font-weight: 600;
+            color: var(--nordic-text-sub);
+            padding: 16px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--nordic-bg);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--nordic-border);
+            transition: background 0.2s;
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        
+        .editable {
+            min-height: 24px;
+            border-radius: 6px;
+            padding: 4px 8px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .editable:hover { background-color: var(--nordic-bg); }
+        .editable:focus { 
+            background-color: var(--highlight-bg);
+            box-shadow: 0 0 0 2px var(--nordic-accent); 
+        }
+
+        /* 週末樣式 */
+        .is-weekend { background-color: var(--weekend-bg); }
+        .is-today { 
+            background-color: #f0fdf4; /* 極淡綠 */
+            position: relative;
+        }
+        .is-today::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background-color: var(--nordic-accent);
+        }
+
+        /* 圓形功能按鈕 */
+        .icon-btn {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: white;
+            color: var(--nordic-text-sub);
+            border: 1px solid var(--nordic-border);
+            transition: all 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .icon-btn:hover {
+            color: var(--nordic-accent);
+            border-color: var(--nordic-accent);
+            transform: translateY(-2px);
+        }
+        .icon-btn.primary {
+            background: var(--nordic-accent);
+            color: white;
+            border-color: var(--nordic-accent);
+        }
+        .icon-btn.primary:hover { background: var(--nordic-accent-hover); }
+
+        /* --- 手機響應式優化 (Card View) --- */
+        @media screen and (max-width: 768px) {
+            thead { display: none; }
+            tr { 
+                display: flex; 
+                flex-direction: column; 
+                padding: 20px;
+                border-bottom: 8px solid var(--nordic-bg) !important;
+                background: white;
+                border-radius: 12px;
+                margin-bottom: 10px;
+            }
+            td { 
+                padding: 8px 0; 
+                border: none; 
+                display: flex; 
+                align-items: center; 
+                justify-content: space-between;
+                text-align: right;
+            }
+            /* 日期列特別樣式 */
+            td:first-child {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--nordic-accent);
+                border-bottom: 1px solid var(--nordic-bg);
+                padding-bottom: 12px;
+                margin-bottom: 8px;
+                display: block; 
+                text-align: left;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: 500;
+                color: var(--nordic-text-sub);
+                font-size: 0.9rem;
+                text-align: left;
+                margin-right: 20px;
+            }
+            .editable {
+                text-align: right;
+                width: 100%;
+                min-height: 20px;
+            }
+        }
+        
+        /* 列印樣式 */
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print, .view-switcher, header button { display: none !important; }
+            .nordic-card { box-shadow: none; border: none; }
+            table { display: table !important; }
+            thead { display: table-header-group !important; }
+            tr { display: table-row !important; page-break-inside: avoid; border-bottom: 1px solid #ddd !important; }
+            td { display: table-cell !important; border: 1px solid #eee !important; padding: 5px !important; text-align: center !important; }
+            td::before { content: none !important; }
+            td:first-child { color: black !important; font-size: 1rem !important; border-bottom: 1px solid #eee !important; margin: 0 !important; }
+        }
+
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(44, 62, 80, 0.9); color: white;
+            padding: 10px 24px; border-radius: 50px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; font-size: 0.9rem; z-index: 100;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部區塊 -->
+    <header class="max-w-5xl mx-auto w-full mb-6 flex flex-col items-center gap-6">
+        
+        <!-- 雲端狀態 -->
+        <div class="w-full flex justify-between items-center px-2">
+            <div class="flex items-center gap-2 text-xs text-slate-400 font-medium tracking-wider uppercase">
+                <i data-lucide="cloud" class="w-4 h-4"></i>
+                <span id="statusText">System Ready</span>
+            </div>
+            <div id="autoSaveIndicator" class="flex items-center gap-2 text-xs text-emerald-600 opacity-0 transition-opacity duration-300">
+                <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+                <span>已儲存</span>
+            </div>
+        </div>
+
+        <!-- 標題與月份選擇 -->
+        <div class="text-center space-y-2">
+            <h1 class="text-xs font-bold tracking-[0.4em] text-slate-400 uppercase">2026 Shift Schedule</h1>
+            <div class="relative inline-block">
+                <select id="monthSelect" class="modern-select" onchange="handleMonthChange(this.value)">
+                    <option value="0">1月 January</option>
+                    <option value="1">2月 February</option>
+                    <option value="2">3月 March</option>
+                    <option value="3">4月 April</option>
+                    <option value="4">5月 May</option>
+                    <option value="5">6月 June</option>
+                    <option value="6">7月 July</option>
+                    <option value="7">8月 August</option>
+                    <option value="8">9月 September</option>
+                    <option value="9">10月 October</option>
+                    <option value="10">11月 November</option>
+                    <option value="11">12月 December</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 視圖切換 (核心功能) -->
+        <div class="view-switcher no-print">
+            <button class="view-btn" onclick="switchView('day')" id="btn-day">今日工作</button>
+            <button class="view-btn" onclick="switchView('week')" id="btn-week">本週概覽</button>
+            <button class="view-btn" onclick="switchView('month')" id="btn-month">全月班表</button>
+        </div>
+
+        <!-- 功能按鈕群 -->
+        <div class="flex gap-4 no-print">
+            <button onclick="exportToCSV()" class="icon-btn" title="匯出 CSV">
+                <i data-lucide="download" class="w-5 h-5"></i>
+            </button>
+            <button onclick="window.print()" class="icon-btn" title="列印">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+            </button>
+            <button onclick="fetchFromCloud()" class="icon-btn" title="重新整理">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+            <button onclick="clearCurrentMonth()" class="icon-btn" style="color:#ef4444; border-color:#fee2e2;" title="清空當月">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+    </header>
+
+    <!-- 主要內容卡片 -->
+    <main class="max-w-5xl mx-auto w-full flex-grow">
+        <div class="nordic-card overflow-hidden">
+            <div class="overflow-x-auto no-scrollbar">
+                <table id="mainTable">
+                    <thead>
+                        <tr>
+                            <th class="w-24 text-center">Date</th>
+                            <th class="w-20 text-center">Day</th>
+                            <th class="w-24">開店</th>
+                            <th class="w-24">當天值班</th>
+                            <th class="w-24">20:00</th>
+                            <th class="w-24">關帳</th>
+                            <th class="w-24">洗餐具</th>
+                            <th class="min-w-[150px]">清潔事項</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody" class="text-sm">
+                        <!-- Javascript Rendered Content -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 無資料時的顯示 (例如篩選錯誤) -->
+            <div id="emptyState" class="hidden py-12 text-center text-slate-400">
+                <i data-lucide="calendar-off" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                <p>無符合日期的資料</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-8 mb-4 text-center text-xs text-slate-400 font-light no-print">
+        Designed for Simplicity & Efficiency
+    </footer>
+
+    <div id="toast">已儲存</div>
+
+    <script>
+        // 初始化圖標
+        lucide.createIcons();
+
+        // --- 配置與變數 ---
+        const CLOUD_API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; // 請填入您的 GAS URL
+        const year = 2026;
+        const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; // 北歐風用英文縮寫較簡約
+        const weekNamesZh = ["日", "一", "二", "三", "四", "五", "六"]; // 手機版或列印可混用
+        const storageKey = 'nordic_shift_v2026_db';
+        
+        let currentMonth = new Date().getMonth(); 
+        let currentView = 'day'; // 預設視圖：day, week, month
+        let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
+        let autoSaveTimer = null;
+
+        // --- DOM 元素 ---
+        const scheduleBody = document.getElementById('scheduleBody');
+        const monthSelect = document.getElementById('monthSelect');
+        const emptyState = document.getElementById('emptyState');
+        const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+
+        // --- 初始化 ---
+        function init() {
+            // 判斷是否在 2026 年，如果不是，為了演示方便，我們模擬今天是 2026 的對應日期
+            // 實際使用請用 new Date()
+            const now = new Date();
+            
+            // 如果當前真實年份不是2026，為了讓使用者一進來看到有意義的畫面，我們切換到1月
+            // 如果是真實使用情境，請保留真實月份
+            if (now.getFullYear() === year) {
+                currentMonth = now.getMonth();
+            } else {
+                // 為了Demo，如果現在不是2026，預設停留在1月或當前月份
+                currentMonth = now.getMonth(); 
+            }
+
+            monthSelect.value = currentMonth;
+            
+            // 預設進入 "Today" 模式
+            switchView('day');
+            
+            fetchFromCloud();
+        }
+
+        // --- 核心視圖邏輯 ---
+        function switchView(viewMode) {
+            currentView = viewMode;
+            
+            // 更新按鈕樣式
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${viewMode}`).classList.add('active');
+
+            // 如果切換回 Today 或 Week，且當前選擇的月份不是真實月份，是否要跳轉？
+            // 這裡設計：按 Today/Week 強制跳轉回「當下真實月份」
+            const now = new Date();
+            const realMonth = now.getMonth(); // 0-11
+            
+            // 只有在年份匹配時才做月份跳轉 (這裡假設我們只處理2026)
+            // 為了方便測試，如果不匹配年份，我們就在當前選中的月份做篩選
+            
+            if (viewMode === 'day' || viewMode === 'week') {
+                // 如果是真實運作，這裡應該強制切換月份到當月
+                // monthSelect.value = realMonth;
+                // currentMonth = realMonth;
+            }
+
+            renderTable();
+        }
+
+        function handleMonthChange(val) {
+            currentMonth = parseInt(val);
+            // 當使用者手動切換月份時，邏輯上應該是想看整月，或者該月的第一天
+            // 為了體驗順暢，手動選月份時自動切換到 "Month" 視圖，以免選了別的月份卻因為 Day View 還是空的
+            if (currentView === 'day' || currentView === 'week') {
+                switchView('month');
+            } else {
+                renderTable();
+            }
+        }
+
+        // --- 表格渲染邏輯 ---
+        function renderTable() {
+            scheduleBody.innerHTML = '';
+            const daysCount = new Date(year, currentMonth + 1, 0).getDate();
+            if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
+
+            const today = new Date();
+            const isCurrentMonthReal = (today.getFullYear() === year && today.getMonth() === currentMonth);
+            const todayDate = today.getDate();
+
+            let startDay = 1;
+            let endDay = daysCount;
+            let hasData = false;
+
+            // 根據視圖模式過濾日期
+            let targetDays = [];
+
+            if (currentView === 'day') {
+                // 只顯示今天
+                // 如果現在的月份跟選單月份不同，Day 模式顯示該月1號，或者是顯示空？
+                // 這裡設計：如果是當月，顯示今天。如果不是當月，顯示該月1號 (或是切換回當月，依上面的邏輯)
+                const targetDate = isCurrentMonthReal ? todayDate : 1; 
+                targetDays.push(targetDate);
+            } 
+            else if (currentView === 'week') {
+                // 計算本週 (以真實時間為準，如果選單月份不同，則以選單月份的1號所在週計算)
+                const baseDateNum = isCurrentMonthReal ? todayDate : 1;
+                const baseDate = new Date(year, currentMonth, baseDateNum);
+                const dayOfWeek = baseDate.getDay(); // 0 (Sun) - 6 (Sat)
+                
+                // 找出該週的週日(start) 到 週六(end)
+                const weekStart = baseDateNum - dayOfWeek;
+                const weekEnd = baseDateNum + (6 - dayOfWeek);
+
+                for (let d = weekStart; d <= weekEnd; d++) {
+                    if (d >= 1 && d <= daysCount) {
+                        targetDays.push(d);
+                    }
+                }
+            } 
+            else {
+                // Month view
+                for (let d = 1; d <= daysCount; d++) targetDays.push(d);
+            }
+
+            // 開始產生 HTML
+            targetDays.forEach(i => {
+                hasData = true;
+                const dateObj = new Date(year, currentMonth, i);
+                const dayIdx = dateObj.getDay();
+                const isWeekend = (dayIdx === 0 || dayIdx === 6);
+                const isTodayRow = (isCurrentMonthReal && i === todayDate);
+                
+                const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", dish: "", clean: "", close: "" };
+
+                const tr = document.createElement('tr');
+                if (isWeekend) tr.classList.add("is-weekend");
+                if (isTodayRow) tr.classList.add("is-today");
+
+                // 日期顯示格式
+                const dateDisplay = `${currentMonth + 1}/${i}`;
+                
+                tr.innerHTML = `
+                    <td data-label="Date">
+                        <span class="font-bold text-slate-700">${dateDisplay}</span>
+                        ${isTodayRow ? '<span class="ml-2 text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold uppercase md:hidden">Today</span>' : ''}
+                    </td>
+                    <td data-label="Day" class="md:text-center text-slate-500 font-medium">
+                        ${weekNames[dayIdx]}
+                        <span class="md:hidden ml-1 text-slate-400">(${weekNamesZh[dayIdx]})</span>
+                    </td>
+                    <td data-label="開店" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'open', this.innerText)">${dayData.open || ''}</td>
+                    <td data-label="當天值班" contenteditable="true" class="editable text-center font-medium text-slate-700" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ''}</td>
+                    <td data-label="20:00" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
+                    <td data-label="關帳" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
+                    <td data-label="洗餐具" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'dish', this.innerText)">${dayData.dish || ''}</td>
+                    <td data-label="清潔事項" contenteditable="true" class="editable text-left whitespace-pre-wrap text-slate-600" oninput="updateData(${i}, 'clean', this.innerText)">${dayData.clean || ''}</td>
+                `;
+                scheduleBody.appendChild(tr);
+            });
+
+            if (!hasData) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // --- 資料處理 ---
+        function updateData(day, field, val) {
+            if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
+            if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
+            fullYearData[currentMonth][day][field] = val;
+
+            // UI 反饋：顯示正在儲存
+            autoSaveIndicator.classList.add('opacity-100');
+            
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => { 
+                saveAllToCloud(); 
+                autoSaveIndicator.classList.remove('opacity-100');
+            }, 800);
+        }
+
+        async function saveAllToCloud() {
+            localStorage.setItem(storageKey, JSON.stringify(fullYearData));
+            
+            // 模擬 API 請求 (如果您有實際 GAS URL)
+            if (CLOUD_API_URL.includes("YOUR_GOOGLE")) return;
+            
+            try {
+                await fetch(CLOUD_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(fullYearData)
+                });
+                showToast("已同步至雲端");
+            } catch (e) {
+                console.error("Sync failed", e);
+            }
+        }
+
+        async function fetchFromCloud() {
+            if (CLOUD_API_URL.includes("YOUR_GOOGLE")) return;
+            const statusText = document.getElementById('statusText');
+            statusText.innerText = "Syncing...";
+            
+            try {
+                const res = await fetch(CLOUD_API_URL);
+                const data = await res.json();
+                if (data && Object.keys(data).length > 0) {
+                    fullYearData = data;
+                    localStorage.setItem(storageKey, JSON.stringify(fullYearData));
+                    renderTable();
+                    statusText.innerText = "Cloud Synced";
+                }
+            } catch (e) {
+                statusText.innerText = "Offline Mode";
+            }
+        }
+
+        function clearCurrentMonth() {
+            if(confirm('確定要清空本月所有資料嗎？此動作無法復原。')) {
+                fullYearData[currentMonth] = {};
+                renderTable();
+                saveAllToCloud();
+                showToast("已清空本月資料");
+            }
+        }
+
+        function exportToCSV() {
+            const daysCount = new Date(year, currentMonth + 1, 0).getDate();
+            let csv = "\ufeffDate,Day,Open,Shift,20:00,Close,Dish,Clean\n";
+            
+            for(let i=1; i<=daysCount; i++) {
+                const d = fullYearData[currentMonth]?.[i] || {};
+                const dateObj = new Date(year, currentMonth, i);
+                const dayName = weekNamesZh[dateObj.getDay()];
+                
+                csv += `${currentMonth+1}/${i},${dayName},"${d.open||''}","${d.shift||''}","${d.t20||''}","${d.close||''}","${d.dish||''}","${d.clean||''}"\n`;
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Shift_Schedule_${year}_${currentMonth+1}.csv`;
+            link.click();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // 啟動
+        init();
+    </script>
+</body>
+</html>
