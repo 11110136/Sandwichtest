@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             /* 北歐風配色 Nordic Palette */
@@ -43,6 +44,7 @@
             border: 1px solid white;
             /* 讓表格在寬度不足時可以橫向滾動，而不是擠壓 */
             overflow-x: auto; 
+            position: relative; /* 用於截圖定位 */
         }
 
         /* 視圖切換器按鈕 (底部) */
@@ -97,7 +99,6 @@
             font-size: 0.95rem; 
             letter-spacing: 0.05em;
             border-bottom: 2px solid var(--nordic-bg);
-            /* 防止標題換行，確保寬度被撐開 */
             white-space: nowrap; 
         }
 
@@ -118,7 +119,6 @@
             padding: 4px 8px;
             outline: none;
             transition: all 0.2s;
-            /* 允許換行 */
             white-space: pre-wrap; 
             word-break: break-word;
         }
@@ -167,19 +167,17 @@
                 border: 1px solid var(--nordic-border) !important;
             }
             
-            /* Grid 佈局：左標題右內容 */
             td { 
                 padding: 12px 0; 
                 border-bottom: 1px solid var(--nordic-bg); 
                 display: grid; 
-                grid-template-columns: 85px 1fr; /* 左欄固定 85px，右欄自動填滿 */
+                grid-template-columns: 85px 1fr; 
                 align-items: center; 
                 gap: 10px; 
                 font-size: 1.1rem; 
             }
             td:last-child { border-bottom: none; }
 
-            /* 日期列保持原樣 */
             td:first-child {
                 font-size: 1.35rem; font-weight: 700; color: var(--nordic-text-main);
                 border-bottom: 2px solid var(--nordic-bg); padding-bottom: 12px; margin-bottom: 8px;
@@ -198,7 +196,6 @@
             }
             td[data-label="Day"] { display: none; }
             
-            /* 手機版內容輸入框：靠左對齊 */
             .editable { 
                 width: 100%; 
                 min-height: 20px; 
@@ -209,19 +206,6 @@
             td[data-label="當天值班"] .editable { font-weight: 700; color: var(--nordic-accent); }
             .is-today::after { display: none; }
             .is-today { border: 2px solid var(--nordic-accent) !important; }
-        }
-
-        /* 列印樣式 */
-        @media print {
-            body { background: white; padding: 0; }
-            .no-print, .view-switcher, header button, header .flex-wrap, .fixed-bottom-bar, #statsModal { display: none !important; }
-            .nordic-card { box-shadow: none; border: none; }
-            table { display: table !important; }
-            thead { display: table-header-group !important; }
-            tr { display: table-row !important; page-break-inside: avoid; border-bottom: 1px solid #ddd !important; }
-            td { display: table-cell !important; border: 1px solid #eee !important; padding: 5px !important; text-align: center !important; }
-            td::before { content: none !important; }
-            td:first-child { color: black !important; font-size: 1rem !important; border-bottom: 1px solid #eee !important; margin: 0 !important; }
         }
 
         /* Toast 通知 */
@@ -272,15 +256,18 @@
         </div>
 
         <div class="w-full flex justify-center gap-3 no-print">
-            <button onclick="exportToCSV()" class="icon-btn" title="匯出 CSV">
-                <i data-lucide="download" class="w-5 h-5 text-slate-600"></i>
+            <button onclick="copyToClipboard()" class="icon-btn" title="複製班表文字 (Line)">
+                <i data-lucide="copy" class="w-5 h-5 text-slate-600"></i>
             </button>
-            <button onclick="window.print()" class="icon-btn" title="列印">
-                <i data-lucide="printer" class="w-5 h-5 text-slate-600"></i>
+            
+            <button onclick="downloadAsImage()" class="icon-btn" title="下載班表圖片">
+                <i data-lucide="image-down" class="w-5 h-5 text-slate-600"></i>
             </button>
+            
             <button onclick="fetchFromCloud()" class="icon-btn" title="重新整理">
                 <i data-lucide="refresh-cw" class="w-5 h-5 text-slate-600"></i>
             </button>
+            
             <button onclick="showMonthStats()" class="icon-btn" style="color:#8b5cf6; border-color:#ddd6fe; background-color:#f5f3ff;" title="個人統計">
                 <i data-lucide="user-search" class="w-5 h-5"></i>
             </button>
@@ -288,7 +275,7 @@
     </header>
 
     <main class="max-w-5xl mx-auto w-full flex-grow">
-        <div class="nordic-card md:overflow-hidden bg-transparent md:bg-white shadow-none md:shadow-lg border-0 md:border"> 
+        <div id="capture-area" class="nordic-card md:overflow-hidden bg-transparent md:bg-white shadow-none md:shadow-lg border-0 md:border p-1"> 
             <div class="w-full">
                 <table id="mainTable">
                     <thead>
@@ -327,13 +314,10 @@
 
     <div id="statsModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto pointer-events-none">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 pointer-events-auto">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-sm border border-slate-100 ring-1 ring-slate-900/5">
-                    
                     <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400"></div>
-
                     <div class="bg-white px-5 pb-5 pt-8">
                         <div class="text-center">
                             <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 mb-4 ring-4 ring-emerald-50/50">
@@ -342,7 +326,6 @@
                             <h3 class="text-xl font-bold leading-6 text-slate-800 tracking-tight" id="modal-title">個人班表統計</h3>
                             <p class="text-sm text-slate-400 mt-1">輸入姓名以查詢本月排班狀況</p>
                         </div>
-
                         <div class="mt-6">
                             <div class="flex gap-2">
                                 <input type="text" id="stats-name-input" 
@@ -353,7 +336,6 @@
                                 </button>
                             </div>
                         </div>
-
                         <div id="stats-result-section" class="hidden mt-6 transition-all duration-300">
                             <div class="mb-6">
                                 <div class="flex justify-between text-xs font-medium text-slate-500 mb-1">
@@ -364,7 +346,6 @@
                                     <div id="modal-progress-bar" class="bg-gradient-to-r from-emerald-400 to-teal-400 h-2.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4">
                                     <div class="flex items-center gap-1.5 text-slate-500 mb-1">
@@ -373,7 +354,6 @@
                                     </div>
                                     <span class="text-2xl font-bold text-slate-700" id="modal-shift-count">0</span>
                                 </div>
-
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4">
                                     <div class="flex items-center gap-1.5 text-slate-500 mb-1">
                                         <i data-lucide="store" class="w-3.5 h-3.5"></i>
@@ -381,7 +361,6 @@
                                     </div>
                                     <span class="text-2xl font-bold text-slate-700" id="modal-open-count">0</span>
                                 </div>
-
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4">
                                     <div class="flex items-center gap-1.5 text-slate-500 mb-1">
                                         <i data-lucide="lock" class="w-3.5 h-3.5"></i>
@@ -389,7 +368,6 @@
                                     </div>
                                     <span class="text-2xl font-bold text-slate-700" id="modal-close-count">0</span>
                                 </div>
-
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4">
                                     <div class="flex items-center gap-1.5 text-slate-500 mb-1">
                                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
@@ -400,7 +378,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="bg-slate-50 px-4 py-4 sm:px-6">
                         <button type="button" onclick="closeModal()" class="w-full inline-flex justify-center rounded-xl bg-slate-200 px-3 py-3 text-sm font-bold text-slate-600 shadow-sm hover:bg-slate-300 active:scale-95 transition-all">
                             關閉視窗
@@ -414,14 +391,10 @@
     <div id="toast">已儲存</div>
 
     <script>
-        // 初始化 Icons
         lucide.createIcons();
 
-        // --- 配置與變數 ---
-        // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-        // 請將下方的 "YOUR_GOOGLE_SCRIPT_URL_HERE" 換成您的 Google Apps Script 網頁應用程式網址
+        // --- 配置 ---
         const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbzsG9p587hAofHfgCoCy6-WNZmd4o4E-R00eY6LXtMnSaHB3Kv4U9MpQ5Cg_MHY1--s5g/exec"; 
-        // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
         
         const year = 2026;
         const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
@@ -441,7 +414,6 @@
         // --- 初始化 ---
         function init() {
             const now = new Date();
-            // 如果當前年份是2026，則使用當前月份，否則預設1月
             if (now.getFullYear() === year) {
                 currentMonth = now.getMonth();
             }
@@ -449,15 +421,12 @@
             switchView('day');
             fetchFromCloud();
 
-            // 監聽輸入框 Enter 鍵
             document.getElementById('stats-name-input').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    calculatePersonalStats();
-                }
+                if (e.key === 'Enter') calculatePersonalStats();
             });
         }
 
-        // --- 視圖切換 ---
+        // --- 視圖與渲染 ---
         function switchView(viewMode) {
             currentView = viewMode;
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
@@ -474,7 +443,6 @@
             }
         }
 
-        // --- 表格渲染核心邏輯 ---
         function renderTable() {
             scheduleBody.innerHTML = '';
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
@@ -485,13 +453,10 @@
             const todayDate = today.getDate();
 
             let targetDays = [];
-
-            // 根據視圖模式篩選日期
             if (currentView === 'day') {
                 const targetDate = isCurrentMonthReal ? todayDate : 1; 
                 targetDays.push(targetDate);
-            } 
-            else if (currentView === 'week') {
+            } else if (currentView === 'week') {
                 const baseDateNum = isCurrentMonthReal ? todayDate : 1;
                 const baseDate = new Date(year, currentMonth, baseDateNum);
                 const dayOfWeek = baseDate.getDay(); 
@@ -500,13 +465,10 @@
                 for (let d = weekStart; d <= weekEnd; d++) {
                     if (d >= 1 && d <= daysCount) targetDays.push(d);
                 }
-            } 
-            else {
-                // Month view
+            } else {
                 for (let d = 1; d <= daysCount; d++) targetDays.push(d);
             }
 
-            // 產生 Rows
             targetDays.forEach(i => {
                 const dateObj = new Date(year, currentMonth, i);
                 const dayIdx = dateObj.getDay();
@@ -561,7 +523,6 @@
 
         async function saveAllToCloud() {
             localStorage.setItem(storageKey, JSON.stringify(fullYearData));
-            // 模擬雲端同步
             if (CLOUD_API_URL.includes("YOUR_GOOGLE")) return;
             try {
                 await fetch(CLOUD_API_URL, {
@@ -587,49 +548,28 @@
             } catch (e) { statusText.innerText = "Offline Mode"; }
         }
 
-        // --- 統計功能 (顯示 Modal) ---
+        // --- 統計與互動 ---
         function showMonthStats() {
-            // 每次打開前先重置狀態
             document.getElementById('stats-name-input').value = "";
             document.getElementById('stats-result-section').classList.add('hidden');
-            
             const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
             document.getElementById('modal-title').innerText = `${monthName} 統計`;
-            
-            // 顯示 Modal
             const modal = document.getElementById('statsModal');
             modal.classList.remove('hidden');
-            
-            // 自動聚焦輸入框
-            setTimeout(() => {
-                document.getElementById('stats-name-input').focus();
-            }, 100);
-            
+            setTimeout(() => document.getElementById('stats-name-input').focus(), 100);
             lucide.createIcons();
         }
 
-        // --- 核心功能：計算個人統計 ---
         function calculatePersonalStats() {
             const targetName = document.getElementById('stats-name-input').value.trim();
-            
-            if (!targetName) {
-                alert("請輸入姓名！");
-                return;
-            }
+            if (!targetName) { alert("請輸入姓名！"); return; }
 
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            let stats = {
-                shift: 0,
-                open: 0,
-                close: 0,
-                clean: 0 
-            };
+            let stats = { shift: 0, open: 0, close: 0, clean: 0 };
             
-            // 遍歷當月資料
             for(let i=1; i<=daysCount; i++) {
                 const d = fullYearData[currentMonth]?.[i];
                 if(d) {
-                    // 使用 includes 進行模糊比對 (只要該格包含名字就算，例如 "小明, 小華")
                     if(d.shift && d.shift.includes(targetName)) stats.shift++;
                     if(d.open && d.open.includes(targetName)) stats.open++;
                     if(d.close && d.close.includes(targetName)) stats.close++;
@@ -637,50 +577,74 @@
                 }
             }
 
-            // 更新介面數字
             document.getElementById('modal-shift-count').innerText = stats.shift;
             document.getElementById('modal-open-count').innerText = stats.open;
             document.getElementById('modal-close-count').innerText = stats.close;
             document.getElementById('modal-clean-count').innerText = stats.clean;
-
-            // 計算覆蓋率 (簡單計算：佔當月天數的比例)
             const percentage = Math.round((stats.shift / daysCount) * 100);
             document.getElementById('modal-coverage').innerText = `${percentage}% (排班天數/當月總天數)`;
-            
-            // 顯示結果區域
-            const resultSection = document.getElementById('stats-result-section');
-            resultSection.classList.remove('hidden');
-            
-            // 動畫跑進度條
+            document.getElementById('stats-result-section').classList.remove('hidden');
             const progressBar = document.getElementById('modal-progress-bar');
             progressBar.style.width = '0%';
-            setTimeout(() => {
-                progressBar.style.width = `${percentage}%`;
-            }, 100);
+            setTimeout(() => progressBar.style.width = `${percentage}%`, 100);
         }
 
         function closeModal() {
             document.getElementById('statsModal').classList.add('hidden');
         }
 
-        // --- CSV 匯出 ---
-        function exportToCSV() {
+        function copyToClipboard() {
             const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-            let csv = "\ufeffDate,Day,Open,Shift,20:00,Close,Dish,Clean\n";
+            const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
+            let text = `【${year}年 ${monthName} 值班表】\n\n`;
+            let hasData = false;
             for(let i=1; i<=daysCount; i++) {
-                const d = fullYearData[currentMonth]?.[i] || {};
-                const dateObj = new Date(year, currentMonth, i);
-                const dayName = weekNamesZh[dateObj.getDay()];
-                csv += `${currentMonth+1}/${i},${dayName},"${d.open||''}","${d.shift||''}","${d.t20||''}","${d.close||''}","${d.dish||''}","${d.clean||''}"\n`;
+                const d = fullYearData[currentMonth]?.[i];
+                if (d && (d.open || d.shift || d.close)) {
+                    hasData = true;
+                    const dateObj = new Date(year, currentMonth, i);
+                    const dayName = weekNamesZh[dateObj.getDay()];
+                    text += `${currentMonth+1}/${i} (${dayName})`;
+                    if(d.open) text += ` 開店:${d.open}`;
+                    if(d.shift) text += ` / 值班:${d.shift}`;
+                    if(d.close) text += ` / 關帳:${d.close}`;
+                    text += `\n`;
+                }
             }
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Shift_Schedule_${year}_${currentMonth+1}.csv`;
-            link.click();
+            if (!hasData) { showToast("本月無資料"); return; }
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try { document.execCommand('copy'); showToast("已複製班表文字！"); } 
+            catch (err) { showToast("複製失敗"); }
+            document.body.removeChild(textArea);
         }
 
-        // --- Toast 顯示 ---
+        // --- [NEW] 下載圖片功能 ---
+        function downloadAsImage() {
+            const element = document.getElementById("capture-area");
+            const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
+            
+            showToast("正在產生圖片...");
+            
+            // 使用 html2canvas 截圖
+            html2canvas(element, {
+                scale: 2, // 提高解析度
+                backgroundColor: "#ffffff", // 強制白底
+                useCORS: true // 允許跨域圖片 (雖然這裡沒用到外部圖片)
+            }).then(canvas => {
+                const link = document.createElement("a");
+                link.download = `Shift_Schedule_${year}_${monthName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                showToast("圖片下載完成！");
+            }).catch(err => {
+                console.error(err);
+                showToast("圖片產生失敗");
+            });
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
@@ -688,7 +652,6 @@
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        // 啟動程式
         init();
     </script>
 </body>
