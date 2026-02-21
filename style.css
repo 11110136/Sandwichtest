@@ -1,0 +1,209 @@
+:root {
+    /* 北歐風配色 Nordic Palette */
+    --nordic-bg: #F3F4F6;        /* 冷灰背景 */
+    --nordic-card: #FFFFFF;      /* 純白卡片 */
+    --nordic-text-main: #2C3E50; /* 深藍灰文字 */
+    --nordic-text-sub: #64748B;  /* 次要文字 */
+    --nordic-accent: #7E9F9F;    /* 鼠尾草綠 (強調色) */
+    --nordic-border: #E2E8F0;    /* 淺灰邊框 */
+    --weekend-bg: #F8FAFC;       /* 週末極淺灰底 */
+    --highlight-bg: #EFF6F6;     /* 編輯或選中時的底色 */
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: var(--nordic-bg);
+    color: var(--nordic-text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    padding-bottom: 120px; /* 底部留白給懸浮按鈕 */
+}
+
+/* 隱藏滾動條但保持功能 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 卡片通用樣式 */
+.nordic-card {
+    background: var(--nordic-card);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    border: 1px solid white;
+    /* 讓表格在寬度不足時可以橫向滾動，而不是擠壓 */
+    overflow-x: auto; 
+    position: relative; /* 用於截圖定位 */
+}
+
+/* 視圖切換器按鈕 (底部) */
+.view-btn {
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--nordic-text-sub);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    background: transparent;
+}
+
+/* 選中狀態：深底白字 */
+.view-btn.active {
+    background: var(--nordic-text-main); 
+    color: white;                        
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+    font-weight: 700;
+    transform: scale(1.05);
+}
+
+/* 月份選擇器美化：靠左對齊 */
+.modern-select {
+    appearance: none;
+    background-color: transparent;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--nordic-text-main);
+    border: none;
+    cursor: pointer;
+    padding-right: 24px;
+    padding-left: 10px; 
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232C3E50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: 16px;
+    text-align: left; 
+    min-width: 200px; 
+}
+.modern-select:focus { outline: none; }
+
+/* 表格樣式 */
+table { width: 100%; border-collapse: separate; border-spacing: 0; }
+
+th {
+    font-weight: 600;
+    color: var(--nordic-text-sub);
+    padding: 16px;
+    text-transform: uppercase;
+    font-size: 0.95rem; 
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--nordic-bg);
+    white-space: nowrap; 
+}
+
+/* 表格內容字體放大 (約 17px) */
+td {
+    padding: 16px;
+    border-bottom: 1px solid var(--nordic-border);
+    vertical-align: top;
+    transition: background 0.2s;
+    font-size: 17px; 
+}
+tr:last-child td { border-bottom: none; }
+
+/* 可編輯區域樣式 */
+.editable {
+    min-height: 24px;
+    border-radius: 6px;
+    padding: 4px 8px;
+    outline: none;
+    transition: all 0.2s;
+    white-space: pre-wrap; 
+    word-break: break-word;
+}
+.editable:hover { background-color: var(--nordic-bg); }
+.editable:focus { 
+    background-color: var(--highlight-bg);
+    box-shadow: 0 0 0 2px var(--nordic-accent); 
+}
+
+/* 週末高亮 */
+.is-weekend { background-color: var(--weekend-bg); }
+
+/* 移除今日綠色背景 */
+.is-today { 
+    position: relative;
+}
+.is-today::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--nordic-accent);
+}
+
+/* 圓形功能按鈕 (頂部) */
+.icon-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: white;
+    color: var(--nordic-text-sub);
+    border: 1px solid var(--nordic-border);
+    transition: all 0.2s;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    flex-shrink: 0;
+}
+.icon-btn:hover {
+    color: var(--nordic-accent); border-color: var(--nordic-accent);
+    transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* --- 手機響應式優化 (Card View) --- */
+@media screen and (max-width: 768px) {
+    thead { display: none; }
+    tr { 
+        display: flex; flex-direction: column; padding: 16px;
+        border-bottom: none !important; background: white; border-radius: 12px;
+        margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        border: 1px solid var(--nordic-border) !important;
+    }
+    
+    td { 
+        padding: 12px 0; 
+        border-bottom: 1px solid var(--nordic-bg); 
+        display: grid; 
+        grid-template-columns: 85px 1fr; 
+        align-items: center; 
+        gap: 10px; 
+        font-size: 1.1rem; 
+    }
+    td:last-child { border-bottom: none; }
+
+    td:first-child {
+        font-size: 1.35rem; font-weight: 700; color: var(--nordic-text-main);
+        border-bottom: 2px solid var(--nordic-bg); padding-bottom: 12px; margin-bottom: 8px;
+        display: flex; flex-direction: row; justify-content: space-between; align-items: center;
+        background-color: transparent !important;
+    }
+
+    td::before {
+        content: attr(data-label); 
+        font-weight: 500; 
+        color: var(--nordic-text-sub);
+        font-size: 0.95rem; 
+        text-transform: uppercase; 
+        text-align: left;
+        white-space: nowrap;
+    }
+    td[data-label="Day"] { display: none; }
+    
+    .editable { 
+        width: 100%; 
+        min-height: 20px; 
+        color: var(--nordic-text-main); 
+        text-align: left; 
+    }
+    
+    td[data-label="當天值班"] .editable { font-weight: 700; color: var(--nordic-accent); }
+    .is-today::after { display: none; }
+    .is-today { border: 2px solid var(--nordic-accent) !important; }
+}
+
+/* Toast 通知 */
+#toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+    background: rgba(44, 62, 80, 0.9); color: white;
+    padding: 10px 24px; border-radius: 50px;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0; font-size: 0.9rem; z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
