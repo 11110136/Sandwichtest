@@ -1,24 +1,42 @@
+// --- 初始化 Lucide Icons ---
 lucide.createIcons();
 
-// --- 配置 ---
+// --- 系統配置 ---
 const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbzsG9p587hAofHfgCoCy6-WNZmd4o4E-R00eY6LXtMnSaHB3Kv4U9MpQ5Cg_MHY1--s5g/exec"; 
-
 const year = 2026;
 const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
 
+// --- 休假表圖片設定 (0代表1月，11代表12月) ---
+const leaveImages = {
+    0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", // 1月
+    1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", // 2月
+    2: "", // 3月 (留空測試無圖片提示)
+    3: "", // 4月
+    4: "", // 5月
+    5: "", // 6月
+    6: "", // 7月
+    7: "", // 8月
+    8: "", // 9月
+    9: "", // 10月
+    10: "", // 11月
+    11: ""  // 12月
+};
+
+// --- 全域變數 ---
 let currentMonth = new Date().getMonth(); 
 let currentView = 'day'; 
 let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 let autoSaveTimer = null;
 
+// --- DOM 元素綁定 ---
 const scheduleBody = document.getElementById('scheduleBody');
 const monthSelect = document.getElementById('monthSelect');
 const emptyState = document.getElementById('emptyState');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 
-// --- 初始化 ---
+// --- 系統初始化 ---
 function init() {
     const now = new Date();
     if (now.getFullYear() === year) {
@@ -28,12 +46,13 @@ function init() {
     switchView('day');
     fetchFromCloud();
 
+    // 綁定統計輸入框的 Enter 鍵事件
     document.getElementById('stats-name-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') calculatePersonalStats();
     });
 }
 
-// --- 視圖與渲染 ---
+// --- 視圖與表格渲染邏輯 ---
 function switchView(viewMode) {
     currentView = viewMode;
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
@@ -114,7 +133,7 @@ function renderTable() {
     else emptyState.classList.add('hidden');
 }
 
-// --- 資料更新與儲存 ---
+// --- 資料更新與雲端同步 ---
 function updateData(day, field, val) {
     if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
     if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
@@ -155,14 +174,13 @@ async function fetchFromCloud() {
     } catch (e) { statusText.innerText = "Offline Mode"; }
 }
 
-// --- 統計與互動 ---
+// --- 個人排班統計功能 ---
 function showMonthStats() {
     document.getElementById('stats-name-input').value = "";
     document.getElementById('stats-result-section').classList.add('hidden');
     const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
     document.getElementById('modal-title').innerText = `${monthName} 統計`;
-    const modal = document.getElementById('statsModal');
-    modal.classList.remove('hidden');
+    document.getElementById('statsModal').classList.remove('hidden');
     setTimeout(() => document.getElementById('stats-name-input').focus(), 100);
     lucide.createIcons();
 }
@@ -200,63 +218,45 @@ function closeModal() {
     document.getElementById('statsModal').classList.add('hidden');
 }
 
-function copyToClipboard() {
-    const daysCount = new Date(year, currentMonth + 1, 0).getDate();
+// --- 月份連動休假表功能 ---
+function showLeaveSchedule() {
     const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
-    let text = `【${year}年 ${monthName} 值班表】\n\n`;
-    let hasData = false;
-    for(let i=1; i<=daysCount; i++) {
-        const d = fullYearData[currentMonth]?.[i];
-        if (d && (d.open || d.shift || d.close)) {
-            hasData = true;
-            const dateObj = new Date(year, currentMonth, i);
-            const dayName = weekNamesZh[dateObj.getDay()];
-            text += `${currentMonth+1}/${i} (${dayName})`;
-            if(d.open) text += ` 開店:${d.open}`;
-            if(d.shift) text += ` / 值班:${d.shift}`;
-            if(d.close) text += ` / 關帳:${d.close}`;
-            text += `\n`;
-        }
+    const imgElement = document.getElementById('leaveScheduleImg');
+    const noImgMsg = document.getElementById('noLeaveImgMsg');
+    
+    // 更新視窗標題
+    document.getElementById('leaveModalMonthTitle').innerText = `${monthName} 員工休假表`;
+
+    // 取得當前選擇月份的圖片網址
+    const currentImgUrl = leaveImages[currentMonth];
+
+    // 判斷該月份是否有設定圖片
+    if (currentImgUrl && currentImgUrl.trim() !== "") {
+        imgElement.src = currentImgUrl;
+        imgElement.classList.remove('hidden');
+        noImgMsg.classList.add('hidden');
+    } else {
+        imgElement.src = "";
+        imgElement.classList.add('hidden');
+        noImgMsg.classList.remove('hidden');
+        lucide.createIcons(); 
     }
-    if (!hasData) { showToast("本月無資料"); return; }
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try { document.execCommand('copy'); showToast("已複製班表文字！"); } 
-    catch (err) { showToast("複製失敗"); }
-    document.body.removeChild(textArea);
+
+    document.getElementById('leaveScheduleModal').classList.remove('hidden');
+    lucide.createIcons();
 }
 
-// --- [NEW] 下載圖片功能 ---
-function downloadAsImage() {
-    const element = document.getElementById("capture-area");
-    const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
-    
-    showToast("正在產生圖片...");
-    
-    // 使用 html2canvas 截圖
-    html2canvas(element, {
-        scale: 2, // 提高解析度
-        backgroundColor: "#ffffff", // 強制白底
-        useCORS: true // 允許跨域圖片 (雖然這裡沒用到外部圖片)
-    }).then(canvas => {
-        const link = document.createElement("a");
-        link.download = `Shift_Schedule_${year}_${monthName}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        showToast("圖片下載完成！");
-    }).catch(err => {
-        console.error(err);
-        showToast("圖片產生失敗");
-    });
+function closeLeaveSchedule() {
+    document.getElementById('leaveScheduleModal').classList.add('hidden');
 }
 
+// --- 通用通知元件 ---
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.innerText = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
+// 執行初始化
 init();

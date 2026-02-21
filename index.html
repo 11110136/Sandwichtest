@@ -7,8 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -46,12 +44,8 @@
         </div>
 
         <div class="w-full flex justify-center gap-3 no-print">
-            <button onclick="copyToClipboard()" class="icon-btn" title="複製班表文字 (Line)">
-                <i data-lucide="copy" class="w-5 h-5 text-slate-600"></i>
-            </button>
-            
-            <button onclick="downloadAsImage()" class="icon-btn" title="下載班表圖片">
-                <i data-lucide="image-down" class="w-5 h-5 text-slate-600"></i>
+            <button onclick="showLeaveSchedule()" class="icon-btn hover:!border-indigo-400 hover:!text-indigo-500" title="查看本月員工休假表">
+                <i data-lucide="calendar-heart" class="w-5 h-5"></i>
             </button>
             
             <button onclick="fetchFromCloud()" class="icon-btn" title="重新整理">
@@ -73,7 +67,8 @@
                             <th class="min-w-[70px] text-center">Date</th>
                             <th class="min-w-[50px] text-center">Day</th>
                             <th class="min-w-[70px]">開店</th>
-                            <th class="min-w-[150px]">當天值班</th> <th class="min-w-[100px]">20:00</th>
+                            <th class="min-w-[150px]">當天值班</th> 
+                            <th class="min-w-[100px]">20:00</th>
                             <th class="min-w-[70px]">關帳</th>
                             <th class="min-w-[100px]">洗餐具</th>
                             <th class="min-w-[150px]">清潔事項</th> 
@@ -173,6 +168,33 @@
                         <button type="button" onclick="closeModal()" class="w-full inline-flex justify-center rounded-xl bg-slate-200 px-3 py-3 text-sm font-bold text-slate-600 shadow-sm hover:bg-slate-300 active:scale-95 transition-all">
                             關閉視窗
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="leaveScheduleModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeLeaveSchedule()"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto pointer-events-none flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-3xl pointer-events-auto border border-slate-100 p-2">
+                <button onclick="closeLeaveSchedule()" class="absolute top-4 right-4 bg-white/90 backdrop-blur p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors z-10 shadow-sm">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                
+                <div class="text-center p-4 pb-2">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
+                        <i data-lucide="calendar-heart" class="w-5 h-5 text-indigo-500"></i>
+                        <span id="leaveModalMonthTitle">員工休假表</span>
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1">排班前請先對照大家的休假時間</p>
+                </div>
+
+                <div class="p-2 overflow-auto max-h-[70vh] bg-slate-50 rounded-xl border border-slate-100 mt-2 min-h-[200px] flex items-center justify-center">
+                    <img id="leaveScheduleImg" src="" alt="員工休假表" class="w-full h-auto rounded-lg object-contain hidden">
+                    <div id="noLeaveImgMsg" class="text-slate-400 text-center hidden flex-col items-center gap-2 py-10">
+                        <i data-lucide="image-off" class="w-8 h-8 opacity-50"></i>
+                        <p>尚未設定本月的休假表圖片</p>
                     </div>
                 </div>
             </div>

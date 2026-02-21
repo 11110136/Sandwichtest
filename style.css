@@ -33,7 +33,7 @@ body {
     border: 1px solid white;
     /* 讓表格在寬度不足時可以橫向滾動，而不是擠壓 */
     overflow-x: auto; 
-    position: relative; /* 用於截圖定位 */
+    position: relative;
 }
 
 /* 視圖切換器按鈕 (底部) */
@@ -57,7 +57,7 @@ body {
     transform: scale(1.05);
 }
 
-/* 月份選擇器美化：靠左對齊 */
+/* 月份選擇器美化 */
 .modern-select {
     appearance: none;
     background-color: transparent;
@@ -91,7 +91,7 @@ th {
     white-space: nowrap; 
 }
 
-/* 表格內容字體放大 (約 17px) */
+/* 表格內容字體放大 */
 td {
     padding: 16px;
     border-bottom: 1px solid var(--nordic-border);
@@ -117,13 +117,9 @@ tr:last-child td { border-bottom: none; }
     box-shadow: 0 0 0 2px var(--nordic-accent); 
 }
 
-/* 週末高亮 */
+/* 週末與今日高亮 */
 .is-weekend { background-color: var(--weekend-bg); }
-
-/* 移除今日綠色背景 */
-.is-today { 
-    position: relative;
-}
+.is-today { position: relative; }
 .is-today::after {
     content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--nordic-accent);
 }
@@ -146,7 +142,7 @@ tr:last-child td { border-bottom: none; }
     transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
-/* --- 手機響應式優化 (Card View) --- */
+/* 手機響應式優化 (Card View) */
 @media screen and (max-width: 768px) {
     thead { display: none; }
     tr { 
@@ -157,13 +153,9 @@ tr:last-child td { border-bottom: none; }
     }
     
     td { 
-        padding: 12px 0; 
-        border-bottom: 1px solid var(--nordic-bg); 
-        display: grid; 
-        grid-template-columns: 85px 1fr; 
-        align-items: center; 
-        gap: 10px; 
-        font-size: 1.1rem; 
+        padding: 12px 0; border-bottom: 1px solid var(--nordic-bg); 
+        display: grid; grid-template-columns: 85px 1fr; 
+        align-items: center; gap: 10px; font-size: 1.1rem; 
     }
     td:last-child { border-bottom: none; }
 
@@ -175,23 +167,12 @@ tr:last-child td { border-bottom: none; }
     }
 
     td::before {
-        content: attr(data-label); 
-        font-weight: 500; 
-        color: var(--nordic-text-sub);
-        font-size: 0.95rem; 
-        text-transform: uppercase; 
-        text-align: left;
-        white-space: nowrap;
+        content: attr(data-label); font-weight: 500; color: var(--nordic-text-sub);
+        font-size: 0.95rem; text-transform: uppercase; text-align: left; white-space: nowrap;
     }
     td[data-label="Day"] { display: none; }
     
-    .editable { 
-        width: 100%; 
-        min-height: 20px; 
-        color: var(--nordic-text-main); 
-        text-align: left; 
-    }
-    
+    .editable { width: 100%; min-height: 20px; color: var(--nordic-text-main); text-align: left; }
     td[data-label="當天值班"] .editable { font-weight: 700; color: var(--nordic-accent); }
     .is-today::after { display: none; }
     .is-today { border: 2px solid var(--nordic-accent) !important; }
