@@ -7,8 +7,6 @@ const year = 2026;
 const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
-// --- 工作崗位表 PDF 設定 (固定 PDF) ---
-const STATION_PDF_URL = "./docs/第四版工作分配表.pdf";
 
 // --- 休假表圖片設定 (0代表1月，11代表12月) ---
 const leaveImages = {
@@ -25,6 +23,9 @@ const leaveImages = {
     10: "", // 11月
     11: ""  // 12月
 };
+
+// --- 工作崗位表圖片設定 (固定圖片) ---
+const STATION_IMAGE_URL = "./images/第四版工作分配表.png";
 
 // --- 全域變數 ---
 let currentMonth = new Date().getMonth(); 
@@ -260,14 +261,13 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// --- [NEW] 管理者實用功能：查看固定的工作崗位表 (PDF版) ---
+// --- [NEW] 管理者實用功能：查看固定的工作崗位表 ---
 function showStationModal() {
-    const pdfElement = document.getElementById('stationPdf');
+    const imgElement = document.getElementById('stationImg');
     
-    // 只有在還沒載入 PDF 時才設定 src，避免每次點開都要重新跑一次載入
-    // 使用當前網址來判斷是否已經設定過
-    if (!pdfElement.src || pdfElement.getAttribute('src') === '') {
-        pdfElement.src = STATION_PDF_URL;
+    // 只有在還沒載入圖片時才設定 src，避免每次打開都重新載入閃爍
+    if (!imgElement.src || imgElement.getAttribute('src') === '') {
+        imgElement.src = STATION_IMAGE_URL;
     }
     
     document.getElementById('stationModal').classList.remove('hidden');
