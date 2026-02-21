@@ -12,7 +12,7 @@ const storageKey = 'nordic_shift_v2026_db';
 const leaveImages = {
     0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", // 1月
     1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", // 2月
-    2: "./images/3月份休假表.jpg", // 這是 3月的圖片", // 3月 
+    2: "./images/level3.png", // 這是 3月的圖片", // 3月 
     3: "", // 4月
     4: "", // 5月
     5: "", // 6月
