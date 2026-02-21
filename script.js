@@ -7,6 +7,8 @@ const year = 2026;
 const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
+// --- 工作崗位表 PDF 設定 (固定 PDF) ---
+const STATION_PDF_URL = "./docs/第四版工作分配表.pdf";
 
 // --- 休假表圖片設定 (0代表1月，11代表12月) ---
 const leaveImages = {
@@ -256,6 +258,24 @@ function showToast(msg) {
     toast.innerText = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// --- [NEW] 管理者實用功能：查看固定的工作崗位表 (PDF版) ---
+function showStationModal() {
+    const pdfElement = document.getElementById('stationPdf');
+    
+    // 只有在還沒載入 PDF 時才設定 src，避免每次點開都要重新跑一次載入
+    // 使用當前網址來判斷是否已經設定過
+    if (!pdfElement.src || pdfElement.getAttribute('src') === '') {
+        pdfElement.src = STATION_PDF_URL;
+    }
+    
+    document.getElementById('stationModal').classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function closeStationModal() {
+    document.getElementById('stationModal').classList.add('hidden');
 }
 
 // 執行初始化
