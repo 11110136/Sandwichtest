@@ -12,7 +12,7 @@ const storageKey = 'nordic_shift_v2026_db';
 const leaveImages = {
     0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", // 1月
     1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", // 2月
-    2: "./images/level3.png", // 這是 3月的圖片", // 3月 
+    2: "./images/level3.png", // 這是 3月的圖片
     3: "", // 4月
     4: "", // 5月
     5: "", // 6月
@@ -32,6 +32,7 @@ let currentMonth = new Date().getMonth();
 let currentView = 'day'; 
 let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 let autoSaveTimer = null;
+let currentStatsDates = { shift: [], open: [], close: [], clean: [] }; // 用來暫存查詢到的詳細日期
 
 // --- DOM 元素綁定 ---
 const scheduleBody = document.getElementById('scheduleBody');
@@ -181,15 +182,14 @@ async function fetchFromCloud() {
 function showMonthStats() {
     document.getElementById('stats-name-input').value = "";
     document.getElementById('stats-result-section').classList.add('hidden');
+    closeDetailDates(); // 打開彈窗時重置詳細日期區塊
+    
     const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
     document.getElementById('modal-title').innerText = `${monthName} 統計`;
     document.getElementById('statsModal').classList.remove('hidden');
     setTimeout(() => document.getElementById('stats-name-input').focus(), 100);
     lucide.createIcons();
 }
-
-// --- 新增全域變數，用來暫存查詢到的日期 ---
-let currentStatsDates = { shift: [], open: [], close: [], clean: [] };
 
 function calculatePersonalStats() {
     const targetName = document.getElementById('stats-name-input').value.trim();
@@ -204,11 +204,31 @@ function calculatePersonalStats() {
     for(let i=1; i<=daysCount; i++) {
         const d = fullYearData[currentMonth]?.[i];
         if(d) {
-            if(d.shift && d.shift.includes(targetName)) { stats.shift++; currentStatsDates.shift.push(i); }
-            if(d.open && d.open.includes(targetName)) { stats.open++; currentStatsDates.open.push(i); }
-            if(d.close && d.close.includes(targetName)) { stats.close++; currentStatsDates.close.push(i); }
+            if(d.shift && d.shift.includes(targetName)) { 
+                stats.shift++; 
+                currentStatsDates.shift.push({ day: i, content: d.shift }); 
+            }
+            if(d.open && d.open.includes(targetName)) { 
+                stats.open++; 
+                currentStatsDates.open.push({ day: i, content: d.open }); 
+            }
+            if(d.close && d.close.includes(targetName)) { 
+                stats.close++; 
+                currentStatsDates.close.push({ day: i, content: d.close }); 
+            }
+            
+            // 處理清潔與洗餐具
             if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) { 
-                stats.clean++; currentStatsDates.clean.push(i); 
+                stats.clean++; 
+                
+                let cleanDetails = [];
+                if (d.dish && d.dish.includes(targetName)) cleanDetails.push(`洗餐具：${d.dish}`);
+                if (d.clean && d.clean.includes(targetName)) cleanDetails.push(`清潔：${d.clean}`);
+                
+                currentStatsDates.clean.push({ 
+                    day: i, 
+                    content: cleanDetails.join(' | ') 
+                }); 
             }
         }
     }
@@ -229,10 +249,10 @@ function calculatePersonalStats() {
     setTimeout(() => progressBar.style.width = `${percentage}%`, 100);
 }
 
-// --- [NEW] 顯示詳細日期的功能 ---
+// --- 顯示詳細日期的功能 ---
 function showDetailDates(type) {
     const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務' };
-    const dates = currentStatsDates[type];
+    const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
     const list = document.getElementById('detail-dates-list');
@@ -240,36 +260,43 @@ function showDetailDates(type) {
     titleSpan.innerText = `${typeNames[type]} 詳細日期`;
     list.innerHTML = '';
 
-    if (dates.length === 0) {
+    if (items.length === 0) {
         list.innerHTML = '<span class="text-slate-400 text-xs py-2 w-full text-center">該項目無排班紀錄</span>';
     } else {
-        dates.forEach(day => {
-            const dateObj = new Date(year, currentMonth, day);
-            const dayName = weekNamesZh[dateObj.getDay()]; // 取得星期幾
+        items.forEach(item => {
+            const dateObj = new Date(year, currentMonth, item.day);
+            const dayName = weekNamesZh[dateObj.getDay()];
             const span = document.createElement('span');
-            // 加上一些北歐風的標籤樣式
-            span.className = 'bg-slate-100/80 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200 text-xs font-medium tracking-wide';
-            span.innerText = `${currentMonth + 1}/${day} (${dayName})`;
+            
+            let displayText = `${currentMonth + 1}/${item.day} (${dayName})`;
+            
+            // 若為清潔事務，把詳細工作內容補上並使用整條顯示樣式
+            if (type === 'clean' && item.content) {
+                displayText += ` 👉 ${item.content}`;
+                span.className = 'bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg border border-emerald-100 text-xs font-medium tracking-wide w-full flex items-center gap-2 mb-1.5 shadow-sm';
+            } else {
+                span.className = 'bg-slate-100/80 text-slate-600 px-2.5 py-1.5 rounded-md border border-slate-200 text-xs font-medium tracking-wide inline-block mb-1 mr-1';
+            }
+            
+            span.innerText = displayText;
             list.appendChild(span);
         });
     }
     
     detailSection.classList.remove('hidden');
-    lucide.createIcons(); // 重新渲染可能出現的 icon
+    lucide.createIcons();
 }
 
-// --- [NEW] 關閉詳細日期的功能 ---
 function closeDetailDates() {
-    document.getElementById('stats-detail-section').classList.add('hidden');
+    const detailSection = document.getElementById('stats-detail-section');
+    if(detailSection) {
+        detailSection.classList.add('hidden');
+    }
 }
 
-// 記得在 closeModal 裡面也加上隱藏詳細日期，確保下次打開是乾淨的狀態
 function closeModal() {
     document.getElementById('statsModal').classList.add('hidden');
-    closeDetailDates(); // 新增這一行
-}
-function closeModal() {
-    document.getElementById('statsModal').classList.add('hidden');
+    closeDetailDates();
 }
 
 // --- 月份連動休假表功能 ---
@@ -278,13 +305,10 @@ function showLeaveSchedule() {
     const imgElement = document.getElementById('leaveScheduleImg');
     const noImgMsg = document.getElementById('noLeaveImgMsg');
     
-    // 更新視窗標題
     document.getElementById('leaveModalMonthTitle').innerText = `${monthName} 員工休假表`;
 
-    // 取得當前選擇月份的圖片網址
     const currentImgUrl = leaveImages[currentMonth];
 
-    // 判斷該月份是否有設定圖片
     if (currentImgUrl && currentImgUrl.trim() !== "") {
         imgElement.src = currentImgUrl;
         imgElement.classList.remove('hidden');
@@ -312,11 +336,10 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// --- [NEW] 管理者實用功能：查看固定的工作崗位表 ---
+// --- 管理者實用功能：查看固定的工作崗位表 ---
 function showStationModal() {
     const imgElement = document.getElementById('stationImg');
     
-    // 只有在還沒載入圖片時才設定 src，避免每次打開都重新載入閃爍
     if (!imgElement.src || imgElement.getAttribute('src') === '') {
         imgElement.src = STATION_IMAGE_URL;
     }
