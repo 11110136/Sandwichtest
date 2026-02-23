@@ -188,6 +188,9 @@ function showMonthStats() {
     lucide.createIcons();
 }
 
+// --- 新增全域變數，用來暫存查詢到的日期 ---
+let currentStatsDates = { shift: [], open: [], close: [], clean: [] };
+
 function calculatePersonalStats() {
     const targetName = document.getElementById('stats-name-input').value.trim();
     if (!targetName) { alert("請輸入姓名！"); return; }
@@ -195,13 +198,18 @@ function calculatePersonalStats() {
     const daysCount = new Date(year, currentMonth + 1, 0).getDate();
     let stats = { shift: 0, open: 0, close: 0, clean: 0 };
     
+    // 初始化日期暫存區
+    currentStatsDates = { shift: [], open: [], close: [], clean: [] };
+    
     for(let i=1; i<=daysCount; i++) {
         const d = fullYearData[currentMonth]?.[i];
         if(d) {
-            if(d.shift && d.shift.includes(targetName)) stats.shift++;
-            if(d.open && d.open.includes(targetName)) stats.open++;
-            if(d.close && d.close.includes(targetName)) stats.close++;
-            if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) stats.clean++;
+            if(d.shift && d.shift.includes(targetName)) { stats.shift++; currentStatsDates.shift.push(i); }
+            if(d.open && d.open.includes(targetName)) { stats.open++; currentStatsDates.open.push(i); }
+            if(d.close && d.close.includes(targetName)) { stats.close++; currentStatsDates.close.push(i); }
+            if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) { 
+                stats.clean++; currentStatsDates.clean.push(i); 
+            }
         }
     }
 
@@ -211,12 +219,55 @@ function calculatePersonalStats() {
     document.getElementById('modal-clean-count').innerText = stats.clean;
     const percentage = Math.round((stats.shift / daysCount) * 100);
     document.getElementById('modal-coverage').innerText = `${percentage}% (排班天數/當月總天數)`;
+    
+    // 每次重新查詢時，隱藏詳細日期區塊
+    closeDetailDates();
+
     document.getElementById('stats-result-section').classList.remove('hidden');
     const progressBar = document.getElementById('modal-progress-bar');
     progressBar.style.width = '0%';
     setTimeout(() => progressBar.style.width = `${percentage}%`, 100);
 }
 
+// --- [NEW] 顯示詳細日期的功能 ---
+function showDetailDates(type) {
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務' };
+    const dates = currentStatsDates[type];
+    const detailSection = document.getElementById('stats-detail-section');
+    const titleSpan = document.querySelector('#detail-title span');
+    const list = document.getElementById('detail-dates-list');
+
+    titleSpan.innerText = `${typeNames[type]} 詳細日期`;
+    list.innerHTML = '';
+
+    if (dates.length === 0) {
+        list.innerHTML = '<span class="text-slate-400 text-xs py-2 w-full text-center">該項目無排班紀錄</span>';
+    } else {
+        dates.forEach(day => {
+            const dateObj = new Date(year, currentMonth, day);
+            const dayName = weekNamesZh[dateObj.getDay()]; // 取得星期幾
+            const span = document.createElement('span');
+            // 加上一些北歐風的標籤樣式
+            span.className = 'bg-slate-100/80 text-slate-600 px-2.5 py-1 rounded-md border border-slate-200 text-xs font-medium tracking-wide';
+            span.innerText = `${currentMonth + 1}/${day} (${dayName})`;
+            list.appendChild(span);
+        });
+    }
+    
+    detailSection.classList.remove('hidden');
+    lucide.createIcons(); // 重新渲染可能出現的 icon
+}
+
+// --- [NEW] 關閉詳細日期的功能 ---
+function closeDetailDates() {
+    document.getElementById('stats-detail-section').classList.add('hidden');
+}
+
+// 記得在 closeModal 裡面也加上隱藏詳細日期，確保下次打開是乾淨的狀態
+function closeModal() {
+    document.getElementById('statsModal').classList.add('hidden');
+    closeDetailDates(); // 新增這一行
+}
 function closeModal() {
     document.getElementById('statsModal').classList.add('hidden');
 }
