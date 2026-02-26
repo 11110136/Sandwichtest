@@ -216,7 +216,7 @@ function calculatePersonalStats() {
                 stats.close++; 
                 currentStatsDates.close.push({ day: i, content: d.close }); 
             }
-            // 處理 20:00 排班
+            // 處理 20:00 先走
             if(d.t20 && d.t20.includes(targetName)) { 
                 stats.t20++; 
                 currentStatsDates.t20.push({ day: i, content: d.t20 }); 
@@ -260,7 +260,7 @@ function calculatePersonalStats() {
 
 // --- 顯示詳細日期的功能 ---
 function showDetailDates(type) {
-    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 排班' };
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 先走' };
     const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
