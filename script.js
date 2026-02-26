@@ -361,5 +361,118 @@ function closeStationModal() {
     document.getElementById('stationModal').classList.add('hidden');
 }
 
+// ==========================================
+// --- [NEW] 快捷輸入面板 (Quick Input) 功能 ---
+// ==========================================
+
+// 你可以在這裡自由增減你的員工名字與常見工作！
+const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "阿綸", "若菱", "祥瑋", "翠翠","Sam" , "偲璇"];
+const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃"];
+
+let activeCell = null; // 紀錄目前正在編輯的格子
+
+function initQuickInput() {
+    // 1. 產生姓名按鈕
+    const namesContainer = document.getElementById('quick-names-container');
+    QUICK_NAMES.forEach(name => {
+        const btn = document.createElement('button');
+        btn.className = 'px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 text-sm rounded-lg border border-slate-200 transition-colors active:scale-95';
+        btn.innerText = name;
+        // 點擊時，使用 preventDefault 避免輸入框失去焦點
+        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(name); };
+        namesContainer.appendChild(btn);
+    });
+
+    // 2. 產生事項按鈕
+    const tasksContainer = document.getElementById('quick-tasks-container');
+    QUICK_TASKS.forEach(task => {
+        const btn = document.createElement('button');
+        btn.className = 'px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 text-emerald-600 text-sm rounded-lg border border-emerald-100 transition-colors active:scale-95';
+        btn.innerText = task;
+        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(task); };
+        tasksContainer.appendChild(btn);
+    });
+
+    // 3. 監聽所有格子的「點擊/聚焦」事件
+    document.addEventListener('focusin', (e) => {
+        if (e.target.classList.contains('editable')) {
+            activeCell = e.target;
+            showQuickInput(activeCell);
+        }
+    });
+
+    // 4. 點擊面板與格子以外的地方，隱藏面板
+    document.addEventListener('mousedown', (e) => {
+        const panel = document.getElementById('quick-input-panel');
+        if (!panel.contains(e.target) && !e.target.classList.contains('editable')) {
+            closeQuickInput();
+        }
+    });
+    
+    // 5. 滾動視窗時隱藏面板 (避免面板位置跑掉)
+    window.addEventListener('scroll', closeQuickInput, true);
+}
+
+function showQuickInput(cell) {
+    const panel = document.getElementById('quick-input-panel');
+    const rect = cell.getBoundingClientRect();
+    
+    // 計算面板顯示位置 (預設顯示在格子正下方)
+    let topPos = rect.bottom + 5;
+    let leftPos = rect.left;
+
+    // 避免面板超出螢幕底部或右側
+    if (topPos + 250 > window.innerHeight) {
+        topPos = rect.top - panel.offsetHeight - 5; // 如果下方空間不夠，改顯示在格子上方
+    }
+    if (leftPos + 280 > window.innerWidth) {
+        leftPos = window.innerWidth - 290; // 靠右對齊
+    }
+
+    panel.style.top = `${topPos}px`;
+    panel.style.left = `${leftPos}px`;
+    panel.classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function closeQuickInput() {
+    const panel = document.getElementById('quick-input-panel');
+    if (panel) panel.classList.add('hidden');
+    activeCell = null;
+}
+
+function insertTextToCell(text) {
+    if (!activeCell) return;
+
+    let currentText = activeCell.innerText.trim();
+    
+    // 如果格子內已經有文字，自動加上逗號分隔；沒有文字就直接填入
+    if (currentText.length > 0) {
+        // 避免重複加上逗號
+        if (currentText.endsWith(',')) {
+            activeCell.innerText = currentText + ' ' + text;
+        } else {
+            activeCell.innerText = currentText + ', ' + text;
+        }
+    } else {
+        activeCell.innerText = text;
+    }
+
+    // 將游標移到文字最後面 (提升使用者體驗)
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(activeCell);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    // ★重要：手動觸發 input 事件，這樣你原本寫在 HTML 裡的 oninput="updateData(...)" 才會執行，資料才會存檔！
+    const inputEvent = new Event('input', { bubbles: true });
+    activeCell.dispatchEvent(inputEvent);
+}
+
+// 執行快捷輸入的初始化
+initQuickInput();
+
 // 執行初始化
 init();
