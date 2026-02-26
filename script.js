@@ -195,43 +195,46 @@ function calculatePersonalStats() {
         const d = fullYearData[currentMonth]?.[i];
         if(d) {
             if(d.shift && d.shift.includes(targetName)) { 
-                stats.shift++; 
-                currentStatsDates.shift.push({ day: i, content: d.shift }); 
+                stats.shift++; currentStatsDates.shift.push({ day: i, content: d.shift }); 
             }
             if(d.open && d.open.includes(targetName)) { 
-                stats.open++; 
-                currentStatsDates.open.push({ day: i, content: d.open }); 
+                stats.open++; currentStatsDates.open.push({ day: i, content: d.open }); 
             }
             if(d.close && d.close.includes(targetName)) { 
-                stats.close++; 
-                currentStatsDates.close.push({ day: i, content: d.close }); 
+                stats.close++; currentStatsDates.close.push({ day: i, content: d.close }); 
             }
             if(d.t20 && d.t20.includes(targetName)) { 
-                stats.t20++; 
-                currentStatsDates.t20.push({ day: i, content: d.t20 }); 
+                stats.t20++; currentStatsDates.t20.push({ day: i, content: d.t20 }); 
             }
             
-            // 【升級】精準提取統計資料 (只抓包含該名字的換行文字)
+            // 處理清潔與洗餐具
             if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) { 
                 stats.clean++; 
                 let cleanDetails = [];
                 
                 if (d.dish && d.dish.includes(targetName)) {
-                    // 根據換行符號切割，過濾出該員工的部分
                     let lines = d.dish.split('\n').filter(l => l.includes(targetName));
                     if(lines.length > 0) cleanDetails.push(`洗餐具：${lines.join(', ')}`);
                 }
                 
                 if (d.clean && d.clean.includes(targetName)) {
-                    // 根據換行符號切割，過濾出該員工的負責項目
-                    let lines = d.clean.split('\n').filter(l => l.includes(targetName));
-                    if(lines.length > 0) cleanDetails.push(lines.join(' | ')); // 顯示例: 果汁：若菱 | 刷地：若菱
+                    let lines = d.clean.split('\n');
+                    let matchedLines = [];
+                    // 檢查「白天/晚上」是否從屬於「玻璃」
+                    for(let j=0; j<lines.length; j++) {
+                        let line = lines[j];
+                        if (line.includes(targetName)) {
+                            if ((line.includes('白天') || line.includes('晚上'))) {
+                                matchedLines.push(`玻璃 (${line.trim()})`); // 加上「玻璃」前綴以便識別
+                            } else {
+                                matchedLines.push(line.trim());
+                            }
+                        }
+                    }
+                    if(matchedLines.length > 0) cleanDetails.push(matchedLines.join(' | '));
                 }
                 
-                currentStatsDates.clean.push({ 
-                    day: i, 
-                    content: cleanDetails.join(' | ') 
-                }); 
+                currentStatsDates.clean.push({ day: i, content: cleanDetails.join(' | ') }); 
             }
         }
     }
@@ -255,7 +258,7 @@ function calculatePersonalStats() {
 }
 
 function showDetailDates(type) {
-    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 先走' };
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 排班' };
     const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
@@ -354,7 +357,8 @@ function closeStationModal() {
 // ==========================================
 
 const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "若菱", "祥瑋", "翠翠","Sam" , "偲璇", "X"];
-const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃"];
+// 【新增】將白天、晚上加入快捷事項
+const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃", "白天", "晚上"];
 
 let activeCell = null; 
 
@@ -364,7 +368,6 @@ function initQuickInput() {
         const btn = document.createElement('button');
         btn.className = 'px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 text-sm rounded-lg border border-slate-200 transition-colors active:scale-95';
         btn.innerText = name;
-        // 【變更】加入 type 標籤為 'name'
         btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(name, 'name'); };
         namesContainer.appendChild(btn);
     });
@@ -374,7 +377,6 @@ function initQuickInput() {
         const btn = document.createElement('button');
         btn.className = 'px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 text-emerald-600 text-sm rounded-lg border border-emerald-100 transition-colors active:scale-95';
         btn.innerText = task;
-        // 【變更】加入 type 標籤為 'task'
         btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(task, 'task'); };
         tasksContainer.appendChild(btn);
     });
@@ -422,36 +424,39 @@ function closeQuickInput() {
     activeCell = null;
 }
 
-// 【升級】智慧排版邏輯：換行與冒號自動處理
+// 【優化】玻璃專屬換行排版邏輯
 function insertTextToCell(text, type) {
     if (!activeCell) return;
 
-    // 取消 trim() 以保留換行狀態
     let currentText = activeCell.innerText; 
     const colLabel = activeCell.getAttribute('data-label');
 
-    // 判斷是否為「清潔事項」或「洗餐具」欄位，需要換行與冒號格式
     if (colLabel === '清潔事項' || colLabel === '洗餐具') {
         if (type === 'task') {
-            // 如果原本已經有文字，且最後不是換行符，則自動幫忙換行加上新任務
-            if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
-                activeCell.innerText = currentText.trim() + '\n' + text + '：';
+            // 【特別處理「玻璃」】點擊玻璃不加冒號，而是獨立一行
+            if (text === '玻璃') {
+                if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
+                    activeCell.innerText = currentText.trim() + '\n' + text + '\n';
+                } else {
+                    activeCell.innerText = currentText + text + '\n';
+                }
             } else {
-                activeCell.innerText = currentText + text + '：';
+                // 其他事項 (果汁、刷地、白天、晚上等) 正常換行加冒號
+                if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
+                    activeCell.innerText = currentText.trim() + '\n' + text + '：';
+                } else {
+                    activeCell.innerText = currentText + text + '：';
+                }
             }
         } else if (type === 'name') {
-            // 若為名字，則看前面是不是剛好帶了冒號結尾
             if (currentText.endsWith('：')) {
                 activeCell.innerText = currentText + text;
             } else {
-                // 如果沒有任務開頭直接點名字，用頓號相連
                 activeCell.innerText = currentText + (currentText.trim().length > 0 && !currentText.endsWith('\n') ? '、' : '') + text;
             }
         }
     } else {
-        // 其他欄位 (開店、值班、關帳等) 維持單純的頓號分隔
         if (currentText.trim().length > 0) {
-            // 避免重複加上符號
             if (currentText.endsWith('、') || currentText.endsWith('：') || currentText.endsWith('\n')) {
                 activeCell.innerText = currentText + text;
             } else {
@@ -462,7 +467,6 @@ function insertTextToCell(text, type) {
         }
     }
 
-    // 將游標移到文字最後面，體驗更好
     const range = document.createRange();
     const sel = window.getSelection();
     range.selectNodeContents(activeCell);
@@ -470,7 +474,6 @@ function insertTextToCell(text, type) {
     sel.removeAllRanges();
     sel.addRange(range);
 
-    // 觸發儲存事件
     const inputEvent = new Event('input', { bubbles: true });
     activeCell.dispatchEvent(inputEvent);
 }
