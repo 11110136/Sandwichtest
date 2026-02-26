@@ -128,11 +128,6 @@ function renderTable() {
             </td>
             <td data-label="休假人員" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-rose-600 font-medium bg-rose-50/40" oninput="updateData(${i}, 'leave', this.innerText, this)">${dayData.leave || ''}</td>
             <td data-label="開店" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-orange-500 ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</td>
-            <td data-label="當天值班" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-bold text-indigo-600" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</td>
-            <td data-label="20:00" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-purple-500" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</td>
-            <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-sky-500 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
-            <td data-label="洗餐具" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-teal-600" oninput="updateData(${i}, 'dish', this.innerText, this)">${dayData.dish || ''}</td>
-            <td data-label="清潔事項" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-emerald-600" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</td>
         `;
         scheduleBody.appendChild(tr);
     });
