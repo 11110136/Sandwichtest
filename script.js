@@ -8,7 +8,7 @@ const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
 
-// 【新增】編輯權限設定
+// 【編輯權限設定】
 let isEditMode = false; // 預設為唯讀模式
 const ADMIN_PIN = "2026"; // 店長解鎖密碼
 
@@ -114,7 +114,9 @@ function renderTable() {
         const openWarningClass = (isEditMode && isWeekday && (!dayData.open || dayData.open.trim() === '')) ? 'warning-cell' : '';
         const closeWarningClass = (isEditMode && isWeekday && (!dayData.close || dayData.close.trim() === '')) ? 'warning-cell' : '';
         
-        // 【視覺化顏色標籤】移除了其他欄位的特殊顏色，統一使用 text-slate-700，保留「開店」的 text-orange-500
+        // 【視覺化顏色標籤更新】
+        // 休假人員：改用更低調的 text-rose-800 和更淡的背景 bg-rose-50/50
+        // 開店：改用溫暖低調的琥珀色 text-amber-700
         tr.innerHTML = `
             <td data-label="Date" data-day="${i}">
                 <div class="flex items-center gap-2">
@@ -126,8 +128,8 @@ function renderTable() {
             <td data-label="Day" data-day="${i}" class="md:text-center text-slate-500 font-medium hidden md:table-cell">
                 ${weekNames[dayIdx]}
             </td>
-            <td data-label="休假人員" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-rose-600 font-medium bg-rose-50/40" oninput="updateData(${i}, 'leave', this.innerText, this)">${dayData.leave || ''}</td>
-            <td data-label="開店" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-orange-500 ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</td>
+            <td data-label="休假人員" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-rose-800 font-medium bg-rose-50/50" oninput="updateData(${i}, 'leave', this.innerText, this)">${dayData.leave || ''}</td>
+            <td data-label="開店" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-amber-700 ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</td>
             <td data-label="當天值班" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-slate-700" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</td>
             <td data-label="20:00" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</td>
             <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
@@ -168,7 +170,7 @@ function updateData(day, field, val, element) {
 }
 
 // ==========================================
-// --- 【新增】權限鎖定與密碼系統 ---
+// --- 【編輯權限與密碼系統】 ---
 // ==========================================
 function toggleEditMode() {
     if (isEditMode) {
@@ -332,7 +334,7 @@ function calculatePersonalStats() {
 }
 
 function showDetailDates(type) {
-    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 先走' };
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 排班' };
     const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
@@ -455,6 +457,7 @@ function initQuickInput() {
     });
 
     document.addEventListener('focusin', (e) => {
+        // 只有在編輯模式下，才會觸發快捷面板
         if (isEditMode && e.target.classList.contains('editable')) {
             activeCell = e.target;
             showQuickInput(activeCell);
