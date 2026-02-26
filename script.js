@@ -366,7 +366,7 @@ function closeStationModal() {
 // ==========================================
 
 // 你可以在這裡自由增減你的員工名字與常見工作！
-const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "阿綸", "若菱", "祥瑋", "翠翠","Sam" , "偲璇"];
+const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "若菱", "祥瑋", "翠翠","Sam" , "偲璇", "X"];
 const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃"];
 
 let activeCell = null; // 紀錄目前正在編輯的格子
@@ -446,13 +446,13 @@ function insertTextToCell(text) {
 
     let currentText = activeCell.innerText.trim();
     
-    // 如果格子內已經有文字，自動加上逗號分隔；沒有文字就直接填入
+    // 如果格子內已經有文字，自動加上冒號分隔；沒有文字就直接填入
     if (currentText.length > 0) {
         // 避免重複加上逗號
-        if (currentText.endsWith(',')) {
+        if (currentText.endsWith('、')) {
             activeCell.innerText = currentText + ' ' + text;
         } else {
-            activeCell.innerText = currentText + ', ' + text;
+            activeCell.innerText = currentText + '、' + text;
         }
     } else {
         activeCell.innerText = text;
