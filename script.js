@@ -10,7 +10,7 @@ const storageKey = 'nordic_shift_v2026_db';
 
 // 【新增】編輯權限設定
 let isEditMode = false; // 預設為唯讀模式
-const ADMIN_PIN = "2026"; // 店長解鎖密碼，可自行修改
+const ADMIN_PIN = "2026"; // 店長解鎖密碼
 
 const leaveImages = {
     0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", 
@@ -114,7 +114,7 @@ function renderTable() {
         const openWarningClass = (isEditMode && isWeekday && (!dayData.open || dayData.open.trim() === '')) ? 'warning-cell' : '';
         const closeWarningClass = (isEditMode && isWeekday && (!dayData.close || dayData.close.trim() === '')) ? 'warning-cell' : '';
         
-        // 【視覺化顏色標籤】透過 Tailwind 直接幫欄位上色，並由 contenteditable="${isEditMode}" 控制是否可編輯
+        // 【視覺化顏色標籤】移除了其他欄位的特殊顏色，統一使用 text-slate-700，保留「開店」的 text-orange-500
         tr.innerHTML = `
             <td data-label="Date" data-day="${i}">
                 <div class="flex items-center gap-2">
@@ -128,11 +128,11 @@ function renderTable() {
             </td>
             <td data-label="休假人員" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-rose-600 font-medium bg-rose-50/40" oninput="updateData(${i}, 'leave', this.innerText, this)">${dayData.leave || ''}</td>
             <td data-label="開店" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-orange-500 ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</td>
-            <td data-label="當天值班" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-bold text-indigo-600" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</td>
-            <td data-label="20:00" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-purple-500" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</td>
-            <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-sky-500 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
-            <td data-label="洗餐具" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-teal-600" oninput="updateData(${i}, 'dish', this.innerText, this)">${dayData.dish || ''}</td>
-            <td data-label="清潔事項" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-emerald-600" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</td>
+            <td data-label="當天值班" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-slate-700" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</td>
+            <td data-label="20:00" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</td>
+            <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
+            <td data-label="洗餐具" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 'dish', this.innerText, this)">${dayData.dish || ''}</td>
+            <td data-label="清潔事項" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</td>
         `;
         scheduleBody.appendChild(tr);
     });
@@ -332,7 +332,7 @@ function calculatePersonalStats() {
 }
 
 function showDetailDates(type) {
-    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 排班' };
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 先走' };
     const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
@@ -455,7 +455,6 @@ function initQuickInput() {
     });
 
     document.addEventListener('focusin', (e) => {
-        // 【變更】只有在編輯模式下，才會觸發快捷面板
         if (isEditMode && e.target.classList.contains('editable')) {
             activeCell = e.target;
             showQuickInput(activeCell);
