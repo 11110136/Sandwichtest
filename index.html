@@ -44,6 +44,10 @@
         </div>
 
         <div class="w-full flex justify-center gap-3 no-print">
+            <button onclick="toggleEditMode()" id="lockBtn" class="icon-btn" title="切換編輯/唯讀模式">
+                <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+            </button>
+
             <button onclick="showLeaveSchedule()" class="icon-btn hover:!border-indigo-400 hover:!text-indigo-500" title="查看本月員工休假表">
                 <i data-lucide="calendar-heart" class="w-5 h-5"></i>
             </button>
@@ -70,12 +74,13 @@
                         <tr>
                             <th class="min-w-[70px] text-center">Date</th>
                             <th class="min-w-[50px] text-center">Day</th>
-                            <th class="min-w-[70px]">開店</th>
-                            <th class="min-w-[150px]">當天值班</th> 
-                            <th class="min-w-[100px]">20:00</th>
-                            <th class="min-w-[70px]">關帳</th>
-                            <th class="min-w-[100px]">洗餐具</th>
-                            <th class="min-w-[150px]">清潔事項</th> 
+                            <th class="min-w-[100px] text-rose-500">休假人員</th> 
+                            <th class="min-w-[70px] text-orange-500">開店</th>
+                            <th class="min-w-[150px] text-indigo-500">當天值班</th> 
+                            <th class="min-w-[100px] text-purple-500">20:00</th>
+                            <th class="min-w-[70px] text-sky-500">關帳</th>
+                            <th class="min-w-[100px] text-teal-600">洗餐具</th>
+                            <th class="min-w-[150px] text-emerald-600">清潔事項</th> 
                         </tr>
                     </thead>
                     <tbody id="scheduleBody">
@@ -118,9 +123,7 @@
                         </div>
                         <div class="mt-6">
                             <div class="flex gap-2">
-                                <input type="text" id="stats-name-input" 
-                                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 placeholder-slate-400"
-                                    placeholder="請輸入姓名 (例如: 小明)">
+                                <input type="text" id="stats-name-input" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 placeholder-slate-400" placeholder="請輸入姓名 (例如: 小明)">
                                 <button onclick="calculatePersonalStats()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium whitespace-nowrap transition-colors">
                                     查詢
                                 </button>
@@ -136,57 +139,57 @@
                                     <div id="modal-progress-bar" class="bg-gradient-to-r from-emerald-400 to-teal-400 h-2.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
                                 </div>
                             </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div onclick="showDetailDates('shift')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
-                                        <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
-                                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
-                                            <span class="text-xs font-medium">值班次數</span>
-                                        </div>
-                                        <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-shift-count">0</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div onclick="showDetailDates('shift')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
+                                    <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
+                                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                        <span class="text-xs font-medium">值班次數</span>
                                     </div>
-                                    <div onclick="showDetailDates('open')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
-                                        <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
-                                            <i data-lucide="store" class="w-3.5 h-3.5"></i>
-                                            <span class="text-xs font-medium">開店次數</span>
-                                        </div>
-                                        <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-open-count">0</span>
-                                    </div>
-                                    <div onclick="showDetailDates('close')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
-                                        <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
-                                            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                                            <span class="text-xs font-medium">關帳次數</span>
-                                        </div>
-                                        <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-close-count">0</span>
-                                    </div>
-                                    <div onclick="showDetailDates('clean')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
-                                        <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
-                                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                                            <span class="text-xs font-medium">清潔事務</span>
-                                        </div>
-                                        <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-clean-count">0</span>
-                                    </div>
-                                    <div onclick="showDetailDates('t20')" class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
-                                        <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
-                                            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                                            <span class="text-xs font-medium">20:00 先走</span>
-                                        </div>
-                                        <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-t20-count">0</span>
-                                    </div>
+                                    <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-shift-count">0</span>
                                 </div>
+                                <div onclick="showDetailDates('open')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
+                                    <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
+                                        <i data-lucide="store" class="w-3.5 h-3.5"></i>
+                                        <span class="text-xs font-medium">開店次數</span>
+                                    </div>
+                                    <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-open-count">0</span>
+                                </div>
+                                <div onclick="showDetailDates('close')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
+                                    <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
+                                        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                        <span class="text-xs font-medium">關帳次數</span>
+                                    </div>
+                                    <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-close-count">0</span>
+                                </div>
+                                <div onclick="showDetailDates('clean')" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
+                                    <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                        <span class="text-xs font-medium">清潔事務</span>
+                                    </div>
+                                    <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-clean-count">0</span>
+                                </div>
+                                <div onclick="showDetailDates('t20')" class="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center py-4 cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group">
+                                    <div class="flex items-center gap-1.5 text-slate-500 mb-1 group-hover:text-emerald-600 transition-colors">
+                                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                        <span class="text-xs font-medium">20:00 排班</span>
+                                    </div>
+                                    <span class="text-2xl font-bold text-slate-700 group-hover:text-emerald-700" id="modal-t20-count">0</span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <div id="stats-detail-section" class="hidden mt-4 bg-white border border-emerald-100 rounded-xl p-3 shadow-inner">
-                                    <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
-                                        <h4 id="detail-title" class="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-                                            <i data-lucide="calendar-days" class="w-4 h-4 text-emerald-500"></i>
-                                            <span>詳細日期</span>
-                                        </h4>
-                                        <button onclick="closeDetailDates()" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-full p-1">
-                                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                    </div>
-                                    <div id="detail-dates-list" class="flex flex-wrap gap-1.5 text-sm text-slate-600 max-h-32 overflow-y-auto no-scrollbar">
-                                        </div>
-                                </div>
+                        <div id="stats-detail-section" class="hidden mt-4 bg-white border border-emerald-100 rounded-xl p-3 shadow-inner">
+                            <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-100">
+                                <h4 id="detail-title" class="font-bold text-slate-700 text-sm flex items-center gap-1.5">
+                                    <i data-lucide="calendar-days" class="w-4 h-4 text-emerald-500"></i>
+                                    <span>詳細日期</span>
+                                </h4>
+                                <button onclick="closeDetailDates()" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-full p-1">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div id="detail-dates-list" class="flex flex-wrap gap-1.5 text-sm text-slate-600 max-h-40 overflow-y-auto no-scrollbar">
+                            </div>
                         </div>
                     </div>
                     <div class="bg-slate-50 px-4 py-4 sm:px-6">
@@ -206,15 +209,12 @@
                 <button onclick="closeLeaveSchedule()" class="absolute top-4 right-4 bg-white/90 backdrop-blur p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors z-10 shadow-sm">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
-                
                 <div class="text-center p-4 pb-2">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
                         <i data-lucide="calendar-heart" class="w-5 h-5 text-indigo-500"></i>
                         <span id="leaveModalMonthTitle">員工休假表</span>
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">排班前請先對照大家的休假時間</p>
                 </div>
-
                 <div class="p-2 overflow-auto max-h-[70vh] bg-slate-50 rounded-xl border border-slate-100 mt-2 min-h-[200px] flex items-center justify-center">
                     <img id="leaveScheduleImg" src="" alt="員工休假表" class="w-full h-auto rounded-lg object-contain hidden">
                     <div id="noLeaveImgMsg" class="text-slate-400 text-center hidden flex-col items-center gap-2 py-10">
@@ -233,17 +233,32 @@
                 <button onclick="closeStationModal()" class="absolute top-4 right-4 bg-white/90 backdrop-blur p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors z-10 shadow-sm">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
-                
                 <div class="text-center p-4 pb-2">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center justify-center gap-2">
                         <i data-lucide="clipboard-list" class="w-5 h-5 text-cyan-500"></i>
                         常規工作崗位表
                     </h3>
-                    <p class="text-sm text-slate-500 mt-1">各崗位職責與負責區域分配 (全月適用)</p>
                 </div>
-
                 <div class="p-2 overflow-auto max-h-[70vh] bg-slate-50 rounded-xl border border-slate-100 mt-2 min-h-[200px] flex items-center justify-center">
                     <img id="stationImg" src="" alt="第四版工作分配表" class="w-full h-auto rounded-lg object-contain">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pinModal" class="fixed inset-0 z-[200] hidden">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closePinModal()"></div>
+        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-sm text-center border border-slate-100">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 mb-3 text-indigo-500">
+                    <i data-lucide="lock-keyhole" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-1">店長模式解鎖</h3>
+                <p class="text-xs text-slate-500 mb-5">請輸入密碼以啟用排班與編輯功能</p>
+                <input type="password" id="pinInput" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4 font-mono" maxlength="4" placeholder="••••">
+                <div class="flex gap-2">
+                    <button onclick="closePinModal()" class="flex-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-medium transition-colors">取消</button>
+                    <button onclick="verifyPin()" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">確認解鎖</button>
                 </div>
             </div>
         </div>
@@ -252,27 +267,23 @@
     <div id="toast">已儲存</div>
 
     <div id="quick-input-panel" class="fixed z-[150] hidden bg-white/95 backdrop-blur-md shadow-2xl rounded-xl border border-slate-200 p-3 w-72 transition-opacity duration-200">
-    <div class="flex justify-between items-center mb-2 pb-1 border-b border-slate-100">
-        <span class="text-xs font-bold text-slate-500 tracking-wider">快捷輸入</span>
-        <button onclick="closeQuickInput()" class="text-slate-400 hover:text-slate-600 p-1">
-            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-        </button>
-    </div>
-    
-    <div class="mb-3">
-        <div class="text-[10px] text-slate-400 mb-1.5 flex items-center gap-1">
-            <i data-lucide="users" class="w-3 h-3"></i> 員工姓名
+        <div class="flex justify-between items-center mb-2 pb-1 border-b border-slate-100">
+            <span class="text-xs font-bold text-slate-500 tracking-wider">快捷輸入</span>
+            <button onclick="closeQuickInput()" class="text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
         </div>
-        <div id="quick-names-container" class="flex flex-wrap gap-1.5">
+        <div class="mb-3">
+            <div class="text-[10px] text-slate-400 mb-1.5 flex items-center gap-1">
+                <i data-lucide="users" class="w-3 h-3"></i> 員工姓名
             </div>
-    </div>
-
-    <div>
-        <div class="text-[10px] text-slate-400 mb-1.5 flex items-center gap-1">
-            <i data-lucide="check-circle" class="w-3 h-3"></i> 常見事項
+            <div id="quick-names-container" class="flex flex-wrap gap-1.5"></div>
         </div>
-        <div id="quick-tasks-container" class="flex flex-wrap gap-1.5">
+        <div>
+            <div class="text-[10px] text-slate-400 mb-1.5 flex items-center gap-1">
+                <i data-lucide="check-circle" class="w-3 h-3"></i> 常見事項
             </div>
+            <div id="quick-tasks-container" class="flex flex-wrap gap-1.5"></div>
         </div>
     </div>
 

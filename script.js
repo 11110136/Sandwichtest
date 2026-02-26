@@ -8,7 +8,10 @@ const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
 
-// --- 休假表圖片設定 (0代表1月，11代表12月) ---
+// 【新增】編輯權限設定
+let isEditMode = false; // 預設為唯讀模式
+const ADMIN_PIN = "2026"; // 店長解鎖密碼，可自行修改
+
 const leaveImages = {
     0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", 
     1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", 
@@ -16,38 +19,40 @@ const leaveImages = {
     3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: ""  
 };
 
-// --- 工作崗位表圖片設定 (固定圖片) ---
 const STATION_IMAGE_URL = "./images/第四版工作分配表.png";
 
-// --- 全域變數 ---
 let currentMonth = new Date().getMonth(); 
 let currentView = 'day'; 
 let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 let autoSaveTimer = null;
 let currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] }; 
 
-// --- DOM 元素綁定 ---
 const scheduleBody = document.getElementById('scheduleBody');
 const monthSelect = document.getElementById('monthSelect');
 const emptyState = document.getElementById('emptyState');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 
-// --- 系統初始化 ---
 function init() {
     const now = new Date();
     if (now.getFullYear() === year) {
         currentMonth = now.getMonth();
     }
     monthSelect.value = currentMonth;
+    
+    updateLockIcon(); // 初始化鎖定圖示
     switchView('day');
     fetchFromCloud();
 
     document.getElementById('stats-name-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') calculatePersonalStats();
     });
+
+    // 密碼框按 Enter 也可以解鎖
+    document.getElementById('pinInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') verifyPin();
+    });
 }
 
-// --- 視圖與表格渲染邏輯 ---
 function switchView(viewMode) {
     currentView = viewMode;
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
@@ -95,7 +100,8 @@ function renderTable() {
         const dayIdx = dateObj.getDay();
         const isWeekend = (dayIdx === 0 || dayIdx === 6);
         const isTodayRow = (isCurrentMonthReal && i === todayDate);
-        const dayData = fullYearData[currentMonth][i] || { open: "", shift: "", t20: "", dish: "", clean: "", close: "" };
+        
+        const dayData = fullYearData[currentMonth][i] || { leave: "", open: "", shift: "", t20: "", dish: "", clean: "", close: "" };
 
         const tr = document.createElement('tr');
         if (isWeekend) tr.classList.add("is-weekend");
@@ -103,23 +109,30 @@ function renderTable() {
 
         const dateDisplay = `${currentMonth + 1}/${i}`;
         
+        // 空值警告：只有在「編輯模式」時才會顯示紅框提示
+        const isWeekday = (dayIdx >= 1 && dayIdx <= 5);
+        const openWarningClass = (isEditMode && isWeekday && (!dayData.open || dayData.open.trim() === '')) ? 'warning-cell' : '';
+        const closeWarningClass = (isEditMode && isWeekday && (!dayData.close || dayData.close.trim() === '')) ? 'warning-cell' : '';
+        
+        // 【視覺化顏色標籤】透過 Tailwind 直接幫欄位上色，並由 contenteditable="${isEditMode}" 控制是否可編輯
         tr.innerHTML = `
-            <td data-label="Date">
+            <td data-label="Date" data-day="${i}">
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-slate-700 text-lg md:text-base">${dateDisplay}</span>
                     <span class="md:hidden text-sm text-slate-400 font-normal ml-2">${weekNamesZh[dayIdx]}</span>
                 </div>
                 ${isTodayRow ? '<span class="text-[10px] bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full font-bold uppercase md:hidden">Today</span>' : ''}
             </td>
-            <td data-label="Day" class="md:text-center text-slate-500 font-medium hidden md:table-cell">
+            <td data-label="Day" data-day="${i}" class="md:text-center text-slate-500 font-medium hidden md:table-cell">
                 ${weekNames[dayIdx]}
             </td>
-            <td data-label="開店" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'open', this.innerText)">${dayData.open || ''}</td>
-            <td data-label="當天值班" contenteditable="true" class="editable text-center font-medium text-slate-700" oninput="updateData(${i}, 'shift', this.innerText)">${dayData.shift || ''}</td>
-            <td data-label="20:00" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 't20', this.innerText)">${dayData.t20 || ''}</td>
-            <td data-label="關帳" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'close', this.innerText)">${dayData.close || ''}</td>
-            <td data-label="洗餐具" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'dish', this.innerText)">${dayData.dish || ''}</td>
-            <td data-label="清潔事項" contenteditable="true" class="editable text-center" oninput="updateData(${i}, 'clean', this.innerText)">${dayData.clean || ''}</td>
+            <td data-label="休假人員" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-rose-600 font-medium bg-rose-50/40" oninput="updateData(${i}, 'leave', this.innerText, this)">${dayData.leave || ''}</td>
+            <td data-label="開店" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-orange-500 ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</td>
+            <td data-label="當天值班" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-bold text-indigo-600" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</td>
+            <td data-label="20:00" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-purple-500" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</td>
+            <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-sky-500 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
+            <td data-label="洗餐具" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-teal-600" oninput="updateData(${i}, 'dish', this.innerText, this)">${dayData.dish || ''}</td>
+            <td data-label="清潔事項" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-medium text-emerald-600" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</td>
         `;
         scheduleBody.appendChild(tr);
     });
@@ -128,11 +141,23 @@ function renderTable() {
     else emptyState.classList.add('hidden');
 }
 
-// --- 資料更新與雲端同步 ---
-function updateData(day, field, val) {
+function updateData(day, field, val, element) {
     if (!fullYearData[currentMonth]) fullYearData[currentMonth] = {};
     if (!fullYearData[currentMonth][day]) fullYearData[currentMonth][day] = {};
     fullYearData[currentMonth][day][field] = val;
+
+    if (element && isEditMode) {
+        const dateObj = new Date(year, currentMonth, day);
+        const dayIdx = dateObj.getDay();
+        const isWeekday = (dayIdx >= 1 && dayIdx <= 5);
+        if (isWeekday && (field === 'open' || field === 'close')) {
+            if (!val || val.trim() === '') {
+                element.classList.add('warning-cell');
+            } else {
+                element.classList.remove('warning-cell');
+            }
+        }
+    }
 
     autoSaveIndicator.classList.add('opacity-100');
     clearTimeout(autoSaveTimer);
@@ -140,6 +165,58 @@ function updateData(day, field, val) {
         saveAllToCloud(); 
         autoSaveIndicator.classList.remove('opacity-100');
     }, 800);
+}
+
+// ==========================================
+// --- 【新增】權限鎖定與密碼系統 ---
+// ==========================================
+function toggleEditMode() {
+    if (isEditMode) {
+        // 如果是編輯模式，點擊就直接上鎖
+        isEditMode = false;
+        updateLockIcon();
+        renderTable(); // 重新渲染表格，把 contenteditable 關掉
+        closeQuickInput(); // 隱藏面板
+        showToast("已切換為唯讀模式 🔒");
+    } else {
+        // 如果是唯讀模式，點擊跳出密碼輸入框
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+}
+
+function closePinModal() {
+    document.getElementById('pinModal').classList.add('hidden');
+}
+
+function verifyPin() {
+    const pin = document.getElementById('pinInput').value;
+    if (pin === ADMIN_PIN) {
+        isEditMode = true;
+        closePinModal();
+        updateLockIcon();
+        renderTable(); // 重新渲染表格，讓格子可以編輯
+        showToast("解鎖成功！已啟用編輯模式 🔓");
+    } else {
+        alert("密碼錯誤，請重新輸入！");
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+    }
+}
+
+function updateLockIcon() {
+    const lockBtn = document.getElementById('lockBtn');
+    if (isEditMode) {
+        lockBtn.innerHTML = '<i data-lucide="unlock" class="w-5 h-5 text-indigo-500"></i>';
+        lockBtn.classList.add('!border-indigo-300', 'bg-indigo-50');
+        lockBtn.title = "點擊以鎖定班表";
+    } else {
+        lockBtn.innerHTML = '<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>';
+        lockBtn.classList.remove('!border-indigo-300', 'bg-indigo-50');
+        lockBtn.title = "點擊解鎖編輯模式";
+    }
+    lucide.createIcons();
 }
 
 async function saveAllToCloud() {
@@ -169,7 +246,6 @@ async function fetchFromCloud() {
     } catch (e) { statusText.innerText = "Offline Mode"; }
 }
 
-// --- 個人排班統計功能 ---
 function showMonthStats() {
     document.getElementById('stats-name-input').value = "";
     document.getElementById('stats-result-section').classList.add('hidden');
@@ -207,7 +283,6 @@ function calculatePersonalStats() {
                 stats.t20++; currentStatsDates.t20.push({ day: i, content: d.t20 }); 
             }
             
-            // 處理清潔與洗餐具
             if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) { 
                 stats.clean++; 
                 let cleanDetails = [];
@@ -220,12 +295,11 @@ function calculatePersonalStats() {
                 if (d.clean && d.clean.includes(targetName)) {
                     let lines = d.clean.split('\n');
                     let matchedLines = [];
-                    // 檢查「白天/晚上」是否從屬於「玻璃」
                     for(let j=0; j<lines.length; j++) {
                         let line = lines[j];
                         if (line.includes(targetName)) {
                             if ((line.includes('白天') || line.includes('晚上'))) {
-                                matchedLines.push(`玻璃 (${line.trim()})`); // 加上「玻璃」前綴以便識別
+                                matchedLines.push(`玻璃 (${line.trim()})`);
                             } else {
                                 matchedLines.push(line.trim());
                             }
@@ -357,7 +431,6 @@ function closeStationModal() {
 // ==========================================
 
 const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "若菱", "祥瑋", "翠翠","Sam" , "偲璇", "X"];
-// 【新增】將白天、晚上加入快捷事項
 const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃", "白天", "晚上"];
 
 let activeCell = null; 
@@ -382,7 +455,8 @@ function initQuickInput() {
     });
 
     document.addEventListener('focusin', (e) => {
-        if (e.target.classList.contains('editable')) {
+        // 【變更】只有在編輯模式下，才會觸發快捷面板
+        if (isEditMode && e.target.classList.contains('editable')) {
             activeCell = e.target;
             showQuickInput(activeCell);
         }
@@ -424,16 +498,29 @@ function closeQuickInput() {
     activeCell = null;
 }
 
-// 【優化】玻璃專屬換行排版邏輯
 function insertTextToCell(text, type) {
     if (!activeCell) return;
+
+    if (type === 'name') {
+        const cellDay = activeCell.getAttribute('data-day');
+        const colLabel = activeCell.getAttribute('data-label');
+        
+        if (colLabel !== '休假人員' && cellDay) {
+            const currentLeaveData = fullYearData[currentMonth]?.[cellDay]?.leave || "";
+            if (currentLeaveData.includes(text)) {
+                const confirmSchedule = confirm(`⚠️ 系統提示：\n\n【${text}】在 ${currentMonth + 1}/${cellDay} 當天已經劃休假了喔！\n\n確定還要強制將他排入這格嗎？`);
+                if (!confirmSchedule) {
+                    return; 
+                }
+            }
+        }
+    }
 
     let currentText = activeCell.innerText; 
     const colLabel = activeCell.getAttribute('data-label');
 
     if (colLabel === '清潔事項' || colLabel === '洗餐具') {
         if (type === 'task') {
-            // 【特別處理「玻璃」】點擊玻璃不加冒號，而是獨立一行
             if (text === '玻璃') {
                 if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
                     activeCell.innerText = currentText.trim() + '\n' + text + '\n';
@@ -441,7 +528,6 @@ function insertTextToCell(text, type) {
                     activeCell.innerText = currentText + text + '\n';
                 }
             } else {
-                // 其他事項 (果汁、刷地、白天、晚上等) 正常換行加冒號
                 if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
                     activeCell.innerText = currentText.trim() + '\n' + text + '：';
                 } else {
@@ -478,8 +564,5 @@ function insertTextToCell(text, type) {
     activeCell.dispatchEvent(inputEvent);
 }
 
-// 執行快捷輸入的初始化
 initQuickInput();
-
-// 執行初始化
 init();
