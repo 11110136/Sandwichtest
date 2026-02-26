@@ -10,18 +10,10 @@ const storageKey = 'nordic_shift_v2026_db';
 
 // --- 休假表圖片設定 (0代表1月，11代表12月) ---
 const leaveImages = {
-    0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", // 1月
-    1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", // 2月
-    2: "./images/level3.png", // 這是 3月的圖片
-    3: "", // 4月
-    4: "", // 5月
-    5: "", // 6月
-    6: "", // 7月
-    7: "", // 8月
-    8: "", // 9月
-    9: "", // 10月
-    10: "", // 11月
-    11: ""  // 12月
+    0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", 
+    1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", 
+    2: "./images/level3.png", 
+    3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: ""  
 };
 
 // --- 工作崗位表圖片設定 (固定圖片) ---
@@ -32,7 +24,7 @@ let currentMonth = new Date().getMonth();
 let currentView = 'day'; 
 let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 let autoSaveTimer = null;
-let currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] }; // 用來暫存查詢到的詳細日期
+let currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] }; 
 
 // --- DOM 元素綁定 ---
 const scheduleBody = document.getElementById('scheduleBody');
@@ -50,7 +42,6 @@ function init() {
     switchView('day');
     fetchFromCloud();
 
-    // 綁定統計輸入框的 Enter 鍵事件
     document.getElementById('stats-name-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') calculatePersonalStats();
     });
@@ -182,7 +173,7 @@ async function fetchFromCloud() {
 function showMonthStats() {
     document.getElementById('stats-name-input').value = "";
     document.getElementById('stats-result-section').classList.add('hidden');
-    closeDetailDates(); // 打開彈窗時重置詳細日期區塊
+    closeDetailDates(); 
     
     const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
     document.getElementById('modal-title').innerText = `${monthName} 統計`;
@@ -198,7 +189,6 @@ function calculatePersonalStats() {
     const daysCount = new Date(year, currentMonth + 1, 0).getDate();
     let stats = { shift: 0, open: 0, close: 0, clean: 0, t20: 0 };
     
-    // 初始化日期暫存區
     currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] };
     
     for(let i=1; i<=daysCount; i++) {
@@ -216,19 +206,27 @@ function calculatePersonalStats() {
                 stats.close++; 
                 currentStatsDates.close.push({ day: i, content: d.close }); 
             }
-            // 處理 20:00 先走
             if(d.t20 && d.t20.includes(targetName)) { 
                 stats.t20++; 
                 currentStatsDates.t20.push({ day: i, content: d.t20 }); 
             }
             
-            // 處理清潔與洗餐具
+            // 【升級】精準提取統計資料 (只抓包含該名字的換行文字)
             if((d.dish && d.dish.includes(targetName)) || (d.clean && d.clean.includes(targetName))) { 
                 stats.clean++; 
-                
                 let cleanDetails = [];
-                if (d.dish && d.dish.includes(targetName)) cleanDetails.push(`洗餐具：${d.dish}`);
-                if (d.clean && d.clean.includes(targetName)) cleanDetails.push(`清潔：${d.clean}`);
+                
+                if (d.dish && d.dish.includes(targetName)) {
+                    // 根據換行符號切割，過濾出該員工的部分
+                    let lines = d.dish.split('\n').filter(l => l.includes(targetName));
+                    if(lines.length > 0) cleanDetails.push(`洗餐具：${lines.join(', ')}`);
+                }
+                
+                if (d.clean && d.clean.includes(targetName)) {
+                    // 根據換行符號切割，過濾出該員工的負責項目
+                    let lines = d.clean.split('\n').filter(l => l.includes(targetName));
+                    if(lines.length > 0) cleanDetails.push(lines.join(' | ')); // 顯示例: 果汁：若菱 | 刷地：若菱
+                }
                 
                 currentStatsDates.clean.push({ 
                     day: i, 
@@ -249,16 +247,13 @@ function calculatePersonalStats() {
     const percentage = Math.round((stats.shift / daysCount) * 100);
     document.getElementById('modal-coverage').innerText = `${percentage}% (排班天數/當月總天數)`;
     
-    // 每次重新查詢時，隱藏詳細日期區塊
     closeDetailDates();
-
     document.getElementById('stats-result-section').classList.remove('hidden');
     const progressBar = document.getElementById('modal-progress-bar');
     progressBar.style.width = '0%';
     setTimeout(() => progressBar.style.width = `${percentage}%`, 100);
 }
 
-// --- 顯示詳細日期的功能 ---
 function showDetailDates(type) {
     const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 先走' };
     const items = currentStatsDates[type];
@@ -279,7 +274,6 @@ function showDetailDates(type) {
             
             let displayText = `${currentMonth + 1}/${item.day} (${dayName})`;
             
-            // 若為清潔事務，把詳細工作內容補上並使用整條顯示樣式
             if (type === 'clean' && item.content) {
                 displayText += ` 👉 ${item.content}`;
                 span.className = 'bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg border border-emerald-100 text-xs font-medium tracking-wide w-full flex items-center gap-2 mb-1.5 shadow-sm';
@@ -308,14 +302,12 @@ function closeModal() {
     closeDetailDates();
 }
 
-// --- 月份連動休假表功能 ---
 function showLeaveSchedule() {
     const monthName = document.getElementById('monthSelect').selectedOptions[0].text;
     const imgElement = document.getElementById('leaveScheduleImg');
     const noImgMsg = document.getElementById('noLeaveImgMsg');
     
     document.getElementById('leaveModalMonthTitle').innerText = `${monthName} 員工休假表`;
-
     const currentImgUrl = leaveImages[currentMonth];
 
     if (currentImgUrl && currentImgUrl.trim() !== "") {
@@ -337,7 +329,6 @@ function closeLeaveSchedule() {
     document.getElementById('leaveScheduleModal').classList.add('hidden');
 }
 
-// --- 通用通知元件 ---
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.innerText = msg;
@@ -345,14 +336,11 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// --- 管理者實用功能：查看固定的工作崗位表 ---
 function showStationModal() {
     const imgElement = document.getElementById('stationImg');
-    
     if (!imgElement.src || imgElement.getAttribute('src') === '') {
         imgElement.src = STATION_IMAGE_URL;
     }
-    
     document.getElementById('stationModal').classList.remove('hidden');
     lucide.createIcons();
 }
@@ -362,38 +350,35 @@ function closeStationModal() {
 }
 
 // ==========================================
-// --- [NEW] 快捷輸入面板 (Quick Input) 功能 ---
+// --- 快捷輸入面板 (Quick Input) 功能 ---
 // ==========================================
 
-// 你可以在這裡自由增減你的員工名字與常見工作！
 const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "若菱", "祥瑋", "翠翠","Sam" , "偲璇", "X"];
 const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃"];
 
-let activeCell = null; // 紀錄目前正在編輯的格子
+let activeCell = null; 
 
 function initQuickInput() {
-    // 1. 產生姓名按鈕
     const namesContainer = document.getElementById('quick-names-container');
     QUICK_NAMES.forEach(name => {
         const btn = document.createElement('button');
         btn.className = 'px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 text-slate-600 text-sm rounded-lg border border-slate-200 transition-colors active:scale-95';
         btn.innerText = name;
-        // 點擊時，使用 preventDefault 避免輸入框失去焦點
-        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(name); };
+        // 【變更】加入 type 標籤為 'name'
+        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(name, 'name'); };
         namesContainer.appendChild(btn);
     });
 
-    // 2. 產生事項按鈕
     const tasksContainer = document.getElementById('quick-tasks-container');
     QUICK_TASKS.forEach(task => {
         const btn = document.createElement('button');
         btn.className = 'px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 text-emerald-600 text-sm rounded-lg border border-emerald-100 transition-colors active:scale-95';
         btn.innerText = task;
-        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(task); };
+        // 【變更】加入 type 標籤為 'task'
+        btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(task, 'task'); };
         tasksContainer.appendChild(btn);
     });
 
-    // 3. 監聽所有格子的「點擊/聚焦」事件
     document.addEventListener('focusin', (e) => {
         if (e.target.classList.contains('editable')) {
             activeCell = e.target;
@@ -401,7 +386,6 @@ function initQuickInput() {
         }
     });
 
-    // 4. 點擊面板與格子以外的地方，隱藏面板
     document.addEventListener('mousedown', (e) => {
         const panel = document.getElementById('quick-input-panel');
         if (!panel.contains(e.target) && !e.target.classList.contains('editable')) {
@@ -409,7 +393,6 @@ function initQuickInput() {
         }
     });
     
-    // 5. 滾動視窗時隱藏面板 (避免面板位置跑掉)
     window.addEventListener('scroll', closeQuickInput, true);
 }
 
@@ -417,16 +400,14 @@ function showQuickInput(cell) {
     const panel = document.getElementById('quick-input-panel');
     const rect = cell.getBoundingClientRect();
     
-    // 計算面板顯示位置 (預設顯示在格子正下方)
     let topPos = rect.bottom + 5;
     let leftPos = rect.left;
 
-    // 避免面板超出螢幕底部或右側
     if (topPos + 250 > window.innerHeight) {
-        topPos = rect.top - panel.offsetHeight - 5; // 如果下方空間不夠，改顯示在格子上方
+        topPos = rect.top - panel.offsetHeight - 5; 
     }
     if (leftPos + 280 > window.innerWidth) {
-        leftPos = window.innerWidth - 290; // 靠右對齊
+        leftPos = window.innerWidth - 290; 
     }
 
     panel.style.top = `${topPos}px`;
@@ -441,24 +422,47 @@ function closeQuickInput() {
     activeCell = null;
 }
 
-function insertTextToCell(text) {
+// 【升級】智慧排版邏輯：換行與冒號自動處理
+function insertTextToCell(text, type) {
     if (!activeCell) return;
 
-    let currentText = activeCell.innerText.trim();
-    
-    // 如果格子內已經有文字，自動加上冒號分隔；沒有文字就直接填入
-    if (currentText.length > 0) {
-        // 避免重複加上逗號
-        if (currentText.endsWith('、')) {
-            activeCell.innerText = currentText + ' ' + text;
-        } else {
-            activeCell.innerText = currentText + '、' + text;
+    // 取消 trim() 以保留換行狀態
+    let currentText = activeCell.innerText; 
+    const colLabel = activeCell.getAttribute('data-label');
+
+    // 判斷是否為「清潔事項」或「洗餐具」欄位，需要換行與冒號格式
+    if (colLabel === '清潔事項' || colLabel === '洗餐具') {
+        if (type === 'task') {
+            // 如果原本已經有文字，且最後不是換行符，則自動幫忙換行加上新任務
+            if (currentText.trim().length > 0 && !currentText.endsWith('\n')) {
+                activeCell.innerText = currentText.trim() + '\n' + text + '：';
+            } else {
+                activeCell.innerText = currentText + text + '：';
+            }
+        } else if (type === 'name') {
+            // 若為名字，則看前面是不是剛好帶了冒號結尾
+            if (currentText.endsWith('：')) {
+                activeCell.innerText = currentText + text;
+            } else {
+                // 如果沒有任務開頭直接點名字，用頓號相連
+                activeCell.innerText = currentText + (currentText.trim().length > 0 && !currentText.endsWith('\n') ? '、' : '') + text;
+            }
         }
     } else {
-        activeCell.innerText = text;
+        // 其他欄位 (開店、值班、關帳等) 維持單純的頓號分隔
+        if (currentText.trim().length > 0) {
+            // 避免重複加上符號
+            if (currentText.endsWith('、') || currentText.endsWith('：') || currentText.endsWith('\n')) {
+                activeCell.innerText = currentText + text;
+            } else {
+                activeCell.innerText = currentText.trim() + '、' + text;
+            }
+        } else {
+            activeCell.innerText = text;
+        }
     }
 
-    // 將游標移到文字最後面 (提升使用者體驗)
+    // 將游標移到文字最後面，體驗更好
     const range = document.createRange();
     const sel = window.getSelection();
     range.selectNodeContents(activeCell);
@@ -466,7 +470,7 @@ function insertTextToCell(text) {
     sel.removeAllRanges();
     sel.addRange(range);
 
-    // ★重要：手動觸發 input 事件，這樣你原本寫在 HTML 裡的 oninput="updateData(...)" 才會執行，資料才會存檔！
+    // 觸發儲存事件
     const inputEvent = new Event('input', { bubbles: true });
     activeCell.dispatchEvent(inputEvent);
 }
