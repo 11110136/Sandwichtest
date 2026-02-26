@@ -32,7 +32,7 @@ let currentMonth = new Date().getMonth();
 let currentView = 'day'; 
 let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
 let autoSaveTimer = null;
-let currentStatsDates = { shift: [], open: [], close: [], clean: [] }; // 用來暫存查詢到的詳細日期
+let currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] }; // 用來暫存查詢到的詳細日期
 
 // --- DOM 元素綁定 ---
 const scheduleBody = document.getElementById('scheduleBody');
@@ -196,10 +196,10 @@ function calculatePersonalStats() {
     if (!targetName) { alert("請輸入姓名！"); return; }
 
     const daysCount = new Date(year, currentMonth + 1, 0).getDate();
-    let stats = { shift: 0, open: 0, close: 0, clean: 0 };
+    let stats = { shift: 0, open: 0, close: 0, clean: 0, t20: 0 };
     
     // 初始化日期暫存區
-    currentStatsDates = { shift: [], open: [], close: [], clean: [] };
+    currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] };
     
     for(let i=1; i<=daysCount; i++) {
         const d = fullYearData[currentMonth]?.[i];
@@ -215,6 +215,11 @@ function calculatePersonalStats() {
             if(d.close && d.close.includes(targetName)) { 
                 stats.close++; 
                 currentStatsDates.close.push({ day: i, content: d.close }); 
+            }
+            // 處理 20:00 排班
+            if(d.t20 && d.t20.includes(targetName)) { 
+                stats.t20++; 
+                currentStatsDates.t20.push({ day: i, content: d.t20 }); 
             }
             
             // 處理清潔與洗餐具
@@ -237,6 +242,10 @@ function calculatePersonalStats() {
     document.getElementById('modal-open-count').innerText = stats.open;
     document.getElementById('modal-close-count').innerText = stats.close;
     document.getElementById('modal-clean-count').innerText = stats.clean;
+    if (document.getElementById('modal-t20-count')) {
+        document.getElementById('modal-t20-count').innerText = stats.t20;
+    }
+
     const percentage = Math.round((stats.shift / daysCount) * 100);
     document.getElementById('modal-coverage').innerText = `${percentage}% (排班天數/當月總天數)`;
     
@@ -251,7 +260,7 @@ function calculatePersonalStats() {
 
 // --- 顯示詳細日期的功能 ---
 function showDetailDates(type) {
-    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務' };
+    const typeNames = { shift: '值班', open: '開店', close: '關帳', clean: '清潔事務', t20: '20:00 排班' };
     const items = currentStatsDates[type];
     const detailSection = document.getElementById('stats-detail-section');
     const titleSpan = document.querySelector('#detail-title span');
