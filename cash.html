@@ -7,20 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
-            .no-print { display: none; }
+            .no-print { display: none !important; }
             body { background-color: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; width: 100%; margin: 0; padding: 20px; border: none !important; }
             input { border: none !important; background: transparent !important; }
             .date-line { border-bottom: 1px solid black !important; }
             
-            /* 新增這行：列印時隱藏備註欄的提示文字 */
+            /* 列印時隱藏備註欄的提示文字 */
             textarea::placeholder { color: transparent !important; }
+            
+            /* 列印時，強制顯示簽名圖片，隱藏按鈕跟提示 */
+            .print-show-img { display: block !important; }
+            .print-hide { display: none !important; }
         }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
 <body class="bg-gray-100 p-4 md:p-8 min-h-screen font-sans">
 
-    <div class="fixed top-4 left-4 z-[999] no-print">
+    <div class="fixed top-4 left-4 z-[990] no-print">
         <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow-md transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
                 <line x1="4" x2="20" y1="12" y2="12"/>
@@ -44,15 +51,15 @@
             </a>
         </div>
     </div>
-    <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg container border border-gray-200 pt-12 md:pt-8 mt-12 md:mt-0">
-        <div class="border-b-2 border-gray-800 pb-4 mb-6 flex justify-between items-end">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800 tracking-wider">每日收銀結算表</h1>
-                <p class="text-xs text-gray-500 uppercase tracking-tighter">Daily Cash Reconciliation Form</p>
+    <div class="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
+        <div class="border-b-2 border-gray-800 pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div class="w-full">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-wider whitespace-nowrap">每日收銀結算表</h1>
+                <p class="text-xs text-gray-500 uppercase tracking-tighter mt-1">Daily Cash Reconciliation Form</p>
             </div>
-            <div class="text-right">
+            <div class="w-full md:w-auto text-left md:text-right">
                 <label class="block text-xs font-bold text-gray-600 mb-1">結算日期</label>
-                <input type="text" id="reportDate" placeholder="年 / 月 / 日" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-center py-1 px-2 w-48 bg-transparent">
+                <input type="text" id="reportDate" placeholder="年 / 月 / 日" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-left md:text-center py-1 px-2 w-full md:w-48 bg-transparent">
             </div>
         </div>
 
@@ -119,15 +126,15 @@
             </tfoot>
         </table>
 
-        <div class="grid grid-cols-2 gap-4 md:gap-12 mt-16 px-2 md:px-4">
+        <div class="grid grid-cols-2 gap-4 md:gap-12 mt-16 px-2 md:px-4 break-inside-avoid">
+            
             <div class="text-center flex flex-col items-center">
-                <div class="relative w-full h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/50">
-                    <canvas id="canvasCloser" class="absolute inset-0 w-full h-full touch-none cursor-crosshair"></canvas>
-                    <button onclick="clearCanvas('canvasCloser')" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/80 px-2 py-1 rounded shadow-sm no-print transition-colors">
-                        清除
-                    </button>
-                    <span class="sign-hint absolute inset-0 flex items-center justify-center text-gray-300 pointer-events-none text-sm tracking-widest no-print">
-                        請在此處簽名
+                <div onclick="openSignatureModal('closer', '當天關帳人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
+                    <img id="imgCloser" src="" class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none print-show-img">
+                    <button onclick="clearInlineSignature(event, 'closer')" id="btnClearCloser" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
+                    <span id="hintCloser" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm tracking-widest no-print group-hover:text-blue-500 transition-colors print-hide">
+                        <svg class="w-5 h-5 mb-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        點擊放大簽名
                     </span>
                 </div>
                 <p class="text-sm font-bold text-gray-700">當天關帳人簽名</p>
@@ -135,13 +142,12 @@
             </div>
 
             <div class="text-center flex flex-col items-center">
-                <div class="relative w-full h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/50">
-                    <canvas id="canvasManager" class="absolute inset-0 w-full h-full touch-none cursor-crosshair"></canvas>
-                    <button onclick="clearCanvas('canvasManager')" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/80 px-2 py-1 rounded shadow-sm no-print transition-colors">
-                        清除
-                    </button>
-                    <span class="sign-hint absolute inset-0 flex items-center justify-center text-gray-300 pointer-events-none text-sm tracking-widest no-print">
-                        請在此處簽名
+                <div onclick="openSignatureModal('manager', '主管/核實人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
+                    <img id="imgManager" src="" class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none print-show-img">
+                    <button onclick="clearInlineSignature(event, 'manager')" id="btnClearManager" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
+                    <span id="hintManager" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm tracking-widest no-print group-hover:text-blue-500 transition-colors print-hide">
+                        <svg class="w-5 h-5 mb-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        點擊放大簽名
                     </span>
                 </div>
                 <p class="text-sm font-bold text-gray-700">主管/核實人簽名</p>
@@ -171,6 +177,34 @@
         </div>
     </div>
 
+    <div id="signatureModal" class="fixed inset-0 z-[1000] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8 no-print">
+        <div class="bg-white w-full max-w-3xl h-[70vh] md:h-[60vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                <h3 id="signatureModalTitle" class="font-bold text-gray-800 text-lg">請簽名</h3>
+                <button onclick="closeSignatureModal()" class="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm border border-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="flex-grow relative bg-white">
+                <canvas id="modalCanvas" class="absolute inset-0 w-full h-full touch-none cursor-crosshair"></canvas>
+                <span id="modalSignHint" class="absolute inset-0 flex items-center justify-center text-gray-300 pointer-events-none text-2xl tracking-widest">
+                    請在此大面積處簽名
+                </span>
+            </div>
+            
+            <div class="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-between gap-4">
+                <button onclick="clearModalCanvas()" class="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm">
+                    清除重寫
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="closeSignatureModal()" class="px-4 py-2 bg-transparent text-gray-500 rounded-lg font-bold hover:bg-gray-200 transition-colors text-sm">取消</button>
+                    <button onclick="saveSignature()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm">完成簽名</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const inputs = document.querySelectorAll('.qty-input');
         const rows = document.querySelectorAll('.cash-row');
@@ -192,17 +226,17 @@
             input.addEventListener('input', calculate);
         });
 
+        // 重置表單
         function resetForm() {
             if(confirm('確定要清空所有數量與簽名嗎？')) {
                 inputs.forEach(input => input.value = '');
                 document.getElementById('reportDate').value = '';
-                
-                // 新增這行：清空備註欄
                 document.getElementById('remarksInput').value = '';
                 
-                // 如果你之前有加上清除簽名的代碼，保留在這裡：
-                clearCanvas('canvasCloser');
-                clearCanvas('canvasManager');
+                // 模擬點擊清空按鈕以清空簽名圖片
+                const fakeEvent = { stopPropagation: () => {} };
+                clearInlineSignature(fakeEvent, 'closer');
+                clearInlineSignature(fakeEvent, 'manager');
                 
                 calculate();
             }
@@ -224,119 +258,159 @@
         });
 
         // ==========================================
-        // --- 電子簽名板 (Signature Pad) 功能 ---
+        // --- 放大電子簽名板 (Modal) 邏輯 ---
         // ==========================================
-        function initSignaturePad(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const container = canvas.parentElement;
-            const hint = container.querySelector('.sign-hint');
+        let currentSignRole = ''; // 紀錄現在是誰在簽名 ('closer' 或是 'manager')
+        let hasDrawn = false; // 紀錄畫布上是否有字跡
+        
+        const modal = document.getElementById('signatureModal');
+        const canvas = document.getElementById('modalCanvas');
+        const ctx = canvas.getContext('2d');
+        const modalHint = document.getElementById('modalSignHint');
+
+        // 打開放大畫布
+        function openSignatureModal(role, titleText) {
+            currentSignRole = role;
+            document.getElementById('signatureModalTitle').innerText = titleText;
             
-            let isDrawing = false;
-            let lastX = 0;
-            let lastY = 0;
-
-            // 確保畫布解析度與 CSS 顯示尺寸一致，線條才會平滑
-            function resizeCanvas() {
-                // 如果已經有簽名了，調整大小前先暫存起來
-                const dataUrl = canvas.toDataURL(); 
-                
-                const rect = canvas.getBoundingClientRect();
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-                
-                // 恢復暫存的簽名
-                const img = new Image();
-                img.src = dataUrl;
-                img.onload = () => { ctx.drawImage(img, 0, 0); };
-                
-                // 設定畫筆樣式
-                ctx.lineWidth = 2.5; // 畫筆粗細
-                ctx.lineCap = 'round'; // 圓滑邊緣
-                ctx.lineJoin = 'round'; // 圓滑轉角
-                ctx.strokeStyle = '#1e293b'; // 墨水顏色 (深藍灰)
-            }
-
-            window.addEventListener('resize', resizeCanvas);
-            setTimeout(resizeCanvas, 100); // 延遲一下確保畫面渲染完畢才取得尺寸
-
-            // 取得目前觸控或滑鼠座標
-            function getPos(e) {
-                const rect = canvas.getBoundingClientRect();
-                let clientX = e.clientX;
-                let clientY = e.clientY;
-
-                if (e.touches && e.touches.length > 0) {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                }
-
-                return {
-                    x: clientX - rect.left,
-                    y: clientY - rect.top
-                };
-            }
-
-            // 開始畫圖
-            function startPosition(e) {
-                isDrawing = true;
-                const pos = getPos(e);
-                lastX = pos.x;
-                lastY = pos.y;
-                if(hint) hint.style.display = 'none'; // 隱藏「請在此處簽名」的提示
-                e.preventDefault(); // 防止手機螢幕跟著滑動
-            }
-
-            // 結束畫圖
-            function endPosition() {
-                isDrawing = false;
-                ctx.beginPath(); // 重置路徑，避免下次畫圖跟上次連在一起
-            }
-
-            // 畫圖中
-            function draw(e) {
-                if (!isDrawing) return;
-                const pos = getPos(e);
-                
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-                
-                lastX = pos.x;
-                lastY = pos.y;
-                e.preventDefault(); // 防止手機螢幕跟著滑動
-            }
-
-            // 註冊滑鼠事件 (電腦端)
-            canvas.addEventListener('mousedown', startPosition);
-            canvas.addEventListener('mouseup', endPosition);
-            canvas.addEventListener('mouseout', endPosition);
-            canvas.addEventListener('mousemove', draw);
-
-            // 註冊觸控事件 (手機/平板端)
-            canvas.addEventListener('touchstart', startPosition, {passive: false});
-            canvas.addEventListener('touchend', endPosition, {passive: false});
-            canvas.addEventListener('touchcancel', endPosition, {passive: false});
-            canvas.addEventListener('touchmove', draw, {passive: false});
+            // 顯示 Modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 防止背景網頁捲動
+            
+            // 每次打開強制重新設定畫布大小並清空
+            resizeCanvas();
+            clearModalCanvas();
         }
 
-        // 清除畫布功能
-        function clearCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // 清空畫面
-            
-            // 把「請在此處簽名」的提示加回來
-            const hint = canvas.parentElement.querySelector('.sign-hint');
-            if(hint) hint.style.display = 'flex';
+        // 關閉放大畫布
+        function closeSignatureModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // 恢復背景捲動
         }
 
-        // 網頁載入後初始化兩個簽名板
-        document.addEventListener("DOMContentLoaded", () => {
-            initSignaturePad('canvasCloser');
-            initSignaturePad('canvasManager');
+        // 確認儲存簽名
+        function saveSignature() {
+            if (!hasDrawn) {
+                alert("您尚未簽名喔！");
+                return;
+            }
+            // 取出畫布圖片資料
+            const dataUrl = canvas.toDataURL("image/png");
+            
+            // 放進原本畫面上的 img 標籤中
+            const imgElement = document.getElementById('img' + capitalize(currentSignRole));
+            const hintElement = document.getElementById('hint' + capitalize(currentSignRole));
+            const btnElement = document.getElementById('btnClear' + capitalize(currentSignRole));
+
+            imgElement.src = dataUrl;
+            imgElement.classList.remove('hidden'); // 顯示圖片
+            hintElement.classList.add('hidden');   // 隱藏「點擊此處簽名」提示
+            btnElement.classList.remove('hidden'); // 顯示內聯的「清除」小按鈕
+
+            closeSignatureModal();
+        }
+
+        // 清除主畫面上的已簽名圖檔
+        function clearInlineSignature(event, role) {
+            event.stopPropagation(); // 防止點擊清除按鈕時，又觸發打開畫布
+            
+            const imgElement = document.getElementById('img' + capitalize(role));
+            const hintElement = document.getElementById('hint' + capitalize(role));
+            const btnElement = document.getElementById('btnClear' + capitalize(role));
+
+            imgElement.src = "";
+            imgElement.classList.add('hidden');
+            hintElement.classList.remove('hidden');
+            btnElement.classList.add('hidden');
+        }
+
+        // 工具函數：首字母大寫 (closer -> Closer)
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        // === 以下為畫布 (Canvas) 核心繪圖程式碼 ===
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            ctx.lineWidth = 3; // 放大畫布所以畫筆也稍微粗一點
+            ctx.lineCap = 'round'; 
+            ctx.lineJoin = 'round'; 
+            ctx.strokeStyle = '#1e293b'; 
+        }
+
+        // 監聽視窗改變時重設畫布
+        window.addEventListener('resize', () => {
+            if (!modal.classList.contains('hidden')) resizeCanvas();
         });
+
+        function clearModalCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            modalHint.style.display = 'flex';
+            hasDrawn = false;
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startPosition(e) {
+            isDrawing = true;
+            hasDrawn = true;
+            const pos = getPos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            modalHint.style.display = 'none'; // 隱藏中央提示文字
+            e.preventDefault(); 
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath(); 
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            
+            lastX = pos.x;
+            lastY = pos.y;
+            e.preventDefault(); 
+        }
+
+        // 綁定電腦滑鼠事件
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mouseout', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        // 綁定手機觸控事件
+        canvas.addEventListener('touchstart', startPosition, {passive: false});
+        canvas.addEventListener('touchend', endPosition, {passive: false});
+        canvas.addEventListener('touchcancel', endPosition, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
     </script>
 </body>
 </html>
