@@ -42,20 +42,44 @@
     </style>
 </head>
 <body class="bg-gray-100 p-4 md:p-8 min-h-screen font-sans">
-    <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg container border border-gray-200">
-        <!-- 表頭 -->
-        <div class="border-b-2 border-gray-800 pb-4 mb-6 flex justify-between items-end">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800 tracking-wider">每日收銀結算表</h1>
-                <p class="text-xs text-gray-500 uppercase tracking-tighter">Daily Cash Reconciliation Form</p>
-            </div>
-            <div class="text-right">
-                <label class="block text-xs font-bold text-gray-600 mb-1">結算日期</label>
-                <!-- 修改為文字輸入框，模擬手寫橫線 -->
-                <input type="text" id="reportDate" placeholder="年 / 月 / 日" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-center py-1 px-2 w-48 bg-transparent">
-            </div>
-        </div>
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg container border border-gray-200">
+                    <!-- 表頭 -->
+                    <div class="border-b-2 border-gray-800 pb-4 mb-6 flex justify-between items-end">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800 tracking-wider">每日收銀結算表</h1>
+                            <p class="text-xs text-gray-500 uppercase tracking-tighter">Daily Cash Reconciliation Form</p>
+                        </div>
+                        <div class="text-right">
+                            <label class="block text-xs font-bold text-gray-600 mb-1">結算日期</label>
+                            <!-- 修改為文字輸入框，模擬手寫橫線 -->
+                            <input type="text" id="reportDate" placeholder="年 / 月 / 日" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-center py-1 px-2 w-48 bg-transparent">
+                        </div>
+                    </div>
 
+                    <div class="fixed top-4 left-4 z-[999] no-print">
+                <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow-md transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+                        <line x1="4" x2="20" y1="12" y2="12"/>
+                        <line x1="4" x2="20" y1="6" y2="6"/>
+                        <line x1="4" x2="20" y1="18" y2="18"/>
+                    </svg>
+                </button>
+                
+                <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden transition-all origin-top-left">
+                    <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-gray-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>
+                        </svg>
+                        值班系統
+                    </a>
+                    <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>
+                        </svg>
+                        每日收銀結算
+                    </a>
+                </div>
+            </div>
         <!-- 表格內容 -->
         <table class="w-full border-collapse border border-gray-300 mb-8">
             <thead>
@@ -186,6 +210,20 @@
                 calculate();
             }
         }
+        // 切換選單顯示/隱藏
+    function toggleGlobalMenu() {
+        document.getElementById('global-nav-menu').classList.toggle('hidden');
+    }
+    
+    // 點擊選單外部時，自動關閉選單
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('global-nav-menu');
+        const btn = document.getElementById('global-nav-btn');
+        // 確保元素存在，且點擊的目標不在按鈕或選單內部
+        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
     </script>
 </body>
 </html>

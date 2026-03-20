@@ -564,6 +564,20 @@ function insertTextToCell(text, type) {
 
     const inputEvent = new Event('input', { bubbles: true });
     activeCell.dispatchEvent(inputEvent);
+    // 切換選單顯示/隱藏
+    function toggleGlobalMenu() {
+        document.getElementById('global-nav-menu').classList.toggle('hidden');
+    }
+    
+    // 點擊選單外部時，自動關閉選單
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('global-nav-menu');
+        const btn = document.getElementById('global-nav-btn');
+        // 確保元素存在，且點擊的目標不在按鈕或選單內部
+        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 }
 
 initQuickInput();
