@@ -160,16 +160,29 @@
             <textarea id="remarksInput" rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-y print:border print:border-gray-300 print:bg-white" placeholder="可點擊此處輸入備註，或直接留白列印出來手寫..."></textarea>
         </div>
 
-        <div class="mt-10 flex justify-center space-x-4 no-print">
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition duration-200 flex items-center">
+        <div class="mt-10 flex justify-center space-x-4 no-print relative">
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow transition duration-200 flex items-center text-sm md:text-base">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                列印紙本表格
+                列印紙本
             </button>
-            <button onclick="resetForm()" class="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold py-3 px-8 rounded-lg transition duration-200">
+            
+            <button id="btnSubmitData" onclick="submitToCloud()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow transition duration-200 flex items-center text-sm md:text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                上傳儲存
+            </button>
+
+            <button onclick="resetForm()" class="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold py-3 px-6 md:px-8 rounded-lg transition duration-200 text-sm md:text-base">
                 清除內容
             </button>
+        </div>
+
+        <div id="loadingOverlay" class="fixed inset-0 z-[2000] hidden bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-emerald-500 mb-4"></div>
+            <p class="text-white font-bold tracking-widest">資料上傳中，請稍候...</p>
         </div>
 
         <div class="text-[10px] text-gray-400 mt-8 text-center uppercase tracking-widest no-print">
@@ -411,6 +424,79 @@
         canvas.addEventListener('touchend', endPosition, {passive: false});
         canvas.addEventListener('touchcancel', endPosition, {passive: false});
         canvas.addEventListener('touchmove', draw, {passive: false});
+
+        // ！！！請將這段網址替換成你剛剛在 Apps Script 部署拿到的 Web App URL ！！！
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzvxtZPmYJD5EmPxAGQnfRmoZrODO3tx_26OWFY20_3ASmUb2ejmkudcPvB-G65cA5VAA/exec";
+
+        // 上傳資料到雲端
+        async function submitToCloud() {
+            const dateVal = document.getElementById('reportDate').value.trim();
+            if (!dateVal) {
+                alert("請先填寫「結算日期」喔！");
+                document.getElementById('reportDate').focus();
+                return;
+            }
+
+            // 取得各面額的數量
+            const getQty = (val) => document.querySelector(`tr[data-val="${val}"] .qty-input`).value || "0";
+            
+            // 取得總金額 (過濾掉 "NT$ " 與逗號)
+            const totalText = document.getElementById('grandTotal').innerText;
+            const totalVal = totalText.replace(/[^\d]/g, ''); 
+
+            // 取得簽名檔的 Base64 字串 (如果 img 的 src 有東西，就是有簽名)
+            const closerImgSrc = document.getElementById('imgCloser').getAttribute('src');
+            const managerImgSrc = document.getElementById('imgManager').getAttribute('src');
+
+            // 整理要傳送的資料包
+            const payload = {
+                date: dateVal,
+                cash1000: getQty(1000),
+                cash500: getQty(500),
+                cash100: getQty(100),
+                coin50: getQty(50),
+                coin10: getQty(10),
+                coin5: getQty(5),
+                total: totalVal,
+                remarks: document.getElementById('remarksInput').value,
+                closerSign: closerImgSrc || "",
+                managerSign: managerImgSrc || ""
+            };
+
+            // 顯示 Loading 畫面
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    // 因為跨域問題，使用 text/plain 送出
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert("✅ 結算資料與簽名已成功上傳至雲端！");
+                    // 上傳成功後自動清空表單
+                    const fakeEvent = { stopPropagation: () => {} };
+                    inputs.forEach(input => input.value = '');
+                    document.getElementById('reportDate').value = '';
+                    document.getElementById('remarksInput').value = '';
+                    clearInlineSignature(fakeEvent, 'closer');
+                    clearInlineSignature(fakeEvent, 'manager');
+                    calculate();
+                } else {
+                    alert("❌ 上傳失敗：" + result.message);
+                }
+            } catch (error) {
+                alert("❌ 網路連線錯誤，請檢查網路狀態或網址設定。");
+                console.error(error);
+            } finally {
+                // 隱藏 Loading 畫面
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
     </script>
 </body>
 </html>
