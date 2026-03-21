@@ -7,21 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
+            /* 1. 強制設定紙張為橫向 (Landscape)，並設定適當邊距 */
+            @page { size: landscape; margin: 10mm; }
+            
             .no-print { display: none !important; }
             body { background-color: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; width: 100%; margin: 0; padding: 10px; border: none !important; }
+            .container { box-shadow: none; max-width: 100%; width: 100%; margin: 0; padding: 0; border: none !important; }
+            
+            /* 2. 強制解除表格的水平卷軸與最小寬度限制，讓它 100% 展開 */
+            .overflow-x-auto { overflow: visible !important; }
+            table { width: 100% !important; min-width: auto !important; border-collapse: collapse !important; table-layout: fixed; }
+            
+            /* 3. 稍微縮小字體與內距，確保所有欄位都能完美塞進一頁 */
+            td, th { border: 1px solid #d1d5db !important; padding: 6px 4px !important; text-align: center; font-size: 13px !important; }
+            input { font-size: 13px !important; }
+            
             input { border: none !important; background: transparent !important; }
             .date-line { border-bottom: 1px solid black !important; }
             textarea::placeholder { color: transparent !important; }
             .print-show-img { display: block !important; }
             .print-hide { display: none !important; }
-
-            /* 列印時強制顯示電腦版表格，隱藏手機卡片 */
             .print\:block { display: block !important; }
             .print\:hidden { display: none !important; }
-            
-            table { width: 100% !important; border-collapse: collapse !important; }
-            td, th { border: 1px solid #d1d5db !important; padding: 6px !important; text-align: center; }
             
             .print-bg-dark { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-gray { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
