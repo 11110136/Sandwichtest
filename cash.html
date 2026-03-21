@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每週收銀結算表</title>
+    <title>每週收銀結算系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -16,15 +16,15 @@
             .print-show-img { display: block !important; }
             .print-hide { display: none !important; }
 
-            /* 列印時強制切回標準表格模式，覆蓋手機版的卡片樣式 */
-            table { display: table !important; width: 100% !important; border-collapse: collapse !important; }
-            thead { display: table-header-group !important; }
-            tbody { display: table-row-group !important; }
-            tfoot { display: table-footer-group !important; }
-            tr { display: table-row !important; border: none !important; box-shadow: none !important; margin: 0 !important; }
-            td, th { display: table-cell !important; border: 1px solid #d1d5db !important; padding: 6px !important; text-align: center; }
-            .md\:hidden { display: none !important; }
+            /* 列印時強制顯示電腦版表格，隱藏手機卡片 */
+            .print\:block { display: block !important; }
+            .print\:hidden { display: none !important; }
+            
+            table { width: 100% !important; border-collapse: collapse !important; }
+            td, th { border: 1px solid #d1d5db !important; padding: 6px !important; text-align: center; }
             .print-bg-gray { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-bg-yellow { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-bg-red { background-color: #fef2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -44,21 +44,17 @@
         
         <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden transition-all origin-top-left">
             <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
                 值班系統
             </a>
             <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
                 每週收銀結算
             </a>
         </div>
     </div>
     
-    <div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
+    <div class="max-w-[1200px] mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
         <div class="border-b-2 border-gray-800 pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div class="w-full">
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-wider whitespace-nowrap">每週金庫結算表</h1>
@@ -70,117 +66,242 @@
             </div>
         </div>
 
-        <table class="w-full block md:table border-collapse mb-4 text-sm">
-            <thead class="hidden md:table-header-group">
-                <tr class="bg-gray-800 text-white">
-                    <th class="border border-gray-300 p-2 text-center w-24">星期</th>
-                    <th class="border border-gray-300 p-2 text-center">1,000 元</th>
-                    <th class="border border-gray-300 p-2 text-center">500 元</th>
-                    <th class="border border-gray-300 p-2 text-center">100 元</th>
-                    <th class="border border-gray-300 p-2 text-center">50 元</th>
-                    <th class="border border-gray-300 p-2 text-center">10 元</th>
-                    <th class="border border-gray-300 p-2 text-center">5 元</th>
-                    <th class="border border-gray-300 p-2 text-right bg-gray-700 w-28">單日總計</th>
-                </tr>
-            </thead>
-            
-            <tbody class="block md:table-row-group">
-                
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="0">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期一</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+        <div class="hidden md:block print:block overflow-x-auto pb-4">
+            <table id="desktop-table" class="w-full min-w-[800px] border-collapse border border-gray-300 mb-4 text-sm">
+                <thead>
+                    <tr class="bg-slate-800 text-white">
+                        <th class="border border-gray-300 p-2 text-center w-20">面額</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期一</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期二</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期三</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期四</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期五</th>
+                        <th class="border border-gray-300 p-2 text-center w-24">星期六</th>
+                        <th class="border border-gray-300 p-2 text-center w-24 text-red-300">星期日</th>
+                        <th class="border border-gray-300 p-2 text-center w-20 bg-gray-700">週數量</th>
+                        <th class="border border-gray-300 p-2 text-right w-28 bg-gray-700 text-nowrap">週小計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">1,000 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="1000"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="1000"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="1000">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="1000">0</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">500 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="500"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="500"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="500"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="500"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="500"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="500"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="500"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="500">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="500">0</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">100 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="100"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="100"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="100"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="100"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="100"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="100"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="100"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="100">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="100">0</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">50 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="50"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="50"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="50"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="50"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="50"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="50"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="50"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="50">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="50">0</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">10 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="10"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="10"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="10"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="10"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="10"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="10"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="10"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="10">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="10">0</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">5 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="5"></td>
+                        <td class="border border-gray-300 p-1 print-bg-red bg-red-50"><input type="number" min="0" class="qty-input w-full text-center border-b border-red-200 focus:border-blue-500 focus:outline-none bg-transparent text-red-600" data-day="6" data-val="5"></td>
+                        <td class="border border-gray-300 p-2 text-center denom-qty-display font-mono text-gray-600 print-bg-gray bg-gray-50" data-val="5">0</td>
+                        <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="5">0</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="border-t-2 border-gray-400">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-sm bg-slate-200 print-bg-gray">單日總計</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="0">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="1">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="2">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="3">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="4">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono day-total-display print-bg-gray bg-gray-50" data-day="5">0</td>
+                        <td class="border border-gray-300 p-2 text-center font-mono text-red-600 font-bold day-total-display print-bg-red bg-red-50" data-day="6">0</td>
+                        <td class="border border-gray-300 p-2 font-bold text-sm text-right bg-yellow-50 print-bg-yellow">當週總計:</td>
+                        <td class="border border-gray-300 p-2 text-right text-blue-800 font-bold text-lg text-nowrap bg-yellow-100 print-bg-yellow grand-total-display">NT$ 0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="1">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期二</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+        <div class="block md:hidden print:hidden">
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期一</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="0">0</span>
+                </div>
+            </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="2">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期三</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期二</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="1">0</span>
+                </div>
+            </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="3">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期四</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期三</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="2">0</span>
+                </div>
+            </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="4">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期五</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期四</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="3" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="3">0</span>
+                </div>
+            </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-gray-300 rounded-xl bg-white shadow-sm md:shadow-none" data-day="5">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-slate-800 text-white md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期六</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-gray-50 md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-gray-50 p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-blue-700 font-bold text-lg md:text-base">0</span></td>
-                </tr>
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期五</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="4" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="4">0</span>
+                </div>
+            </div>
 
-                <tr class="day-row grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 md:table-row md:border-none mb-6 md:mb-0 border border-red-200 rounded-xl bg-red-50/30 shadow-sm md:shadow-none" data-day="6">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 md:p-2 text-center font-bold bg-red-800 text-white md:bg-transparent md:text-red-600 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">星期日</td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="1000"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">500 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="500"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">100 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="100"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">50 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="50"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">10 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="10"></td>
-                    <td class="flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-1 bg-white md:bg-transparent p-2 rounded-lg md:rounded-none"><span class="md:hidden font-bold text-red-400 text-xs">5 元</span><input type="number" min="0" class="qty-input w-20 md:w-full text-right md:text-center border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-val="5"></td>
-                    <td class="col-span-2 flex md:table-cell items-center justify-between md:border md:border-gray-300 md:p-2 bg-yellow-50 md:bg-transparent p-3 rounded-lg md:rounded-none md:text-right border border-yellow-200 md:border-none mt-1 md:mt-0"><span class="md:hidden font-bold text-blue-800 text-sm">單日結算金額</span><span class="day-total font-mono text-red-600 font-bold text-lg md:text-base">0</span></td>
-                </tr>
-            </tbody>
-            
-            <tfoot class="block md:table-footer-group">
-                <tr class="grid grid-cols-2 gap-x-2 gap-y-2 p-3 md:p-0 bg-white md:bg-gray-100 border border-gray-300 md:border-none rounded-xl md:rounded-none md:table-row shadow-md md:shadow-none mt-8 md:mt-0 md:border-t-2 md:border-gray-400">
-                    <td class="col-span-2 block md:table-cell md:border md:border-gray-300 p-2 text-center font-bold text-sm bg-slate-200 md:bg-transparent md:text-gray-900 rounded-lg md:rounded-none py-2 mb-2 md:mb-0 print-bg-gray">當週各面額<br class="hidden md:inline">總張/枚數</td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">1,000 元</span><span class="denom-qty-total text-gray-600" data-val="1000">0</span></td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">500 元</span><span class="denom-qty-total text-gray-600" data-val="500">0</span></td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">100 元</span><span class="denom-qty-total text-gray-600" data-val="100">0</span></td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">50 元</span><span class="denom-qty-total text-gray-600" data-val="50">0</span></td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">10 元</span><span class="denom-qty-total text-gray-600" data-val="10">0</span></td>
-                    <td class="flex md:table-cell justify-between items-center md:border md:border-gray-300 p-2 bg-gray-50 md:bg-transparent rounded-lg md:rounded-none md:text-center font-mono"><span class="md:hidden font-bold text-gray-500 text-xs">5 元</span><span class="denom-qty-total text-gray-600" data-val="5">0</span></td>
-                    
-                    <td class="col-span-2 flex md:table-cell justify-between items-center md:border md:border-gray-300 p-3 bg-yellow-100 md:bg-yellow-50 rounded-lg md:rounded-none mt-2 md:mt-0 border border-yellow-300 md:border-none md:text-right print-bg-gray">
-                        <span class="md:hidden font-bold text-gray-800 text-base">一週結算總金額</span>
-                        <span id="grandTotal" class="text-blue-800 font-bold text-xl md:text-lg text-nowrap">NT$ 0</span>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-slate-800 text-white text-center font-bold py-2">星期六</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="5" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-blue-700 font-bold text-lg" data-day="5">0</span>
+                </div>
+            </div>
+
+            <div class="mb-8 border border-red-200 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div class="bg-red-800 text-white text-center font-bold py-2">星期日</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-red-50/50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">1,000 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="1000"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">500 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="500"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">100 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="100"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">50 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="50"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">10 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="10"></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-red-400 text-xs">5 元</span><input type="number" min="0" class="qty-input w-16 text-right border-b border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent" data-day="6" data-val="5"></div>
+                </div>
+                <div class="bg-yellow-50 p-3 flex justify-between items-center border-t border-yellow-200">
+                    <span class="font-bold text-blue-800 text-sm">單日結算金額</span>
+                    <span class="day-total-display font-mono text-red-600 font-bold text-lg" data-day="6">0</span>
+                </div>
+            </div>
+
+            <div class="mb-6 border border-gray-300 rounded-xl bg-white shadow-md overflow-hidden">
+                <div class="bg-slate-200 text-gray-900 text-center font-bold py-2 text-sm">當週各面額總張/枚數</div>
+                <div class="grid grid-cols-2 gap-2 p-3 bg-gray-50">
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">1,000 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="1000">0</span></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">500 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="500">0</span></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">100 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="100">0</span></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">50 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="50">0</span></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">10 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="10">0</span></div>
+                    <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg"><span class="font-bold text-gray-500 text-xs">5 元</span><span class="denom-qty-display font-mono text-gray-600" data-val="5">0</span></div>
+                </div>
+                <div class="bg-yellow-100 p-4 flex justify-between items-center border-t border-yellow-300">
+                    <span class="font-bold text-gray-800 text-base">一週結算總金額</span>
+                    <span class="grand-total-display text-blue-800 font-bold text-xl text-nowrap">NT$ 0</span>
+                </div>
+            </div>
+        </div>
 
         <div class="grid grid-cols-2 gap-4 md:gap-12 mt-8 px-2 md:px-4 break-inside-avoid">
             <div class="text-center flex flex-col items-center">
@@ -217,19 +338,13 @@
 
         <div class="mt-8 flex justify-center space-x-4 no-print relative">
             <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow transition duration-200 flex items-center text-sm md:text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 列印紙本
             </button>
-            
             <button id="btnSubmitData" onclick="submitToCloud()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 md:px-8 rounded-lg shadow transition duration-200 flex items-center text-sm md:text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 上傳儲存
             </button>
-
             <button onclick="resetForm()" class="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold py-3 px-6 md:px-8 rounded-lg transition duration-200 text-sm md:text-base">
                 清除內容
             </button>
@@ -269,45 +384,64 @@
 
     <script>
         const inputs = document.querySelectorAll('.qty-input');
-        
-        // 核心 JavaScript 的重新設計：因為現在是「橫向算單日總和」，「直向算單一面額一週總張數」
+        const denoms = [1000, 500, 100, 50, 10, 5];
+
+        // 綁定輸入事件，讓手機版與電腦版畫面中的數字自動互相同步
+        inputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                const day = this.getAttribute('data-day');
+                const val = this.getAttribute('data-val');
+                const value = this.value;
+
+                // 將數值同步到擁有相同 data-day 與 data-val 的所有 input (包含隱藏的電腦/手機版)
+                document.querySelectorAll(`.qty-input[data-day="${day}"][data-val="${val}"]`).forEach(el => {
+                    if (el !== this) el.value = value;
+                });
+
+                calculate();
+            });
+        });
+
         function calculate() {
             let grandTotal = 0;
+            let dailyTotals = [0, 0, 0, 0, 0, 0, 0];
             let weeklyDenomTotals = { 1000: 0, 500: 0, 100: 0, 50: 0, 10: 0, 5: 0 }; 
-            
-            const rows = document.querySelectorAll('.day-row');
-            rows.forEach((row, dayIndex) => {
-                let dayTotal = 0;
+
+            // 以電腦版表格作為抓資料基準 (因為兩邊數字已經同步)
+            denoms.forEach(val => {
+                let denomQty = 0;
+                for(let day = 0; day < 7; day++) {
+                    const input = document.querySelector(`#desktop-table .qty-input[data-day="${day}"][data-val="${val}"]`);
+                    const qty = parseInt(input?.value) || 0;
+                    denomQty += qty;
+                    dailyTotals[day] += (qty * val);
+                }
                 
-                // 抓這一天(這一列)的所有輸入框
-                const rowInputs = row.querySelectorAll('.qty-input');
-                rowInputs.forEach(input => {
-                    const val = parseInt(input.getAttribute('data-val'));
-                    const qty = parseInt(input.value) || 0;
-                    const subtotal = qty * val;
-                    
-                    dayTotal += subtotal;          // 單日總額累加
-                    weeklyDenomTotals[val] += qty; // 面額週總張數累加
+                weeklyDenomTotals[val] = denomQty;
+                const denomSubtotal = denomQty * val;
+                grandTotal += denomSubtotal;
+
+                // 更新面額總計與小計顯示 (包含電腦版與手機版)
+                document.querySelectorAll(`.denom-qty-display[data-val="${val}"]`).forEach(el => {
+                    el.textContent = denomQty.toLocaleString('zh-TW');
                 });
-                
-                // 更新該日的單日總額顯示
-                row.querySelector('.day-total').textContent = dayTotal.toLocaleString('zh-TW');
-                grandTotal += dayTotal;
+                document.querySelectorAll(`.denom-subtotal-display[data-val="${val}"]`).forEach(el => {
+                    el.textContent = denomSubtotal.toLocaleString('zh-TW');
+                });
             });
 
-            // 更新表格底部的「當週各面額總張數」
-            [1000, 500, 100, 50, 10, 5].forEach(val => {
-                const footerQty = document.querySelector(`.denom-qty-total[data-val="${val}"]`);
-                if (footerQty) footerQty.textContent = weeklyDenomTotals[val].toLocaleString('zh-TW');
-            });
+            // 更新每日總結算顯示
+            for(let day = 0; day < 7; day++) {
+                document.querySelectorAll(`.day-total-display[data-day="${day}"]`).forEach(el => {
+                    el.textContent = dailyTotals[day].toLocaleString('zh-TW');
+                });
+            }
 
-            // 更新最後的當週總結算
-            document.getElementById('grandTotal').textContent = 'NT$ ' + grandTotal.toLocaleString('zh-TW');
+            // 更新週總結算金額顯示
+            document.querySelectorAll('.grand-total-display').forEach(el => {
+                el.textContent = 'NT$ ' + grandTotal.toLocaleString('zh-TW');
+            });
         }
-
-        inputs.forEach(input => {
-            input.addEventListener('input', calculate);
-        });
 
         function resetForm() {
             if(confirm('確定要清空本週所有數量與簽名嗎？')) {
@@ -335,9 +469,9 @@
             }
         });
 
+        // 簽名畫布功能
         let currentSignRole = ''; 
         let hasDrawn = false; 
-        
         const modal = document.getElementById('signatureModal');
         const canvas = document.getElementById('modalCanvas');
         const ctx = canvas.getContext('2d');
@@ -387,27 +521,18 @@
             btnElement.classList.add('hidden');
         }
 
-        function capitalize(s) {
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
+        function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
         let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
+        let lastX = 0; let lastY = 0;
 
         function resizeCanvas() {
             const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            ctx.lineWidth = 3; 
-            ctx.lineCap = 'round'; 
-            ctx.lineJoin = 'round'; 
-            ctx.strokeStyle = '#1e293b'; 
+            canvas.width = rect.width; canvas.height = rect.height;
+            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1e293b'; 
         }
 
-        window.addEventListener('resize', () => {
-            if (!modal.classList.contains('hidden')) resizeCanvas();
-        });
+        window.addEventListener('resize', () => { if (!modal.classList.contains('hidden')) resizeCanvas(); });
 
         function clearModalCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -417,54 +542,36 @@
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX;
-            let clientY = e.clientY;
+            let clientX = e.clientX; let clientY = e.clientY;
             if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
             }
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
+            return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
         function startPosition(e) {
-            isDrawing = true;
-            hasDrawn = true;
-            const pos = getPos(e);
-            lastX = pos.x;
-            lastY = pos.y;
-            modalHint.style.display = 'none'; 
-            e.preventDefault(); 
+            isDrawing = true; hasDrawn = true;
+            const pos = getPos(e); lastX = pos.x; lastY = pos.y;
+            modalHint.style.display = 'none'; e.preventDefault(); 
         }
 
-        function endPosition() {
-            isDrawing = false;
-            ctx.beginPath(); 
-        }
+        function endPosition() { isDrawing = false; ctx.beginPath(); }
 
         function draw(e) {
             if (!isDrawing) return;
             const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            lastX = pos.x;
-            lastY = pos.y;
-            e.preventDefault(); 
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke();
+            lastX = pos.x; lastY = pos.y; e.preventDefault(); 
         }
 
-        canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mouseup', endPosition);
-        canvas.addEventListener('mouseout', endPosition);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startPosition, {passive: false});
-        canvas.addEventListener('touchend', endPosition, {passive: false});
-        canvas.addEventListener('touchcancel', endPosition, {passive: false});
-        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('mousedown', startPosition); canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mouseout', endPosition); canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition, {passive: false}); canvas.addEventListener('touchend', endPosition, {passive: false});
+        canvas.addEventListener('touchcancel', endPosition, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false});
 
+        // ==============================================
+        // 後端 Apps Script 上傳邏輯
+        // ==============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzvxtZPmYJD5EmPxAGQnfRmoZrODO3tx_26OWFY20_3ASmUb2ejmkudcPvB-G65cA5VAA/exec";
 
         async function submitToCloud() {
@@ -475,22 +582,21 @@
                 return;
             }
 
-            // 使用新版對應的 DOM 元素抓取週總量
+            // 直接讀取電腦版表格的加總資料作為上傳的 payload，確保資料結構跟之前完全一樣
             const getWeeklyQty = (val) => {
-                return document.querySelector(`.denom-qty-total[data-val="${val}"]`).innerText.replace(/[^\d]/g, '') || "0";
+                return document.querySelector(`#desktop-table .denom-qty-display[data-val="${val}"]`).innerText.replace(/[^\d]/g, '') || "0";
             };
 
-            // 抓取每一天的單日總結算
-            const dailyTotalValues = Array.from(document.querySelectorAll('.day-row')).map(row => {
-                return row.querySelector('.day-total').innerText.replace(/[^\d]/g, '') || "0";
-            });
+            const dailyTotalValues = [];
+            for(let i=0; i<7; i++) {
+                dailyTotalValues.push(document.querySelector(`#desktop-table .day-total-display[data-day="${i}"]`).innerText.replace(/[^\d]/g, '') || "0");
+            }
             
-            const totalText = document.getElementById('grandTotal').innerText;
+            const totalText = document.querySelector('#desktop-table .grand-total-display').innerText;
             const totalVal = totalText.replace(/[^\d]/g, ''); 
             const closerImgSrc = document.getElementById('imgCloser').getAttribute('src');
             const managerImgSrc = document.getElementById('imgManager').getAttribute('src');
 
-            // 送出的格式 100% 維持原狀，讓後端免修改
             const payload = {
                 date: dateVal,
                 cash1000: getWeeklyQty(1000),
