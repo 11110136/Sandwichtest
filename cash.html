@@ -22,6 +22,9 @@
             
             table { width: 100% !important; border-collapse: collapse !important; }
             td, th { border: 1px solid #d1d5db !important; padding: 6px !important; text-align: center; }
+            
+            /* 列印時的顏色設定，確保深色標題印得出來 */
+            .print-bg-dark { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-gray { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-yellow { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-red { background-color: #fef2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -68,23 +71,23 @@
 
         <div class="hidden md:block print:block overflow-x-auto pb-4">
             <table id="desktop-table" class="w-full min-w-[800px] border-collapse border border-gray-300 mb-4 text-sm">
-                <thead>
-                    <tr class="bg-slate-800 text-white">
-                        <th class="border border-gray-300 p-2 text-center w-20">面額</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期一</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期二</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期三</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期四</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期五</th>
-                        <th class="border border-gray-300 p-2 text-center w-24">星期六</th>
-                        <th class="border border-gray-300 p-2 text-center w-24 text-red-300">星期日</th>
-                        <th class="border border-gray-300 p-2 text-center w-20 bg-gray-700">週數量</th>
-                        <th class="border border-gray-300 p-2 text-right w-28 bg-gray-700 text-nowrap">週小計</th>
+                <thead class="bg-slate-800 text-white print-bg-dark">
+                    <tr>
+                        <th class="border border-slate-700 p-2 text-center w-20">面額</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期一</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期二</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期三</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期四</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期五</th>
+                        <th class="border border-slate-700 p-2 text-center w-24">星期六</th>
+                        <th class="border border-slate-700 p-2 text-center w-24 text-red-300">星期日</th>
+                        <th class="border border-slate-700 p-2 text-center w-20 bg-slate-700">週數量</th>
+                        <th class="border border-slate-700 p-2 text-right w-28 bg-slate-700 text-nowrap">週小計</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">1,000 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">1,000 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="1000"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="1000"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="1000"></td>
@@ -96,7 +99,7 @@
                         <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="1000"></td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">500 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">500 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="500"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="500"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="500"></td>
@@ -108,7 +111,7 @@
                         <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="500"></td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">100 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">100 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="100"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="100"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="100"></td>
@@ -120,7 +123,7 @@
                         <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="100"></td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">50 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">50 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="50"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="50"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="50"></td>
@@ -132,7 +135,7 @@
                         <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="50"></td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">10 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">10 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="10"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="10"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="10"></td>
@@ -144,7 +147,7 @@
                         <td class="border border-gray-300 p-2 text-right denom-subtotal-display font-mono text-blue-700 font-bold print-bg-gray bg-gray-50" data-val="10"></td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold print-bg-gray bg-gray-50">5 元</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold bg-slate-800 text-white print-bg-dark">5 元</td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="0" data-val="5"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="1" data-val="5"></td>
                         <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input w-full text-center border-b border-gray-200 focus:border-blue-500 focus:outline-none bg-transparent" data-day="2" data-val="5"></td>
