@@ -303,21 +303,8 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 md:gap-12 mt-8 px-2 md:px-4 break-inside-avoid">
-            <div class="text-center flex flex-col items-center">
-                <div onclick="openSignatureModal('closer', '結算人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
-                    <img id="imgCloser" src="" class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none print-show-img">
-                    <button onclick="clearInlineSignature(event, 'closer')" id="btnClearCloser" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
-                    <span id="hintCloser" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm tracking-widest no-print group-hover:text-blue-500 transition-colors print-hide">
-                        <svg class="w-5 h-5 mb-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                        點擊放大簽名
-                    </span>
-                </div>
-                <p class="text-sm font-bold text-gray-700">結算人簽名</p>
-                <div class="text-xs text-gray-400 italic mt-1">(Signature of Closer)</div>
-            </div>
-
-            <div class="text-center flex flex-col items-center">
+        <div class="flex justify-center mt-8 px-2 md:px-4 break-inside-avoid">
+            <div class="text-center flex flex-col items-center w-full max-w-xs md:max-w-sm">
                 <div onclick="openSignatureModal('manager', '主管/核實人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
                     <img id="imgManager" src="" class="absolute inset-0 w-full h-full object-contain hidden pointer-events-none print-show-img">
                     <button onclick="clearInlineSignature(event, 'manager')" id="btnClearManager" class="absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
@@ -386,14 +373,12 @@
         const inputs = document.querySelectorAll('.qty-input');
         const denoms = [1000, 500, 100, 50, 10, 5];
 
-        // 綁定輸入事件，讓手機版與電腦版畫面中的數字自動互相同步
         inputs.forEach(input => {
             input.addEventListener('input', function(e) {
                 const day = this.getAttribute('data-day');
                 const val = this.getAttribute('data-val');
                 const value = this.value;
 
-                // 將數值同步到擁有相同 data-day 與 data-val 的所有 input (包含隱藏的電腦/手機版)
                 document.querySelectorAll(`.qty-input[data-day="${day}"][data-val="${val}"]`).forEach(el => {
                     if (el !== this) el.value = value;
                 });
@@ -407,7 +392,6 @@
             let dailyTotals = [0, 0, 0, 0, 0, 0, 0];
             let weeklyDenomTotals = { 1000: 0, 500: 0, 100: 0, 50: 0, 10: 0, 5: 0 }; 
 
-            // 以電腦版表格作為抓資料基準 (因為兩邊數字已經同步)
             denoms.forEach(val => {
                 let denomQty = 0;
                 for(let day = 0; day < 7; day++) {
@@ -421,7 +405,6 @@
                 const denomSubtotal = denomQty * val;
                 grandTotal += denomSubtotal;
 
-                // 更新面額總計與小計顯示 (包含電腦版與手機版)
                 document.querySelectorAll(`.denom-qty-display[data-val="${val}"]`).forEach(el => {
                     el.textContent = denomQty.toLocaleString('zh-TW');
                 });
@@ -430,14 +413,12 @@
                 });
             });
 
-            // 更新每日總結算顯示
             for(let day = 0; day < 7; day++) {
                 document.querySelectorAll(`.day-total-display[data-day="${day}"]`).forEach(el => {
                     el.textContent = dailyTotals[day].toLocaleString('zh-TW');
                 });
             }
 
-            // 更新週總結算金額顯示
             document.querySelectorAll('.grand-total-display').forEach(el => {
                 el.textContent = 'NT$ ' + grandTotal.toLocaleString('zh-TW');
             });
@@ -450,7 +431,7 @@
                 document.getElementById('remarksInput').value = '';
                 
                 const fakeEvent = { stopPropagation: () => {} };
-                clearInlineSignature(fakeEvent, 'closer');
+                // 移除結算人簽名的清除呼叫，避免報錯
                 clearInlineSignature(fakeEvent, 'manager');
                 
                 calculate();
@@ -469,7 +450,6 @@
             }
         });
 
-        // 簽名畫布功能
         let currentSignRole = ''; 
         let hasDrawn = false; 
         const modal = document.getElementById('signatureModal');
@@ -515,10 +495,12 @@
             const hintElement = document.getElementById('hint' + capitalize(role));
             const btnElement = document.getElementById('btnClear' + capitalize(role));
 
-            imgElement.src = "";
-            imgElement.classList.add('hidden');
-            hintElement.classList.remove('hidden');
-            btnElement.classList.add('hidden');
+            if (imgElement) {
+                imgElement.src = "";
+                imgElement.classList.add('hidden');
+            }
+            if (hintElement) hintElement.classList.remove('hidden');
+            if (btnElement) btnElement.classList.add('hidden');
         }
 
         function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -569,9 +551,6 @@
         canvas.addEventListener('touchstart', startPosition, {passive: false}); canvas.addEventListener('touchend', endPosition, {passive: false});
         canvas.addEventListener('touchcancel', endPosition, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false});
 
-        // ==============================================
-        // 後端 Apps Script 上傳邏輯
-        // ==============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzvxtZPmYJD5EmPxAGQnfRmoZrODO3tx_26OWFY20_3ASmUb2ejmkudcPvB-G65cA5VAA/exec";
 
         async function submitToCloud() {
@@ -582,7 +561,6 @@
                 return;
             }
 
-            // 直接讀取電腦版表格的加總資料作為上傳的 payload，確保資料結構跟之前完全一樣
             const getWeeklyQty = (val) => {
                 return document.querySelector(`#desktop-table .denom-qty-display[data-val="${val}"]`).innerText.replace(/[^\d]/g, '') || "0";
             };
@@ -594,7 +572,6 @@
             
             const totalText = document.querySelector('#desktop-table .grand-total-display').innerText;
             const totalVal = totalText.replace(/[^\d]/g, ''); 
-            const closerImgSrc = document.getElementById('imgCloser').getAttribute('src');
             const managerImgSrc = document.getElementById('imgManager').getAttribute('src');
 
             const payload = {
@@ -608,7 +585,7 @@
                 total: totalVal, 
                 dailyTotals: dailyTotalValues,
                 remarks: document.getElementById('remarksInput').value,
-                closerSign: closerImgSrc || "",
+                closerSign: "", // 固定回傳空白字串，維持原本資料結構
                 managerSign: managerImgSrc || ""
             };
 
@@ -629,7 +606,6 @@
                     inputs.forEach(input => input.value = '');
                     document.getElementById('reportDate').value = '';
                     document.getElementById('remarksInput').value = '';
-                    clearInlineSignature(fakeEvent, 'closer');
                     clearInlineSignature(fakeEvent, 'manager');
                     calculate();
                 } else {
