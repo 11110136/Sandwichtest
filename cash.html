@@ -6,35 +6,44 @@
     <title>每週金庫盤點系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* 自訂卷軸，避免手機版表格太擠 */
+        .table-container { overflow-x: auto; }
+        table { min-width: 700px; }
+
         @media print {
-            /* 設定紙張為直向 (Portrait)，保留邊距 */
-            @page { size: portrait; margin: 12mm; }
+            /* 設定紙張為直向 (Portrait)，保留適當邊距 */
+            @page { size: portrait; margin: 10mm; }
             
             .no-print { display: none !important; }
             body { background-color: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; width: 100%; margin: 0; padding: 0; border: none !important; }
             
-            table { width: 100% !important; border-collapse: collapse !important; }
-            td, th { border: 1px solid #d1d5db !important; padding: 10px 8px !important; }
+            /* 解除列印時的寬度限制與捲軸，解決表格被壓縮的問題 */
+            .table-container { overflow-x: visible !important; }
+            table { min-width: 100% !important; width: 100% !important; border-collapse: collapse !important; }
             
-            input { border: none !important; background: transparent !important; width: 100% !important; text-align: center !important; }
+            /* 【字體放大】微調列印時的字體與間距 */
+            td, th { border: 1px solid #d1d5db !important; padding: 8px 4px !important; font-size: 13px !important; }
+            input { border: none !important; background: transparent !important; width: 100% !important; text-align: center !important; font-size: 14px !important; font-weight: bold !important; }
+            
             .date-line { border-bottom: 1px solid black !important; }
             textarea::placeholder { color: transparent !important; }
-            .print-show-img { display: block !important; }
-            .print-hide { display: none !important; }
-            .print\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
             
             /* 列印顏色保留 */
             .print-bg-dark { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-gray { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-bg-yellow { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            .print-text-large { font-size: 16px !important; }
+            .print-text-xl { font-size: 20px !important; }
         }
+        
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
-<body class="bg-gray-100 p-2 md:p-8 min-h-screen font-sans">
+<body class="bg-gray-100 p-2 md:p-6 min-h-screen font-sans text-gray-800">
 
     <div class="fixed top-4 left-4 z-[990] no-print">
         <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow-md transition-all">
@@ -54,209 +63,238 @@
         </div>
     </div>
     
-    <div class="max-w-4xl mx-auto bg-white p-5 md:p-10 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-10 mt-12 md:mt-0 relative z-10">
+    <div class="max-w-5xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
         
         <div class="border-b-2 border-gray-800 pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div class="w-full shrink-1">
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-wider whitespace-nowrap">每週金庫盤點表</h1>
-                <p class="text-xs text-gray-500 uppercase tracking-tighter mt-1">Weekly Cash Inventory Form</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 tracking-wider whitespace-nowrap">每週金庫結算表</h1>
+                <p class="text-sm text-gray-500 uppercase tracking-tighter mt-1">WEEKLY CASH RECONCILIATION FORM</p>
             </div>
-            <div class="w-full md:w-auto shrink-0 min-w-[260px] text-left md:text-right flex flex-col items-start md:items-end">
-                <label class="block text-xs font-bold text-gray-600 mb-1">盤點週別 (日期區間)</label>
-                <input type="text" id="reportDate" placeholder="例: 2026/03/16 - 03/22" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-left md:text-center py-1 px-2 w-full bg-transparent text-sm md:text-base font-bold text-gray-700">
+            <div class="w-full md:w-auto shrink-0 min-w-[280px] text-left md:text-right flex flex-col items-start md:items-end">
+                <label class="block text-sm font-bold text-gray-600 mb-1">結算週別 (日期區間)</label>
+                <input type="text" id="reportDate" placeholder="例: 2026/03/16 - 03/22" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-left md:text-center py-1 px-2 w-full bg-transparent text-base md:text-lg font-bold text-gray-700">
             </div>
         </div>
 
-        <table class="w-full border-collapse border border-gray-300 mb-8">
-            <thead class="bg-slate-800 text-white print-bg-dark">
-                <tr>
-                    <th class="border border-slate-700 p-3 md:p-4 text-left w-[30%] pl-4 md:pl-6 text-sm md:text-base">面額</th>
-                    <th class="border border-slate-700 p-3 md:p-4 text-center w-[35%] text-sm md:text-base">盤點數量 (張/枚)</th>
-                    <th class="border border-slate-700 p-3 md:p-4 text-right w-[35%] pr-4 md:pr-6 text-sm md:text-base">小計金額 (元)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="bg-gray-100 print-bg-gray">
-                    <td colspan="3" class="border border-gray-300 p-2 md:p-3 font-bold text-gray-700 text-left pl-4 md:pl-6 text-sm">百鈔與大鈔 (Notes)</td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="1000">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">1,000 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="1000">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="500">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">500 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="500">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="100">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">100 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="100">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-                
-                <tr class="bg-gray-100 print-bg-gray">
-                    <td colspan="3" class="border border-gray-300 p-2 md:p-3 font-bold text-gray-700 text-left pl-4 md:pl-6 text-sm">零錢 (Coins)</td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="50">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">50 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="50">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="10">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">10 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="10">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-                <tr class="cash-row hover:bg-gray-50 transition-colors" data-val="5">
-                    <td class="border border-gray-300 p-3 md:p-4 text-left font-bold text-lg text-slate-800 pl-4 md:pl-6">5 元</td>
-                    <td class="border border-gray-300 p-2 text-center">
-                        <input type="number" min="0" class="qty-input w-24 md:w-32 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none bg-transparent font-bold text-xl text-gray-800 pb-1" data-val="5">
-                    </td>
-                    <td class="border border-gray-300 p-3 md:p-4 text-right font-mono text-blue-700 font-bold text-lg pr-4 md:pr-6 subtotal"></td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr class="border-t-[3px] border-gray-400 bg-yellow-50 print-bg-yellow">
-                    <td colspan="2" class="border border-gray-300 p-4 md:p-5 text-right font-bold text-base md:text-lg text-gray-800">金庫盤點總計 (Grand Total):</td>
-                    <td class="border border-gray-300 p-4 md:p-5 text-right text-blue-800 font-bold text-xl md:text-2xl text-nowrap pr-4 md:pr-6" id="grandTotal"></td>
-                </tr>
-            </tfoot>
-        </table>
+        <div class="table-container mb-6">
+            <table class="w-full border-collapse border border-gray-300 text-base md:text-lg">
+                <thead class="bg-slate-800 text-white print-bg-dark text-center">
+                    <tr>
+                        <th class="border border-slate-700 p-2 md:p-3 w-[14%] font-bold tracking-wide">面額</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">一</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">二</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">三</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">四</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">五</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold">六</th>
+                        <th class="border border-slate-700 p-2 w-[9%] font-bold text-red-300">日</th>
+                        <th class="border border-slate-700 p-2 w-[23%] font-bold tracking-wide">週小計</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                    <tr class="bg-gray-100 print-bg-gray">
+                        <td colspan="9" class="border border-gray-300 p-2 font-bold text-gray-700 text-left pl-4 text-sm md:text-base print-text-large">百鈔與大鈔 (Notes)</td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="1000">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">1,000 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="500">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">500 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="100">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">100 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                    
+                    <tr class="bg-gray-100 print-bg-gray">
+                        <td colspan="9" class="border border-gray-300 p-2 font-bold text-gray-700 text-left pl-4 text-sm md:text-base print-text-large">零錢 (Coins)</td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="50">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">50 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="10">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">10 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="5">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">5 元</td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="1"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="2"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="3"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="4"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="5"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="6"></td>
+                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="7"></td>
+                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
+                    </tr>
+                </tbody>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 md:gap-8 mt-10 break-inside-avoid">
+                <tfoot>
+                    <tr class="bg-gray-50 print-bg-gray">
+                        <td class="border border-gray-300 p-2 text-center font-bold text-gray-700 text-sm md:text-base">每日金庫<br>剩餘</td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-1"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-2"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-3"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-4"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-5"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-6"></td>
+                        <td class="border border-gray-300 p-1 text-center font-bold text-red-500 day-total day-7"></td>
+                        
+                        <td rowspan="2" class="border border-gray-300 p-3 md:p-4 text-left pl-4 align-middle bg-yellow-50 print-bg-yellow">
+                            <div class="font-bold text-base md:text-lg text-gray-800 print-text-large">當週總計:</div>
+                            <div class="mt-2 pl-2">
+                                <span id="grandTotal" class="text-blue-800 font-bold text-2xl md:text-3xl print-text-xl"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="border border-gray-300 p-2 text-center font-bold text-gray-600 text-sm md:text-base">當天關帳人<br>簽名</td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
+                        </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 break-inside-avoid mt-8">
             
-            <div class="border border-gray-300 rounded-xl p-4 flex flex-col bg-white h-full">
-                <label for="remarksInput" class="block text-sm font-bold text-gray-700 mb-2">盤點備註事項 (Remarks):</label>
-                <textarea id="remarksInput" class="w-full flex-grow border border-gray-200 rounded-lg p-3 text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none min-h-[120px] print:border print:border-gray-300 print:bg-white" placeholder="可點擊此處輸入備註，或直接留白列印出來手寫..."></textarea>
+            <div class="border border-gray-300 rounded-xl p-5 flex flex-col bg-white h-full shadow-sm">
+                <label for="remarksInput" class="block text-base md:text-lg font-bold text-gray-700 mb-2 print-text-large">本週備註事項 (Remarks):</label>
+                <textarea id="remarksInput" class="w-full flex-grow border border-gray-200 rounded-lg p-3 text-gray-800 text-base md:text-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none min-h-[140px] print:border print:border-gray-300 print:bg-white print:min-h-[100px]" placeholder="可點擊此處輸入備註，或直接留白列印出來手寫..."></textarea>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 h-full">
-                <div class="text-center flex flex-col items-center justify-end">
-                    <div onclick="openSignatureModal('closer', '盤點人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
-                        <img data-sign-role="closer" src="" class="absolute inset-0 w-full h-full object-contain hidden print-show-img">
-                        <button onclick="clearInlineSignature(event, 'closer')" class="btn-clear-closer absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
-                        <span class="hint-closer absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm tracking-widest no-print group-hover:text-blue-500 transition-colors print-hide">
-                            <svg class="w-5 h-5 mb-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                            盤點人簽名
-                        </span>
-                    </div>
-                    <p class="text-sm font-bold text-gray-700">盤點人簽名</p>
-                    <div class="text-xs text-gray-400 italic mt-1">(Counter)</div>
-                </div>
-
-                <div class="text-center flex flex-col items-center justify-end">
-                    <div onclick="openSignatureModal('manager', '主管/核實人簽名')" class="relative w-full h-24 md:h-32 border-b-2 border-gray-800 mb-2 rounded-t-lg bg-gray-50/80 cursor-pointer hover:bg-blue-50/50 transition-colors group">
-                        <img data-sign-role="manager" src="" class="absolute inset-0 w-full h-full object-contain hidden print-show-img">
-                        <button onclick="clearInlineSignature(event, 'manager')" class="btn-clear-manager absolute top-1 right-1 text-xs text-slate-400 hover:text-red-500 bg-white/90 px-2 py-1 rounded shadow-sm no-print transition-colors hidden z-10">清除</button>
-                        <span class="hint-manager absolute inset-0 flex flex-col items-center justify-center text-gray-400 text-sm tracking-widest no-print group-hover:text-blue-500 transition-colors print-hide">
-                            <svg class="w-5 h-5 mb-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                            主管簽名
-                        </span>
-                    </div>
-                    <p class="text-sm font-bold text-gray-700">主管/核實人</p>
-                    <div class="text-xs text-gray-400 italic mt-1">(Manager)</div>
-                </div>
+            <div class="border border-gray-300 rounded-xl p-5 flex flex-col items-center justify-end bg-white h-full shadow-sm">
+                <div class="w-full max-w-[320px] h-24 md:h-32 border-b-2 border-gray-800 mb-4 bg-white"></div>
+                <p class="text-lg md:text-xl font-bold text-gray-700 tracking-wide print-text-large">主管/核實人簽名</p>
+                <div class="text-sm text-gray-400 italic mt-1">(Signature of Manager)</div>
             </div>
             
         </div>
 
-        <div class="mt-12 flex flex-wrap justify-center gap-3 md:gap-4 no-print relative">
-            <button onclick="window.print()" class="w-32 md:w-40 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition duration-200 text-sm md:text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+        <div class="mt-10 flex flex-wrap justify-center gap-3 md:gap-4 no-print relative">
+            <button onclick="window.print()" class="w-36 md:w-44 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200 text-base md:text-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 列印紙本
             </button>
-            <button id="btnSubmitData" onclick="submitToCloud()" class="w-32 md:w-40 flex justify-center items-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition duration-200 text-sm md:text-base">
-                上傳儲存
+            <button id="btnSubmitData" onclick="submitToCloud()" class="w-36 md:w-44 flex justify-center items-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200 text-base md:text-lg">
+                上傳數據
             </button>
-            <button onclick="resetForm()" class="w-32 md:w-40 flex justify-center items-center bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold py-3 rounded-lg transition duration-200 text-sm md:text-base shadow-sm">
+            <button onclick="resetForm()" class="w-36 md:w-44 flex justify-center items-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 md:py-4 rounded-lg transition duration-200 text-base md:text-lg shadow-sm">
                 清除內容
             </button>
         </div>
 
         <div id="loadingOverlay" class="fixed inset-0 z-[2000] hidden bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-emerald-500 mb-4"></div>
-            <p class="text-white font-bold tracking-widest">資料上傳中，請稍候...</p>
+            <p class="text-white font-bold tracking-widest text-lg">資料上傳中，請稍候...</p>
         </div>
 
-        <div class="text-[10px] text-gray-400 mt-10 text-center uppercase tracking-widest no-print">
+        <div class="text-xs text-gray-400 mt-8 text-center uppercase tracking-widest no-print">
             End of Inventory Report
         </div>
     </div>
 
-    <div id="signatureModal" class="fixed inset-0 z-[1000] hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-8 no-print">
-        <div class="bg-white w-full max-w-3xl h-[70vh] md:h-[60vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                <h3 id="signatureModalTitle" class="font-bold text-gray-800 text-lg">請簽名</h3>
-                <button onclick="closeSignatureModal()" class="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm border border-gray-200 transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div class="flex-grow relative bg-white">
-                <canvas id="modalCanvas" class="absolute inset-0 w-full h-full touch-none cursor-crosshair"></canvas>
-                <span id="modalSignHint" class="absolute inset-0 flex items-center justify-center text-gray-300 pointer-events-none text-2xl tracking-widest">請在此大面積處簽名</span>
-            </div>
-            <div class="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-between gap-4">
-                <button onclick="clearModalCanvas()" class="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm">清除重寫</button>
-                <div class="flex gap-2">
-                    <button onclick="closeSignatureModal()" class="px-4 py-2 bg-transparent text-gray-500 rounded-lg font-bold hover:bg-gray-200 transition-colors text-sm">取消</button>
-                    <button onclick="saveSignature()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm">完成簽名</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
+        // 設定面額與邏輯
+        const denominations = [1000, 500, 100, 50, 10, 5];
         const inputs = document.querySelectorAll('.qty-input');
 
         inputs.forEach(input => {
             input.addEventListener('input', calculate);
         });
 
-        // 簡化版的計算邏輯 (一週只有一欄)
+        // 7天盤點計算邏輯
         function calculate() {
             let grandTotal = 0;
+            let dayTotals = [0, 0, 0, 0, 0, 0, 0];
 
-            document.querySelectorAll('.cash-row').forEach(row => {
-                const val = parseInt(row.getAttribute('data-val'));
-                const input = row.querySelector('.qty-input');
-                const qty = parseInt(input.value) || 0;
-                const subtotal = qty * val;
-                
-                grandTotal += subtotal;
+            denominations.forEach(val => {
+                let weekQty = 0;
+                const row = document.querySelector(`.cash-row[data-val="${val}"]`);
+                if(!row) return;
 
-                // 若大於0才顯示數字，否則清空為空白
-                row.querySelector('.subtotal').textContent = subtotal > 0 ? subtotal.toLocaleString('zh-TW') : '';
+                // 統計星期一到星期日的數值
+                for(let day = 1; day <= 7; day++) {
+                    const input = row.querySelector(`.qty-input.day-${day}`);
+                    const qty = parseInt(input.value) || 0;
+                    weekQty += qty;
+                    dayTotals[day-1] += (qty * val);
+                }
+
+                const weekSubtotal = weekQty * val;
+                grandTotal += weekSubtotal;
+
+                // 更新畫面中的當列「週小計」，若為 0 則顯示空白
+                row.querySelector('.week-subtotal-cell').textContent = weekSubtotal > 0 ? weekSubtotal.toLocaleString('zh-TW') : '';
             });
 
-            // 更新總計
+            // 更新「每日金庫剩餘」列，若為 0 則顯示空白
+            for(let day = 1; day <= 7; day++) {
+                const dtCell = document.querySelector(`.day-total.day-${day}`);
+                if(dtCell) {
+                    dtCell.textContent = dayTotals[day-1] > 0 ? dayTotals[day-1].toLocaleString('zh-TW') : '';
+                }
+            }
+
+            // 更新總計，若為 0 則顯示空白
             document.getElementById('grandTotal').textContent = grandTotal > 0 ? 'NT$ ' + grandTotal.toLocaleString('zh-TW') : '';
         }
 
+        // 格式清除功能
         function resetForm() {
-            if(confirm('確定要清空所有數量與簽名嗎？')) {
+            if(confirm('確定要清空所有數量與備註嗎？')) {
                 inputs.forEach(input => input.value = '');
                 document.getElementById('reportDate').value = '';
                 document.getElementById('remarksInput').value = '';
-                
-                const fakeEvent = { stopPropagation: () => {} };
-                clearInlineSignature(fakeEvent, 'closer');
-                clearInlineSignature(fakeEvent, 'manager');
-                
                 calculate();
             }
         }
 
+        // 導航列控制
         function toggleGlobalMenu() {
             document.getElementById('global-nav-menu').classList.toggle('hidden');
         }
@@ -269,142 +307,46 @@
             }
         });
 
-        let currentSignRole = ''; 
-        let hasDrawn = false; 
-        const modal = document.getElementById('signatureModal');
-        const canvas = document.getElementById('modalCanvas');
-        const ctx = canvas.getContext('2d');
-        const modalHint = document.getElementById('modalSignHint');
-
-        function openSignatureModal(role, titleText) {
-            currentSignRole = role;
-            document.getElementById('signatureModalTitle').innerText = titleText;
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; 
-            resizeCanvas();
-            clearModalCanvas();
-        }
-
-        function closeSignatureModal() {
-            modal.classList.add('hidden');
-            document.body.style.overflow = ''; 
-        }
-
-        function saveSignature() {
-            if (!hasDrawn) {
-                alert("您尚未簽名喔！");
-                return;
-            }
-            const dataUrl = canvas.toDataURL("image/png");
-            
-            document.querySelectorAll(`img[data-sign-role="${currentSignRole}"]`).forEach(img => {
-                img.src = dataUrl;
-                img.classList.remove('hidden');
-            });
-            document.querySelectorAll(`.hint-${currentSignRole}`).forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll(`.btn-clear-${currentSignRole}`).forEach(el => el.classList.remove('hidden'));
-
-            closeSignatureModal();
-        }
-
-        function clearInlineSignature(event, role) {
-            event.stopPropagation(); 
-            document.querySelectorAll(`img[data-sign-role="${role}"]`).forEach(img => {
-                img.src = "";
-                img.classList.add('hidden');
-            });
-            document.querySelectorAll(`.hint-${role}`).forEach(el => el.classList.remove('hidden'));
-            document.querySelectorAll(`.btn-clear-${role}`).forEach(el => el.classList.add('hidden'));
-        }
-
-        function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-
-        let isDrawing = false;
-        let lastX = 0; let lastY = 0;
-
-        function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width; canvas.height = rect.height;
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1e293b'; 
-        }
-
-        window.addEventListener('resize', () => { if (!modal.classList.contains('hidden')) resizeCanvas(); });
-
-        function clearModalCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            modalHint.style.display = 'flex';
-            hasDrawn = false;
-        }
-
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX; let clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
-            }
-            return { x: clientX - rect.left, y: clientY - rect.top };
-        }
-
-        function startPosition(e) {
-            isDrawing = true; hasDrawn = true;
-            const pos = getPos(e); lastX = pos.x; lastY = pos.y;
-            modalHint.style.display = 'none'; e.preventDefault(); 
-        }
-
-        function endPosition() { isDrawing = false; ctx.beginPath(); }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getPos(e);
-            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke();
-            lastX = pos.x; lastY = pos.y; e.preventDefault(); 
-        }
-
-        canvas.addEventListener('mousedown', startPosition); canvas.addEventListener('mouseup', endPosition);
-        canvas.addEventListener('mouseout', endPosition); canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startPosition, {passive: false}); canvas.addEventListener('touchend', endPosition, {passive: false});
-        canvas.addEventListener('touchcancel', endPosition, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false});
-
         // ==============================================
-        // 後端 Apps Script 上傳邏輯
+        // 後端 Apps Script 上傳邏輯 (背景自動計算總數量)
         // ==============================================
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzvxtZPmYJD5EmPxAGQnfRmoZrODO3tx_26OWFY20_3ASmUb2ejmkudcPvB-G65cA5VAA/exec";
 
         async function submitToCloud() {
             const dateVal = document.getElementById('reportDate').value.trim();
             if (!dateVal) {
-                alert("請先填寫「盤點週別」喔！");
+                alert("請先填寫「結算週別」喔！");
                 document.getElementById('reportDate').focus();
                 return;
             }
 
-            const getQty = (val) => {
-                return document.querySelector(`.qty-input[data-val="${val}"]`).value || "0";
+            // 自己計算出當週各面額的總數量 (傳給後端雲端用)
+            const getWeekQty = (val) => {
+                let qty = 0;
+                const row = document.querySelector(`.cash-row[data-val="${val}"]`);
+                if(row) {
+                    for(let day = 1; day <= 7; day++) {
+                        const input = row.querySelector(`.qty-input.day-${day}`);
+                        qty += parseInt(input.value) || 0;
+                    }
+                }
+                return qty.toString();
             };
             
             const totalText = document.getElementById('grandTotal').innerText;
             const totalVal = totalText.replace(/[^\d]/g, '') || "0"; 
 
-            // 取得簽名檔
-            const closerImg = document.querySelector(`img[data-sign-role="closer"]`);
-            const closerImgSrc = closerImg ? closerImg.getAttribute('src') : "";
-            
-            const managerImg = document.querySelector(`img[data-sign-role="manager"]`);
-            const managerImgSrc = managerImg ? managerImg.getAttribute('src') : "";
-
-            // payload 保持原有格式相容性
+            // 傳送數據與備註給 Google Sheets
             const payload = {
                 date: dateVal,
-                cash1000: getQty(1000),
-                cash500: getQty(500),
-                cash100: getQty(100),
-                coin50: getQty(50),
-                coin10: getQty(10),
-                coin5: getQty(5),
+                cash1000: getWeekQty(1000),
+                cash500: getWeekQty(500),
+                cash100: getWeekQty(100),
+                coin50: getWeekQty(50),
+                coin10: getWeekQty(10),
+                coin5: getWeekQty(5),
                 total: totalVal, 
-                remarks: document.getElementById('remarksInput').value,
-                closerSign: closerImgSrc, 
-                managerSign: managerImgSrc
+                remarks: document.getElementById('remarksInput').value
             };
 
             document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -419,14 +361,8 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    alert("✅ 盤點資料與簽名已成功上傳至雲端！");
-                    const fakeEvent = { stopPropagation: () => {} };
-                    inputs.forEach(input => input.value = '');
-                    document.getElementById('reportDate').value = '';
-                    document.getElementById('remarksInput').value = '';
-                    clearInlineSignature(fakeEvent, 'closer');
-                    clearInlineSignature(fakeEvent, 'manager');
-                    calculate();
+                    alert("✅ 盤點數據已成功上傳至雲端！");
+                    resetForm();
                 } else {
                     alert("❌ 上傳失敗：" + result.message);
                 }
