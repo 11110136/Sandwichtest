@@ -101,7 +101,7 @@ function renderTable() {
         const isWeekend = (dayIdx === 0 || dayIdx === 6);
         const isTodayRow = (isCurrentMonthReal && i === todayDate);
         
-        const dayData = fullYearData[currentMonth][i] || { leave: "", open: "", shift: "", t20: "", dish: "", clean: "", close: "" };
+        const dayData = fullYearData[currentMonth][i] || { leave: "", open: "", shift: "", t20: "", dish: "", clean: "", close: "" , notes: ""};
 
         const tr = document.createElement('tr');
         if (isWeekend) tr.classList.add("is-weekend");
@@ -135,6 +135,7 @@ function renderTable() {
             <td data-label="關帳" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700 ${closeWarningClass}" oninput="updateData(${i}, 'close', this.innerText, this)">${dayData.close || ''}</td>
             <td data-label="洗餐具" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 'dish', this.innerText, this)">${dayData.dish || ''}</td>
             <td data-label="清潔事項" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-700" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</td>
+            <td data-label="備註" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-slate-400" oninput="updateData(${i}, 'notes', this.innerText, this)">${dayData.notes || ''}</td>
         `;
         scheduleBody.appendChild(tr);
     });
