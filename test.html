@@ -821,7 +821,7 @@ function openEditModal(type, key, day) {
     content.innerHTML = `
       <div class="form-group">
         <label>🧃 果汁負責人</label>
-        <input id="m_juice" value="${cd.juice||''}" placeholder="人員姓名">
+        <textarea id="m_juice" rows="2" placeholder="人員姓名">${cd.juice||''}</textarea>
       </div>
       <div class="form-group">
         <label>🧹 刷地負責人</label>
@@ -829,7 +829,7 @@ function openEditModal(type, key, day) {
       </div>
       <div class="form-group">
         <label>🚽 廁所負責人</label>
-        <input id="m_toilet" value="${cd.toilet||''}" placeholder="廁所：OO\n刷地：OO">
+        <textarea id="m_toilet" rows="2" placeholder="廁所：OO\n刷地：OO">${cd.toilet||''}</textarea>
       </div>
       <div class="form-group">
         <label>🪟 玻璃（白天/晚上）</label>
