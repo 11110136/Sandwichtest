@@ -694,7 +694,7 @@ function renderCal(bodyId, year, month, type) {
       if(type==='clean') {
         const cd = cleanData[key]||{};
         if(cd.juice||cd.floor||cd.toilet||cd.glass) {
-          if(cd.glass) content += `<div class="task-line">🪟 ${cd.glass}</div>`;
+          if(cd.glass) content += `<div class="task-line" style="text-align: center;">玻璃\n${cd.glass} </div>`;
           if(cd.juice||cd.floor) content += `<div class="task-line">果汁：${cd.juice||'-'}<br>刷地：${cd.floor||'-'}</div>`;
           if(cd.toilet) content += `<div class="task-line">${cd.toilet}</div>`;
         }
