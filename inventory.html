@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>庫存盤點系統</title>
+  <title>庫存盤點系統 - 雲端版</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -30,6 +34,14 @@
   <script type="text/babel">
   const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
+  // ==========================================
+  // 🚀 1. Supabase 連線設定 (請替換為你的密鑰)
+  // ==========================================
+  const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co'; 
+  const SUPABASE_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // --- Icons ---
   const Search = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
   const ClipboardList = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>;
   const AlertCircle = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
@@ -47,6 +59,7 @@
   const Download = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
   const Copy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
 
+  // --- 資料庫 (前端靜態商品表) ---
   const initialInventory = [
     { id: 1,  name: '火腿S',       spec: '20條/箱',            unit: '箱', systemStock: 1.1,  alertLevel: 0.5,  tag: '每日' },
     { id: 2,  name: '沙拉S',       spec: '600公克/包',          unit: '包', systemStock: 63.0, alertLevel: 50,   tag: '每日' },
@@ -79,10 +92,6 @@
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   };
-
-  const STORAGE_KEY = 'inventory_history_v2';
-  const loadHistory = () => { try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch { return {}; } };
-  const saveHistory = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
 
   // ── Toast ──
   const Toast = ({ message, type, onDone }) => {
@@ -171,7 +180,6 @@
             <div className="flex-1 bg-gray-50 rounded-lg p-2 flex justify-between items-center">
               <span className="text-xs text-gray-500 font-medium">盤點數量</span>
               <div className="flex items-center">
-                {/* 加入 inputMode="decimal" 優化手機鍵盤 */}
                 <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="輸入.."
                   value={item.actualCount}
                   onChange={e => onUpdate(item.id, e.target.value)}
@@ -191,10 +199,11 @@
     );
   };
 
-  // ── App ──
+  // ── App 主程式 ──
   function App() {
+    const [isDBLoading, setIsDBLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('record');
-    const [historyData, setHistoryData] = useState(() => loadHistory());
+    const [historyData, setHistoryData] = useState({});
     const [calendarMonth, setCalendarMonth] = useState(new Date());
     const [selectedHistoryDate, setSelectedHistoryDate] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -205,19 +214,47 @@
     const [toast, setToast] = useState(null);
     const inputRef = useRef(null);
 
-    const todayCounts = useMemo(() => historyData[getTodayStr()] || [], [historyData]);
-
-    const updateTodayData = useCallback((updater) => {
-      setHistoryData(prev => {
-        const key = getTodayStr();
-        const newList = updater(prev[key] || []);
-        const next = { ...prev, [key]: newList };
-        saveHistory(next);
-        return next;
-      });
-    }, []);
+    const todayStr = getTodayStr();
+    const todayCounts = useMemo(() => historyData[todayStr] || [], [historyData, todayStr]);
 
     const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
+
+    // 🚀 初始化：從 Supabase 抓取所有歷史資料
+    useEffect(() => {
+      const fetchSupabaseData = async () => {
+        try {
+          const { data, error } = await supabase.from('inventory_records').select('*');
+          if (error) throw error;
+
+          const hData = {};
+          if (data) {
+            data.forEach(row => {
+              const itemDef = initialInventory.find(i => i.id === row.item_id);
+              if (itemDef) {
+                if (!hData[row.record_date]) hData[row.record_date] = [];
+                hData[row.record_date].push({
+                  ...itemDef,
+                  actualCount: row.actual_count !== null ? row.actual_count : ''
+                });
+              }
+            });
+          }
+          setHistoryData(hData);
+        } catch (err) {
+          console.error("資料庫連線失敗:", err);
+          showToast("無法連線到雲端資料庫", "error");
+        } finally {
+          setIsDBLoading(false);
+        }
+      };
+      
+      if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+        alert("⚠️ 開發者提示：請先將 SUPABASE_URL 與 SUPABASE_KEY 替換為你的密鑰");
+        setIsDBLoading(false);
+      } else {
+        fetchSupabaseData();
+      }
+    }, [showToast]);
 
     const filteredItems = useMemo(() => {
       if (!searchQuery) return initialInventory;
@@ -229,32 +266,81 @@
       setTimeout(() => inputRef.current && inputRef.current.focus(), 50);
     };
 
-    const handleAddRecord = () => {
+    // 🚀 新增或覆蓋單筆紀錄 (同步到 DB)
+    const handleAddRecord = async () => {
       if (!selectedItem || inputValue === '') return;
       const count = parseFloat(inputValue);
       if (isNaN(count)) return;
-      updateTodayData(list => {
-        const newItem = { ...selectedItem, actualCount: count };
+      
+      // 1. Optimistic Update (先更新前端畫面)
+      const newItem = { ...selectedItem, actualCount: count };
+      setHistoryData(prev => {
+        const list = [...(prev[todayStr] || [])];
         const idx = list.findIndex(i => i.id === selectedItem.id);
-        if (idx >= 0) { const n = [...list]; n.splice(idx, 1); return [newItem, ...n]; }
-        return [newItem, ...list];
+        if (idx >= 0) list.splice(idx, 1);
+        return { ...prev, [todayStr]: [newItem, ...list] };
       });
       showToast(`已記錄「${selectedItem.name}」`);
       setSelectedItem(null); setSearchQuery(''); setInputValue('');
+
+      // 2. 寫入 Supabase (Upsert 覆蓋)
+      await supabase.from('inventory_records').upsert({
+        record_date: todayStr,
+        item_id: newItem.id,
+        actual_count: count
+      }, { onConflict: 'record_date, item_id' });
     };
 
-    const handleQuickLoad = (tag) => {
+    // 🚀 快速載入群組 (同步到 DB)
+    const handleQuickLoad = async (tag) => {
       const items = initialInventory.filter(i => i.tag === tag);
-      updateTodayData(list => {
-        const next = [...list];
-        items.forEach(item => { if (!next.find(p => p.id === item.id)) next.push({ ...item, actualCount: '' }); });
-        return next;
+      
+      let dbUpserts = [];
+      setHistoryData(prev => {
+        const list = [...(prev[todayStr] || [])];
+        items.forEach(item => { 
+          if (!list.find(p => p.id === item.id)) {
+            list.push({ ...item, actualCount: '' }); 
+            // 如果只有載入沒有填數字，我們先塞 null
+            dbUpserts.push({ record_date: todayStr, item_id: item.id, actual_count: null });
+          }
+        });
+        return { ...prev, [todayStr]: list };
       });
       showToast(`已載入「${tag}」盤點表`);
+
+      if(dbUpserts.length > 0) {
+        await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
+      }
     };
 
-    const handleUpdateListItem = (id, val) => updateTodayData(list => list.map(i => i.id === id ? { ...i, actualCount: val } : i));
-    const handleRemoveListItem = (id) => updateTodayData(list => list.filter(i => i.id !== id));
+    // 🚀 更新數字 (同步到 DB)
+    const handleUpdateListItem = async (id, val) => {
+      setHistoryData(prev => ({
+        ...prev,
+        [todayStr]: (prev[todayStr] || []).map(i => i.id === id ? { ...i, actualCount: val } : i)
+      }));
+
+      const count = parseFloat(val);
+      await supabase.from('inventory_records').upsert({
+        record_date: todayStr,
+        item_id: id,
+        actual_count: isNaN(count) ? null : count
+      }, { onConflict: 'record_date, item_id' });
+    };
+
+    // 🚀 移除紀錄 (從 DB 刪除)
+    const handleRemoveListItem = async (id) => {
+      setHistoryData(prev => ({
+        ...prev,
+        [todayStr]: (prev[todayStr] || []).filter(i => i.id !== id)
+      }));
+
+      await supabase.from('inventory_records').delete().match({
+        record_date: todayStr,
+        item_id: id
+      });
+    };
 
     const handleExportCSV = () => {
       let csv = "\uFEFF品名,規格,標籤,帳面庫存,實際盤點,盤差,單位\n";
@@ -291,7 +377,6 @@
     const renderCalendar = () => {
       const y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
       const firstDay = new Date(y, m, 1).getDay(), days_in = new Date(y, m+1, 0).getDate();
-      const todayStr = getTodayStr();
       const cells = [];
       for (let i = 0; i < firstDay; i++) cells.push(<div key={`e${i}`} className="h-10"/>);
       for (let i = 1; i <= days_in; i++) {
@@ -320,6 +405,10 @@
         </div>
       );
     };
+
+    if (isDBLoading) {
+      return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold bg-gray-50">連線雲端資料庫中...</div>;
+    }
 
     return (
       <div className="min-h-screen pb-24 flex flex-col">
@@ -350,7 +439,6 @@
         </header>
 
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
-
           {activeTab === 'record' && (
             <div className="space-y-6 fade-in">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
@@ -388,7 +476,6 @@
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-end gap-3 fade-in">
                     <div className="flex-1">
                       <label className="block text-xs font-bold text-gray-500 mb-1.5">輸入數量 ({selectedItem.unit})</label>
-                      {/* 加入 inputMode="decimal" 優化手機鍵盤 */}
                       <input ref={inputRef} type="number" inputMode="decimal" step="0.1" min="0" value={inputValue}
                         onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAddRecord()}
                         placeholder={`帳面庫存: ${selectedItem.systemStock}`}
