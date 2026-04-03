@@ -2,8 +2,12 @@
 lucide.createIcons();
 
 // --- 系統配置 ---
-const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbzsG9p587hAofHfgCoCy6-WNZmd4o4E-R00eY6LXtMnSaHB3Kv4U9MpQ5Cg_MHY1--s5g/exec"; 
+const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const year = 2026;
+// ...保留原本的其他常數...
 const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
@@ -41,7 +45,7 @@ function init() {
     
     updateLockIcon(); // 初始化鎖定圖示
     switchView('day');
-    fetchFromCloud();
+    fetchFromSupabase();
 
     document.getElementById('stats-name-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') calculatePersonalStats();
@@ -165,7 +169,7 @@ function updateData(day, field, val, element) {
     autoSaveIndicator.classList.add('opacity-100');
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => { 
-        saveAllToCloud(); 
+        saveDayToSupabase(currentMonth, day, fullYearData[currentMonth][day]); 
         autoSaveIndicator.classList.remove('opacity-100');
     }, 800);
 }
@@ -222,31 +226,72 @@ function updateLockIcon() {
     lucide.createIcons();
 }
 
-async function saveAllToCloud() {
+async function saveDayToSupabase(m, d, dayData) {
+    // 依然保留本地備份，避免網路斷線
     localStorage.setItem(storageKey, JSON.stringify(fullYearData));
-    if (CLOUD_API_URL.includes("YOUR_GOOGLE")) return;
+    
     try {
-        await fetch(CLOUD_API_URL, {
-            method: 'POST', mode: 'no-cors', body: JSON.stringify(fullYearData)
-        });
-        showToast("已同步至雲端");
-    } catch (e) { console.error("Sync failed", e); }
+        const { error } = await supabase
+            .from('shift_schedules')
+            .upsert({ 
+                year: year, 
+                month: m, 
+                day: d, 
+                leave: dayData.leave || "",
+                open: dayData.open || "",
+                shift: dayData.shift || "",
+                t20: dayData.t20 || "",
+                dish: dayData.dish || "",
+                clean: dayData.clean || "",
+                close: dayData.close || "",
+                notes: dayData.notes || ""
+            }, { onConflict: 'year,month,day' }); // 利用我們設好的複合主鍵來決定是新增還是更新
+
+        if (error) throw error;
+        showToast("已儲存至 Supabase ⚡");
+    } catch (e) { 
+        console.error("Supabase sync failed", e);
+        showToast("雲端同步失敗，已暫存於本地");
+    }
 }
 
-async function fetchFromCloud() {
-    if (CLOUD_API_URL.includes("YOUR_GOOGLE")) return;
+async function fetchFromSupabase() {
     const statusText = document.getElementById('statusText');
-    statusText.innerText = "Syncing...";
+    statusText.innerText = "Syncing from Supabase...";
+    
     try {
-        const res = await fetch(CLOUD_API_URL);
-        const data = await res.json();
-        if (data && Object.keys(data).length > 0) {
-            fullYearData = data;
+        const { data, error } = await supabase
+            .from('shift_schedules')
+            .select('*')
+            .eq('year', year);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            fullYearData = {}; // 清空並重新寫入
+            data.forEach(row => {
+                if (!fullYearData[row.month]) fullYearData[row.month] = {};
+                fullYearData[row.month][row.day] = {
+                    leave: row.leave || "",
+                    open: row.open || "",
+                    shift: row.shift || "",
+                    t20: row.t20 || "",
+                    dish: row.dish || "",
+                    clean: row.clean || "",
+                    close: row.close || "",
+                    notes: row.notes || ""
+                };
+            });
             localStorage.setItem(storageKey, JSON.stringify(fullYearData));
             renderTable();
-            statusText.innerText = "Cloud Synced";
+            statusText.innerText = "Supabase Synced";
+        } else {
+            statusText.innerText = "System Ready";
         }
-    } catch (e) { statusText.innerText = "Offline Mode"; }
+    } catch (e) { 
+        console.error("Supabase fetch failed", e);
+        statusText.innerText = "Offline Mode"; 
+    }
 }
 
 function showMonthStats() {
