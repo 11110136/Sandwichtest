@@ -292,27 +292,41 @@
     };
 
     // 🚀 快速載入群組 (同步到 DB)
-    const handleQuickLoad = async (tag) => {
-      const items = initialInventory.filter(i => i.tag === tag);
-      
-      let dbUpserts = [];
-      setHistoryData(prev => {
-        const list = [...(prev[todayStr] || [])];
-        items.forEach(item => { 
-          if (!list.find(p => p.id === item.id)) {
-            list.push({ ...item, actualCount: '' }); 
-            // 如果只有載入沒有填數字，我們先塞 null
-            dbUpserts.push({ record_date: todayStr, item_id: item.id, actual_count: null });
-          }
-        });
-        return { ...prev, [todayStr]: list };
-      });
-      showToast(`已載入「${tag}」盤點表`);
+    // 🚀 快速載入群組 (切換並同步到 DB)
+  const handleQuickLoad = async (tag) => {
+    // 🛡️ 安全機制：如果畫面上已經有品項，先跟使用者確認是否要切換（覆蓋）
+    const currentList = historyData[todayStr] || [];
+    if (currentList.length > 0) {
+      const isConfirm = window.confirm(`確定要切換成「${tag}」盤點表嗎？\n這會清除畫面上原本載入的品項喔！`);
+      if (!isConfirm) return; // 如果使用者按取消，就停止執行
+    }
 
-      if(dbUpserts.length > 0) {
-        await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
-      }
-    };
+    // 1. 篩選出新標籤的商品
+    const items = initialInventory.filter(i => i.tag === tag);
+    
+    // 2. 更新前端畫面：直接「取代」整份清單，而不是附加進去
+    setHistoryData(prev => ({
+      ...prev,
+      [todayStr]: items.map(item => ({ ...item, actualCount: '' }))
+    }));
+    
+    showToast(`已切換為「${tag}」盤點表`);
+
+    // 3. 同步資料庫：
+    // (a) 先把今天原本的舊清單從資料庫清掉（避免重整網頁後舊資料又跑出來）
+    await supabase.from('inventory_records').delete().match({ record_date: todayStr });
+    
+    // (b) 寫入新載入的清單 (預設數量為 null)
+    const dbUpserts = items.map(item => ({ 
+      record_date: todayStr, 
+      item_id: item.id, 
+      actual_count: null 
+    }));
+    
+    if(dbUpserts.length > 0) {
+      await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
+    }
+  };
 
     // 🚀 更新數字 (同步到 DB)
     const handleUpdateListItem = async (id, val) => {
