@@ -4,10 +4,10 @@ lucide.createIcons();
 // --- 系統配置 ---
 const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 【修正 1】將自訂變數改為 supabaseClient，避免與全域物件 supabase 衝突
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const year = 2026;
-// ...保留原本的其他常數...
 const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
 const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
 const storageKey = 'nordic_shift_v2026_db';
@@ -27,7 +27,19 @@ const STATION_IMAGE_URL = "./images/第四版工作分配表.png";
 
 let currentMonth = new Date().getMonth(); 
 let currentView = 'day'; 
-let fullYearData = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+// 【修正 2】加上 try-catch 防護網，避免本地損壞的資料讓網頁崩潰
+let fullYearData = {};
+try {
+    const localData = localStorage.getItem(storageKey);
+    if (localData) {
+        fullYearData = JSON.parse(localData);
+    }
+} catch (e) {
+    console.warn("本地暫存資料損壞，已重置為空物件", e);
+    fullYearData = {};
+}
+
 let autoSaveTimer = null;
 let currentStatsDates = { shift: [], open: [], close: [], clean: [], t20: [] }; 
 
@@ -113,14 +125,10 @@ function renderTable() {
 
         const dateDisplay = `${currentMonth + 1}/${i}`;
         
-        // 空值警告：只有在「編輯模式」時才會顯示紅框提示
         const isWeekday = (dayIdx >= 1 && dayIdx <= 5);
         const openWarningClass = (isEditMode && isWeekday && (!dayData.open || dayData.open.trim() === '')) ? 'warning-cell' : '';
         const closeWarningClass = (isEditMode && isWeekday && (!dayData.close || dayData.close.trim() === '')) ? 'warning-cell' : '';
         
-        // 【視覺化顏色標籤更新】
-        // 休假人員：改用更低調的 text-rose-800 和更淡的背景 bg-rose-50/50
-        // 開店：改用溫暖低調的琥珀色 text-amber-700
         tr.innerHTML = `
             <td data-label="Date" data-day="${i}">
                 <div class="flex items-center gap-2">
@@ -174,19 +182,14 @@ function updateData(day, field, val, element) {
     }, 800);
 }
 
-// ==========================================
-// --- 【編輯權限與密碼系統】 ---
-// ==========================================
 function toggleEditMode() {
     if (isEditMode) {
-        // 如果是編輯模式，點擊就直接上鎖
         isEditMode = false;
         updateLockIcon();
-        renderTable(); // 重新渲染表格，把 contenteditable 關掉
-        closeQuickInput(); // 隱藏面板
+        renderTable(); 
+        closeQuickInput(); 
         showToast("已切換為唯讀模式 🔒");
     } else {
-        // 如果是唯讀模式，點擊跳出密碼輸入框
         document.getElementById('pinInput').value = '';
         document.getElementById('pinModal').classList.remove('hidden');
         setTimeout(() => document.getElementById('pinInput').focus(), 100);
@@ -203,7 +206,7 @@ function verifyPin() {
         isEditMode = true;
         closePinModal();
         updateLockIcon();
-        renderTable(); // 重新渲染表格，讓格子可以編輯
+        renderTable(); 
         showToast("解鎖成功！已啟用編輯模式 🔓");
     } else {
         alert("密碼錯誤，請重新輸入！");
@@ -227,11 +230,11 @@ function updateLockIcon() {
 }
 
 async function saveDayToSupabase(m, d, dayData) {
-    // 依然保留本地備份，避免網路斷線
     localStorage.setItem(storageKey, JSON.stringify(fullYearData));
     
     try {
-        const { error } = await supabase
+        // 【修正 3】改用 supabaseClient
+        const { error } = await supabaseClient
             .from('shift_schedules')
             .upsert({ 
                 year: year, 
@@ -245,7 +248,7 @@ async function saveDayToSupabase(m, d, dayData) {
                 clean: dayData.clean || "",
                 close: dayData.close || "",
                 notes: dayData.notes || ""
-            }, { onConflict: 'year,month,day' }); // 利用我們設好的複合主鍵來決定是新增還是更新
+            }, { onConflict: 'year,month,day' }); 
 
         if (error) throw error;
         showToast("已儲存至 Supabase ⚡");
@@ -260,7 +263,8 @@ async function fetchFromSupabase() {
     statusText.innerText = "Syncing from Supabase...";
     
     try {
-        const { data, error } = await supabase
+        // 【修正 4】改用 supabaseClient
+        const { data, error } = await supabaseClient
             .from('shift_schedules')
             .select('*')
             .eq('year', year);
@@ -268,7 +272,7 @@ async function fetchFromSupabase() {
         if (error) throw error;
 
         if (data && data.length > 0) {
-            fullYearData = {}; // 清空並重新寫入
+            fullYearData = {}; 
             data.forEach(row => {
                 if (!fullYearData[row.month]) fullYearData[row.month] = {};
                 fullYearData[row.month][row.day] = {
@@ -474,10 +478,6 @@ function closeStationModal() {
     document.getElementById('stationModal').classList.add('hidden');
 }
 
-// ==========================================
-// --- 快捷輸入面板 (Quick Input) 功能 ---
-// ==========================================
-
 const QUICK_NAMES = ["可柔", "俐嬅", "小郭", "菟菟", "林宣", "若菱", "祥瑋", "翠翠","Sam" , "偲璇", "X"];
 const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃", "白天", "晚上"];
 
@@ -503,7 +503,6 @@ function initQuickInput() {
     });
 
     document.addEventListener('focusin', (e) => {
-        // 只有在編輯模式下，才會觸發快捷面板
         if (isEditMode && e.target.classList.contains('editable')) {
             activeCell = e.target;
             showQuickInput(activeCell);
@@ -615,9 +614,7 @@ function insertTextToCell(text, type) {
 
 initQuickInput();
 init();
-// ==========================================
-// --- 全域導覽選單功能 ---
-// ==========================================
+
 function toggleGlobalMenu() {
     document.getElementById('global-nav-menu').classList.toggle('hidden');
 }
