@@ -29,20 +29,6 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
   <div id="root"></div>
-    <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden transition-all origin-top-left">
-                <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-gray-50 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-                    值班系統
-                </a>
-                <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-                    每週收銀結算
-                </a>
-                <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-                    庫存盤點系統
-                </a>
-            </div>
   <script type="text/babel">
   const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
@@ -150,11 +136,11 @@
         {isOpen && (
           <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
             {[
-              { label: '值班系統', color: 'indigo' },
-              { label: '每週收銀結算', color: 'emerald' },
-              { label: '庫存盤點系統', color: 'blue' },
-            ].map(({ label, color }) => (
-              <a key={label} href="#" className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-gray-50 last:border-0 transition-colors`}>{label}</a>
+              { label: '值班系統', color: 'indigo', href: 'index.html' },
+              { label: '每週收銀結算', color: 'emerald', href: 'cash.html' },
+              { label: '庫存盤點系統', color: 'blue', href: 'inventory.html' },
+            ].map(({ label, color, href }) => (
+              <a key={label} href={href} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-gray-50 last:border-0 transition-colors`}>{label}</a>
             ))}
           </div>
         )}
