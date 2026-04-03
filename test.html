@@ -222,9 +222,10 @@
   }
   .cal-cell.other-month .date-num { color: #bbb; }
   .cal-cell .task-line {
-    font-size: 14px; /* 🔼 排班人員文字放大 (原 11px) */
-    line-height: 1.5; /* 增加行距讓文字更好閱讀 */
+    font-size: 14px; 
+    line-height: 1.5; 
     color: var(--ink-soft);
+    white-space: pre-line; /* 🔼 新增這行：強制將換行符號(\n)顯示為真正的換行 */
   }
   .cal-cell .task-line b { color: var(--olive); }
   .cal-cell .edit-btn {
