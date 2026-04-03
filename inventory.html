@@ -48,31 +48,31 @@
   const Copy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
 
   const initialInventory = [
-    { id: 1,  name: '火腿S',       spec: '20條/箱',            unit: '箱', systemStock: 1.1,  alertLevel: 0.5,  tag: '每日' },
-    { id: 2,  name: '沙拉S',       spec: '600公克/包',          unit: '包', systemStock: 63.0, alertLevel: 50,   tag: '每日' },
+    { id: 1,  name: '火腿S',       spec: '20條/箱',             unit: '箱', systemStock: 1.1,  alertLevel: 0.5,  tag: '每日' },
+    { id: 2,  name: '沙拉S',       spec: '600公克/包',           unit: '包', systemStock: 63.0, alertLevel: 50,   tag: '每日' },
     { id: 3,  name: '水煮蛋',      spec: '顆',                  unit: '顆', systemStock: 400.0,alertLevel: 400,  tag: '每日' },
-    { id: 4,  name: '涼麵條',      spec: '3公斤/包',            unit: '包', systemStock: 27.0, alertLevel: 13,   tag: '每日' },
-    { id: 5,  name: '涼麵',        spec: '206公克/盒',          unit: '盒', systemStock: 26.0, alertLevel: 35,   tag: '每日' },
-    { id: 6,  name: '小黃瓜(箱)',  spec: '15~18公斤/箱',        unit: '箱', systemStock: 2.0,  alertLevel: 2,    tag: '每日' },
+    { id: 4,  name: '涼麵條',      spec: '3公斤/包',             unit: '包', systemStock: 27.0, alertLevel: 13,   tag: '每日' },
+    { id: 5,  name: '涼麵',        spec: '206公克/盒',           unit: '盒', systemStock: 26.0, alertLevel: 35,   tag: '每日' },
+    { id: 6,  name: '小黃瓜(箱)',  spec: '15~18公斤/箱',         unit: '箱', systemStock: 2.0,  alertLevel: 2,    tag: '每日' },
     { id: 7,  name: '番茄(箱)',    spec: '8公斤/箱;200克/盒',    unit: '箱', systemStock: 3.0,  alertLevel: 2,    tag: '每日' },
-    { id: 8,  name: '鮮乳',        spec: '936毫升/盒',          unit: '盒', systemStock: 9.0,  alertLevel: 14,   tag: '每日' },
-    { id: 9,  name: '豆腐',        spec: '看有幾盒',            unit: '盒', systemStock: 17.0, alertLevel: 3,    tag: '每日' },
-    { id: 10, name: '木瓜(顆)',    spec: '13顆/箱',             unit: '顆', systemStock: 49.0, alertLevel: 1,    tag: '每日' },
-    { id: 11, name: '涼麵醬(原味)',spec: '80g/包',              unit: '包', systemStock: 63.0, alertLevel: 103,  tag: '每日' },
-    { id: 12, name: '涼麵醬(辣味)',spec: '80g/包',              unit: '包', systemStock: 37.0, alertLevel: 106,  tag: '每日' },
-    { id: 13, name: '二砂',        spec: '50公斤/包',           unit: '包', systemStock: 1.2,  alertLevel: 0.3,  tag: '每周' },
-    { id: 14, name: '金蘭甲級醬油',spec: '5公升/罐',            unit: '罐', systemStock: 5.0,  alertLevel: 2,    tag: '每周' },
+    { id: 8,  name: '鮮乳',        spec: '936毫升/盒',           unit: '盒', systemStock: 9.0,  alertLevel: 14,   tag: '每日' },
+    { id: 9,  name: '豆腐',        spec: '看有幾盒',             unit: '盒', systemStock: 17.0, alertLevel: 3,    tag: '每日' },
+    { id: 10, name: '木瓜(顆)',    spec: '13顆/箱',              unit: '顆', systemStock: 49.0, alertLevel: 1,    tag: '每日' },
+    { id: 11, name: '涼麵醬(原味)',spec: '80g/包',               unit: '包', systemStock: 63.0, alertLevel: 103,  tag: '每日' },
+    { id: 12, name: '涼麵醬(辣味)',spec: '80g/包',               unit: '包', systemStock: 37.0, alertLevel: 106,  tag: '每日' },
+    { id: 13, name: '二砂',        spec: '50公斤/包',            unit: '包', systemStock: 1.2,  alertLevel: 0.3,  tag: '每周' },
+    { id: 14, name: '金蘭甲級醬油',spec: '5公升/罐',             unit: '罐', systemStock: 5.0,  alertLevel: 2,    tag: '每周' },
     { id: 15, name: '鹽S',         spec: '1000公克/包, 24包/箱', unit: '包', systemStock: 18.0, alertLevel: 1,    tag: '每周' },
-    { id: 16, name: '幸福醋',      spec: '5.5公升/罐',          unit: '罐', systemStock: 6.5,  alertLevel: 1,    tag: '每周' },
+    { id: 16, name: '幸福醋',      spec: '5.5公升/罐',           unit: '罐', systemStock: 6.5,  alertLevel: 1,    tag: '每周' },
     { id: 17, name: '芝麻醬',      spec: '2.7公升/罐, 6罐/箱',   unit: '罐', systemStock: 4.0,  alertLevel: 2,    tag: '每周' },
-    { id: 18, name: '金味王醬油',  spec: '5公升/罐',            unit: '罐', systemStock: 3.8,  alertLevel: 1,    tag: '每周' },
-    { id: 19, name: '金梅油膏',    spec: '4.5公斤/罐',          unit: '罐', systemStock: 5.8,  alertLevel: 1,    tag: '每周' },
-    { id: 20, name: '細砂糖S',     spec: '25公斤/包',           unit: '包', systemStock: 6.0,  alertLevel: 0.2,  tag: '每周' },
-    { id: 32, name: '冬瓜磚',      spec: '30塊/箱',             unit: '箱', systemStock: 22.0, alertLevel: 6,    tag: '每周' },
-    { id: 38, name: '味噌',        spec: '9公斤/箱',            unit: '箱', systemStock: 2.2,  alertLevel: 0.8,  tag: '每周' },
-    { id: 46, name: '吸管',        spec: '100支/包',            unit: '包', systemStock: 6.0,  alertLevel: 0.5,  tag: '每周' },
-    { id: 50, name: '紙520湯杯',   spec: '50個/條',             unit: '條', systemStock: 22.0, alertLevel: 2,    tag: '每周' },
-    { id: 56, name: '熱感應發票紙',spec: '650個/包',            unit: '包', systemStock: 122.0,alertLevel: 1,    tag: '每周' },
+    { id: 18, name: '金味王醬油',  spec: '5公升/罐',             unit: '罐', systemStock: 3.8,  alertLevel: 1,    tag: '每周' },
+    { id: 19, name: '金梅油膏',    spec: '4.5公斤/罐',           unit: '罐', systemStock: 5.8,  alertLevel: 1,    tag: '每周' },
+    { id: 20, name: '細砂糖S',     spec: '25公斤/包',            unit: '包', systemStock: 6.0,  alertLevel: 0.2,  tag: '每周' },
+    { id: 32, name: '冬瓜磚',      spec: '30塊/箱',              unit: '箱', systemStock: 22.0, alertLevel: 6,    tag: '每周' },
+    { id: 38, name: '味噌',        spec: '9公斤/箱',             unit: '箱', systemStock: 2.2,  alertLevel: 0.8,  tag: '每周' },
+    { id: 46, name: '吸管',        spec: '100支/包',             unit: '包', systemStock: 6.0,  alertLevel: 0.5,  tag: '每周' },
+    { id: 50, name: '紙520湯杯',   spec: '50個/條',              unit: '條', systemStock: 22.0, alertLevel: 2,    tag: '每周' },
+    { id: 56, name: '熱感應發票紙',spec: '650個/包',             unit: '包', systemStock: 122.0,alertLevel: 1,    tag: '每周' },
   ];
 
   const getTodayStr = () => {
@@ -129,7 +129,7 @@
     );
   };
 
-  // ── StockCard ──
+  // ── StockCard（內嵌刪除確認，不用 window.confirm）──
   const StockCard = ({ item, onUpdate, onRemove }) => {
     const [confirmDelete, setConfirmDelete] = useState(false);
     const count = parseFloat(item.actualCount);
@@ -171,8 +171,7 @@
             <div className="flex-1 bg-gray-50 rounded-lg p-2 flex justify-between items-center">
               <span className="text-xs text-gray-500 font-medium">盤點數量</span>
               <div className="flex items-center">
-                {/* 加入 inputMode="decimal" 優化手機鍵盤 */}
-                <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="輸入.."
+                <input type="number" step="0.1" min="0" placeholder="輸入.."
                   value={item.actualCount}
                   onChange={e => onUpdate(item.id, e.target.value)}
                   className={`w-20 px-2 py-1 bg-white border rounded-md text-center font-bold text-base focus:outline-none focus:ring-2 ${isLow ? 'border-red-300 focus:ring-red-500 text-red-600' : 'border-blue-300 focus:ring-blue-500 text-blue-700'}`}
@@ -194,6 +193,7 @@
   // ── App ──
   function App() {
     const [activeTab, setActiveTab] = useState('record');
+    // ✅ 修正1：historyData 為唯一資料來源
     const [historyData, setHistoryData] = useState(() => loadHistory());
     const [calendarMonth, setCalendarMonth] = useState(new Date());
     const [selectedHistoryDate, setSelectedHistoryDate] = useState(null);
@@ -205,6 +205,7 @@
     const [toast, setToast] = useState(null);
     const inputRef = useRef(null);
 
+    // ✅ 修正1：todayCounts 從 historyData 衍生
     const todayCounts = useMemo(() => historyData[getTodayStr()] || [], [historyData]);
 
     const updateTodayData = useCallback((updater) => {
@@ -243,6 +244,7 @@
       setSelectedItem(null); setSearchQuery(''); setInputValue('');
     };
 
+    // ✅ 修正2：快速載入直接寫入 historyData
     const handleQuickLoad = (tag) => {
       const items = initialInventory.filter(i => i.tag === tag);
       updateTodayData(list => {
@@ -271,6 +273,7 @@
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
+    // ✅ 修正3：Clipboard API，fallback 到 LINE URL Scheme
     const handleCopyAndLine = async () => {
       let text = `【${getTodayStr()} 叫貨清單】\n\n`;
       orderList.forEach(i => { text += `▪ ${i.name}：剩 ${i.actualCount} ${i.unit}\n`; });
@@ -388,8 +391,7 @@
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-end gap-3 fade-in">
                     <div className="flex-1">
                       <label className="block text-xs font-bold text-gray-500 mb-1.5">輸入數量 ({selectedItem.unit})</label>
-                      {/* 加入 inputMode="decimal" 優化手機鍵盤 */}
-                      <input ref={inputRef} type="number" inputMode="decimal" step="0.1" min="0" value={inputValue}
+                      <input ref={inputRef} type="number" step="0.1" min="0" value={inputValue}
                         onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAddRecord()}
                         placeholder={`帳面庫存: ${selectedItem.systemStock}`}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50/30"/>
