@@ -186,7 +186,7 @@
     grid-template-columns: repeat(7, 1fr);
     background: var(--sage);
     color: #fff;
-    font-size: 13px;
+    font-size: 16px; /* 🔼 表頭星期幾放大 (原 13px) */
     font-weight: 700;
   }
   .cal-header div {
@@ -199,11 +199,11 @@
     grid-template-columns: repeat(7, 1fr);
   }
   .cal-cell {
-    min-height: 90px;
+    min-height: 110px; /* 🔼 為了容納更大文字，稍微拉高格子 (原 90px) */
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 6px 5px;
-    font-size: 12px;
+    padding: 8px 6px; /* 稍微增加內距 */
+    font-size: 14px;  /* 基礎文字放大 */
     vertical-align: top;
     position: relative;
     transition: background .15s;
@@ -214,16 +214,16 @@
   .cal-cell.weekend { background: #faf5f5; }
   .cal-cell.highlighted { background: var(--sage-pale); }
   .cal-cell .date-num {
-    font-size: 13px;
+    font-size: 16px; /* 🔼 日期數字放大 (原 13px) */
     font-weight: 700;
     color: var(--ink-soft);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     display: block;
   }
   .cal-cell.other-month .date-num { color: #bbb; }
   .cal-cell .task-line {
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 14px; /* 🔼 排班人員文字放大 (原 11px) */
+    line-height: 1.5; /* 增加行距讓文字更好閱讀 */
     color: var(--ink-soft);
   }
   .cal-cell .task-line b { color: var(--olive); }
@@ -234,8 +234,8 @@
     background: var(--sage-light);
     border: none;
     border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 10px;
+    padding: 4px 8px; /* 按鈕稍微加大 */
+    font-size: 12px;  /* 按鈕文字加大 */
     cursor: pointer;
     color: var(--olive);
     opacity: 0;
@@ -243,19 +243,16 @@
   }
   .cal-cell:hover .edit-btn { opacity: 1; }
   .cal-cell .closed-label {
-    font-size: 12px;
+    font-size: 15px; /* 🔼 店休文字放大 (原 12px) */
     font-weight: 700;
     color: var(--accent-red);
   }
 
   /* ── SHIFT TABLE (Image 2 style) ── */
-  .shift-wrap {
-    overflow-x: auto;
-  }
   .shift-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 15px; /* 🔼 整體表格預設文字放大 (原 13px) */
     background: var(--warm-white);
     border-radius: var(--radius);
     overflow: hidden;
@@ -263,14 +260,15 @@
   }
   .shift-table th, .shift-table td {
     border: 1px solid var(--border);
-    padding: 6px 8px;
+    padding: 8px 10px; /* 增加儲存格內距 */
     text-align: center;
     vertical-align: middle;
   }
+  /* (中間保留原本的 .shift-table thead tr:first-child th) */
   .shift-table thead tr:first-child th {
     background: #3b6cbf;
     color: #fff;
-    font-size: 16px;
+    font-size: 18px; /* 大標題放大 */
     font-weight: 700;
     letter-spacing: 2px;
     border: none;
@@ -279,22 +277,22 @@
     background: #e8f0fe;
     color: var(--ink-soft);
     font-weight: 700;
-    font-size: 12px;
+    font-size: 14px; /* 🔼 次標題放大 (原 12px) */
   }
   .shift-table td.closed-cell {
     color: var(--accent-red);
     font-weight: 700;
-    font-size: 13px;
+    font-size: 15px; /* 🔼 店休文字放大 (原 13px) */
   }
   .shift-table td.open-cell {
     min-width: 120px;
   }
   .shift-table td input, .shift-table td select {
     font-family: inherit;
-    font-size: 12px;
+    font-size: 14px; /* 🔼 輸入框文字放大 (原 12px) */
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 3px 6px;
+    padding: 5px 6px; /* 增加輸入框高度 */
     width: 100%;
     outline: none;
     background: var(--cream);
@@ -303,9 +301,9 @@
   .shift-table td input:focus, .shift-table td select:focus { border-color: var(--sage); background: #fff; }
   .opener-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 14px; /* 🔼 開店標籤文字放大 (原 12px) */
     font-weight: 700;
     cursor: pointer;
     border: none;
@@ -385,8 +383,8 @@
     .topbar, .tabs, .section-header .month-nav, .edit-btn,
     .btn, .add-staff-row, #staffPanel, .modal-overlay { display: none !important; }
     .main { padding: 0; }
-    .panel { display: block !important; }
-    .panel:not(#printTarget) { display: none !important; }
+    .panel.active { display: block !important; }
+    .panel:not(.active) { display: none !important; }
     .calendars-wrap { grid-template-columns: 1fr 1fr; gap: 16px; }
     .cal-cell { min-height: 70px; }
     .shift-table { font-size: 11px; }
@@ -890,19 +888,7 @@ function saveModal() {
 //  PRINT
 // ══════════════════════════════════════════
 function printSchedule() {
-  const activePanel = document.querySelector('.panel.active');
-  // Temporarily set all panels visible for print target selection
-  const printTarget = activePanel.id;
-  document.getElementById('printTarget') && document.getElementById('printTarget').remove();
-  const script2 = document.createElement('style');
-  script2.id='printTarget';
-  script2.media='print';
-  // hide all other panels
-  const allPanels = ['cleanPanel','shiftPanel','staffPanel'];
-  const hideList = allPanels.filter(p=>p!==printTarget);
-  script2.textContent = hideList.map(id=>`#${id}{display:none!important}`).join('\n');
-  document.head.appendChild(script2);
-  window.print();
+  window.print(); // 直接呼叫瀏覽器列印，CSS 會自動處理好顯示 .active 面板
 }
 
 // ══════════════════════════════════════════
