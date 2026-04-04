@@ -226,10 +226,9 @@
     vertical-align: top;
     position: relative;
     transition: background .15s;
-    text-align: center;           /* ✅ 置中 */
+    text-align: center;
   }
   .cal-cell:last-child { border-right: none; }
-  /* For weekday cal, every 5th cell has no right border */
   .cal-weekday .cal-cell:nth-child(5n) { border-right: none; }
   .cal-full .cal-cell:nth-child(7n) { border-right: none; }
 
@@ -239,7 +238,7 @@
   .cal-cell.highlighted { background: var(--sage-pale); }
 
   .cal-cell .date-num {
-    font-size: 17px;              /* ✅ 放大日期數字 */
+    font-size: 17px;
     font-weight: 700;
     color: var(--ink-soft);
     margin-bottom: 6px;
@@ -249,11 +248,11 @@
   .cal-cell.other-month .date-num { color: #bbb; }
 
   .cal-cell .task-line {
-    font-size: 15px;              /* ✅ 放大內容文字 */
+    font-size: 15px;
     line-height: 1.6;
     color: var(--ink-soft);
     white-space: pre-line;
-    text-align: center;           /* ✅ 置中 */
+    text-align: center;
   }
   .cal-cell .task-line b { color: var(--olive); font-size: 16px; }
 
@@ -328,7 +327,7 @@
     outline: none;
     background: var(--cream);
     transition: border .15s;
-    text-align: center;           /* ✅ 置中 */
+    text-align: center;
   }
   .shift-table td input:focus, .shift-table td select:focus { border-color: var(--sage); background: #fff; }
 
@@ -415,42 +414,177 @@
   .staff-checkbox.checked { background: var(--sage); color: #fff; border-color: var(--olive); }
   .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 
-  /* ── PRINT STYLES ── */
+  /* ══════════════════════════════════════════
+     PRINT STYLES — 清潔＋洗餐具同頁、填滿、置中
+     ══════════════════════════════════════════ */
   @media print {
-    body { background: #fff; }
-    .topbar, .tabs, .section-header .month-nav, .edit-btn,
-    .btn, .add-staff-row, #staffPanel, .modal-overlay { display: none !important; }
-    .main { padding: 0; }
+    @page {
+      size: A4 landscape;
+      margin: 8mm 10mm;
+    }
 
-    /* Only show cleanPanel when printing from clean tab */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body { background: #fff !important; margin: 0; padding: 0; }
+
+    /* Hide everything except active panel */
+    .topbar, .tabs, .section-header .month-nav,
+    .edit-btn, .btn, .add-staff-row,
+    #staffPanel, .modal-overlay { display: none !important; }
+
+    .main { padding: 0 !important; margin: 0 !important; }
+
     .panel { display: none !important; }
-    .panel.active { display: block !important; }
+    .panel.active { display: flex !important; flex-direction: column; height: 100vh; }
 
-    /* Clean panel: both calendars side by side on ONE page */
+    /* ── cleanPanel: fill the entire page ── */
+    #cleanPanel {
+      width: 100% !important;
+      height: calc(100vh - 16mm) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 4px !important;
+    }
+
+    /* Title row */
+    #cleanPanel .section-header {
+      width: 100% !important;
+      justify-content: center !important;
+      margin-bottom: 4px !important;
+    }
+    #cleanPanel .section-header h2 {
+      font-size: 22px !important;
+      text-align: center !important;
+    }
+
+    /* Two calendars side by side, filling width & remaining height */
     #cleanPanel .calendars-wrap {
       display: grid !important;
       grid-template-columns: 1fr 1fr !important;
-      gap: 12px !important;
+      gap: 10px !important;
+      width: 100% !important;
+      flex: 1 !important;
+      align-items: stretch !important;
     }
-    #cleanPanel {
-      page-break-after: avoid;
-    }
-    .cal-cell {
-      min-height: 60px !important;
-      font-size: 11px !important;
-      padding: 4px 3px !important;
-    }
-    .cal-cell .date-num { font-size: 12px !important; }
-    .cal-cell .task-line { font-size: 11px !important; line-height: 1.4 !important; }
-    .cal-cell .closed-label { font-size: 11px !important; }
-    .cal-header div { padding: 5px 2px !important; font-size: 12px !important; }
-    .cal-section h3 { font-size: 14px !important; margin-bottom: 5px !important; }
-    .section-header h2 { font-size: 16px !important; }
 
+    #cleanPanel .cal-section {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+    }
+
+    #cleanPanel .cal-section h3 {
+      font-size: 17px !important;
+      margin-bottom: 4px !important;
+      text-align: center !important;
+    }
+
+    /* Calendar fills remaining height */
+    #cleanPanel .calendar {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      border-radius: 4px !important;
+      overflow: hidden !important;
+      box-shadow: none !important;
+    }
+
+    /* Cal header */
+    #cleanPanel .cal-header div {
+      padding: 6px 2px !important;
+      font-size: 16px !important;
+    }
+
+    /* Cal body fills all space */
+    #cleanPanel .cal-body {
+      flex: 1 !important;
+      /* grid rows auto-stretch to fill */
+      align-content: stretch !important;
+    }
+
+    /* ── 清潔 weekday grid ── */
+    #cleanPanel #cleanCalBody {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      /* auto rows that stretch evenly */
+      grid-auto-rows: 1fr !important;
+      height: 100% !important;
+    }
+
+    /* ── 洗餐具 full-week grid ── */
+    #cleanPanel #dishCalBody {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      grid-auto-rows: 1fr !important;
+      height: 100% !important;
+    }
+
+    /* ── Calendar cells ── */
+    #cleanPanel .cal-cell {
+      min-height: unset !important;
+      height: auto !important;
+      padding: 4px 3px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-right: 1px solid #ccc !important;
+      border-bottom: 1px solid #ccc !important;
+      overflow: hidden !important;
+    }
+
+    #cleanPanel .cal-cell .date-num {
+      font-size: 15px !important;
+      margin-bottom: 3px !important;
+      font-weight: 700 !important;
+      line-height: 1.1 !important;
+    }
+
+    /* 清潔 cell text */
+    #cleanPanel #cleanCalBody .cal-cell .task-line {
+      font-size: 13px !important;
+      line-height: 1.4 !important;
+      text-align: center !important;
+      white-space: pre-line !important;
+    }
+
+    /* 洗餐具 cell text — LARGE, fills the cell */
+    #cleanPanel #dishCalBody .cal-cell {
+      justify-content: center !important;
+    }
+    #cleanPanel #dishCalBody .cal-cell .task-line {
+      font-size: 20px !important;
+      font-weight: 700 !important;
+      line-height: 1.2 !important;
+      text-align: center !important;
+    }
+    #cleanPanel #dishCalBody .cal-cell .task-line b {
+      font-size: 22px !important;
+      color: var(--olive) !important;
+    }
+    #cleanPanel #dishCalBody .cal-cell .closed-label {
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      color: var(--accent-red) !important;
+    }
+    #cleanPanel #dishCalBody .cal-cell .date-num {
+      font-size: 13px !important;
+      color: #888 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Background colors preserved */
+    #cleanPanel .cal-cell.highlighted { background: #eaf2eb !important; }
+    #cleanPanel .cal-cell.today { background: #fffbea !important; }
+    #cleanPanel .cal-cell.weekend { background: #faf5f5 !important; }
+    #cleanPanel .cal-cell.other-month { background: #f7f7f5 !important; }
+    #cleanPanel .cal-header { background: #7a9e7e !important; color: #fff !important; }
+
+    /* Shift panel print (unchanged) */
     .shift-table { font-size: 11px; }
     .shift-table th, .shift-table td { padding: 4px 5px; }
-
-    @page { margin: 10mm; size: A4 landscape; }
   }
 
   /* ── RESPONSIVE ── */
@@ -495,7 +629,6 @@
     <div class="calendars-wrap">
       <div class="cal-section">
         <h3>清潔</h3>
-        <!-- cal-weekday = 5 columns only -->
         <div class="calendar cal-weekday" id="cleanCal">
           <div class="cal-header">
             <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div>
@@ -505,7 +638,6 @@
       </div>
       <div class="cal-section">
         <h3>洗餐具</h3>
-        <!-- cal-full = 7 columns -->
         <div class="calendar cal-full" id="dishCal">
           <div class="cal-header">
             <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
@@ -702,37 +834,25 @@ function renderDishCal() {
   renderFullCal('dishCalBody', cleanYear, cleanMonth, 'dish');
 }
 
-/**
- * Weekday-only calendar: shows Mon–Fri columns only.
- * Weekend days are skipped entirely.
- */
 function renderWeekdayCal(bodyId, year, month, type) {
   const body = document.getElementById(bodyId);
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const today = new Date();
 
-  // Find the Monday of the week containing the 1st of the month
   const firstDay = new Date(year, month, 1);
-  // getDay(): 0=Sun,1=Mon,...,6=Sat
-  // We want Mon=0 offset. If firstDay is Sun(0), offset=6; Mon(1)=0; Tue(2)=1...
-  const firstDow = firstDay.getDay(); // 0=Sun
-  // offset from Monday: Mon=0,Tue=1,...,Fri=4,Sat=5,Sun=6
+  const firstDow = firstDay.getDay();
   const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
 
   let html = '';
-  // Total weekday cells needed: pad + actual weekdays in month
-  // We'll iterate week by week
-  let currentDate = new Date(year, month, 1 - offsetFromMon); // start from Monday of first week
+  let currentDate = new Date(year, month, 1 - offsetFromMon);
 
-  // Figure out total rows needed
   const lastDay = new Date(year, month, daysInMonth);
   const lastDow = lastDay.getDay();
   const offsetFromFri = (lastDow === 0) ? 2 : (lastDow <= 5 ? 5 - lastDow : 0);
   const endDate = new Date(year, month, daysInMonth + offsetFromFri);
 
   while(currentDate <= endDate) {
-    const dow = currentDate.getDay(); // 0=Sun
-    // Only render Mon–Fri
+    const dow = currentDate.getDay();
     if(dow >= 1 && dow <= 5) {
       const isCurrentMonth = (currentDate.getFullYear()===year && currentDate.getMonth()===month);
       const day = currentDate.getDate();
@@ -741,7 +861,6 @@ function renderWeekdayCal(bodyId, year, month, type) {
                        currentDate.getMonth()===today.getMonth() &&
                        currentDate.getDate()===today.getDate());
 
-      // Highlight alternating weeks: week index from start
       const weekIndex = getWeekIndex(currentDate, year, month);
       const hl = (weekIndex % 2 === 1);
 
@@ -764,14 +883,12 @@ function renderWeekdayCal(bodyId, year, month, type) {
         ${isCurrentMonth ? `<button class="edit-btn" onclick='openEditModal("${type}","${key}","${day}")'>編輯</button>` : ''}
       </div>`;
     }
-    // Move to next day
     currentDate = new Date(currentDate.getTime() + 86400000);
   }
   body.innerHTML = html;
 }
 
 function getWeekIndex(date, refYear, refMonth) {
-  // Week index relative to the first Monday on or before the 1st of refMonth
   const firstDay = new Date(refYear, refMonth, 1);
   const firstDow = firstDay.getDay();
   const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
@@ -780,9 +897,6 @@ function getWeekIndex(date, refYear, refMonth) {
   return Math.floor(diff / (7 * 86400000));
 }
 
-/**
- * Full 7-column calendar for dish washing.
- */
 function renderFullCal(bodyId, year, month, type) {
   const body = document.getElementById(bodyId);
   const firstDay = new Date(year, month, 1).getDay();
