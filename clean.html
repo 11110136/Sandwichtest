@@ -181,53 +181,82 @@
     overflow: hidden;
     border: 1px solid var(--border);
   }
-  .cal-header {
+
+  /* ── WEEKDAY CALENDAR (5 columns: Mon–Fri) ── */
+  .cal-weekday .cal-header {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: var(--sage);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .cal-weekday .cal-body {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  /* ── FULL CALENDAR (7 columns: all week) ── */
+  .cal-full .cal-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     background: var(--sage);
     color: #fff;
-    font-size: 16px; /* 🔼 表頭星期幾放大 (原 13px) */
+    font-size: 16px;
     font-weight: 700;
   }
+  .cal-full .cal-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
   .cal-header div {
     text-align: center;
     padding: 8px 4px;
     letter-spacing: .5px;
   }
-  .cal-body {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-  }
+
+  /* ── CALENDAR CELL ── */
   .cal-cell {
-    min-height: 110px; /* 🔼 為了容納更大文字，稍微拉高格子 (原 90px) */
+    min-height: 110px;
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 8px 6px; /* 稍微增加內距 */
-    font-size: 14px;  /* 基礎文字放大 */
+    padding: 8px 6px;
+    font-size: 15px;
     vertical-align: top;
     position: relative;
     transition: background .15s;
+    text-align: center;           /* ✅ 置中 */
   }
-  .cal-cell:nth-child(7n) { border-right: none; }
+  .cal-cell:last-child { border-right: none; }
+  /* For weekday cal, every 5th cell has no right border */
+  .cal-weekday .cal-cell:nth-child(5n) { border-right: none; }
+  .cal-full .cal-cell:nth-child(7n) { border-right: none; }
+
   .cal-cell.other-month { background: #f7f7f5; }
   .cal-cell.today { background: #fffbea; }
   .cal-cell.weekend { background: #faf5f5; }
   .cal-cell.highlighted { background: var(--sage-pale); }
+
   .cal-cell .date-num {
-    font-size: 16px; /* 🔼 日期數字放大 (原 13px) */
+    font-size: 17px;              /* ✅ 放大日期數字 */
     font-weight: 700;
     color: var(--ink-soft);
     margin-bottom: 6px;
     display: block;
+    text-align: center;
   }
   .cal-cell.other-month .date-num { color: #bbb; }
+
   .cal-cell .task-line {
-    font-size: 14px; 
-    line-height: 1.5; 
+    font-size: 15px;              /* ✅ 放大內容文字 */
+    line-height: 1.6;
     color: var(--ink-soft);
-    white-space: pre-line; /* 🔼 新增這行：強制將換行符號(\n)顯示為真正的換行 */
+    white-space: pre-line;
+    text-align: center;           /* ✅ 置中 */
   }
-  .cal-cell .task-line b { color: var(--olive); }
+  .cal-cell .task-line b { color: var(--olive); font-size: 16px; }
+
   .cal-cell .edit-btn {
     position: absolute;
     bottom: 4px;
@@ -235,25 +264,27 @@
     background: var(--sage-light);
     border: none;
     border-radius: 4px;
-    padding: 4px 8px; /* 按鈕稍微加大 */
-    font-size: 12px;  /* 按鈕文字加大 */
+    padding: 4px 8px;
+    font-size: 12px;
     cursor: pointer;
     color: var(--olive);
     opacity: 0;
     transition: opacity .15s;
   }
   .cal-cell:hover .edit-btn { opacity: 1; }
+
   .cal-cell .closed-label {
-    font-size: 15px; /* 🔼 店休文字放大 (原 12px) */
+    font-size: 16px;
     font-weight: 700;
     color: var(--accent-red);
+    text-align: center;
   }
 
-  /* ── SHIFT TABLE (Image 2 style) ── */
+  /* ── SHIFT TABLE ── */
   .shift-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 15px; /* 🔼 整體表格預設文字放大 (原 13px) */
+    font-size: 15px;
     background: var(--warm-white);
     border-radius: var(--radius);
     overflow: hidden;
@@ -261,15 +292,14 @@
   }
   .shift-table th, .shift-table td {
     border: 1px solid var(--border);
-    padding: 8px 10px; /* 增加儲存格內距 */
+    padding: 9px 12px;
     text-align: center;
     vertical-align: middle;
   }
-  /* (中間保留原本的 .shift-table thead tr:first-child th) */
   .shift-table thead tr:first-child th {
     background: #3b6cbf;
     color: #fff;
-    font-size: 18px; /* 大標題放大 */
+    font-size: 18px;
     font-weight: 700;
     letter-spacing: 2px;
     border: none;
@@ -278,33 +308,35 @@
     background: #e8f0fe;
     color: var(--ink-soft);
     font-weight: 700;
-    font-size: 14px; /* 🔼 次標題放大 (原 12px) */
+    font-size: 15px;
   }
   .shift-table td.closed-cell {
     color: var(--accent-red);
     font-weight: 700;
-    font-size: 15px; /* 🔼 店休文字放大 (原 13px) */
+    font-size: 15px;
   }
   .shift-table td.open-cell {
     min-width: 120px;
   }
   .shift-table td input, .shift-table td select {
     font-family: inherit;
-    font-size: 14px; /* 🔼 輸入框文字放大 (原 12px) */
+    font-size: 14px;
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 5px 6px; /* 增加輸入框高度 */
+    padding: 5px 6px;
     width: 100%;
     outline: none;
     background: var(--cream);
     transition: border .15s;
+    text-align: center;           /* ✅ 置中 */
   }
   .shift-table td input:focus, .shift-table td select:focus { border-color: var(--sage); background: #fff; }
+
   .opener-badge {
     display: inline-block;
     padding: 4px 10px;
     border-radius: 12px;
-    font-size: 14px; /* 🔼 開店標籤文字放大 (原 12px) */
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     border: none;
@@ -317,6 +349,7 @@
   .opener-若 { background: #f8bbd0; color: #880e4f; }
   .opener-瑋 { background: #dcedc8; color: #33691e; }
   .opener-菟 { background: #f0f4c3; color: #827717; }
+  .opener-苑 { background: #ffd54f; color: #5d4037; }
 
   /* ── MODAL ── */
   .modal-overlay {
@@ -388,13 +421,36 @@
     .topbar, .tabs, .section-header .month-nav, .edit-btn,
     .btn, .add-staff-row, #staffPanel, .modal-overlay { display: none !important; }
     .main { padding: 0; }
+
+    /* Only show cleanPanel when printing from clean tab */
+    .panel { display: none !important; }
     .panel.active { display: block !important; }
-    .panel:not(.active) { display: none !important; }
-    .calendars-wrap { grid-template-columns: 1fr 1fr; gap: 16px; }
-    .cal-cell { min-height: 70px; }
+
+    /* Clean panel: both calendars side by side on ONE page */
+    #cleanPanel .calendars-wrap {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px !important;
+    }
+    #cleanPanel {
+      page-break-after: avoid;
+    }
+    .cal-cell {
+      min-height: 60px !important;
+      font-size: 11px !important;
+      padding: 4px 3px !important;
+    }
+    .cal-cell .date-num { font-size: 12px !important; }
+    .cal-cell .task-line { font-size: 11px !important; line-height: 1.4 !important; }
+    .cal-cell .closed-label { font-size: 11px !important; }
+    .cal-header div { padding: 5px 2px !important; font-size: 12px !important; }
+    .cal-section h3 { font-size: 14px !important; margin-bottom: 5px !important; }
+    .section-header h2 { font-size: 16px !important; }
+
     .shift-table { font-size: 11px; }
     .shift-table th, .shift-table td { padding: 4px 5px; }
-    @page { margin: 12mm; size: A4 landscape; }
+
+    @page { margin: 10mm; size: A4 landscape; }
   }
 
   /* ── RESPONSIVE ── */
@@ -435,20 +491,22 @@
         <button onclick="changeMonth(1)">›</button>
       </div>
     </div>
-    <p class="tip">點擊日期格右下角「編輯」按鈕可輸入當天負責人員</p>
+    <p class="tip">點擊日期格右下角「編輯」按鈕可輸入當天負責人員（清潔表格僅顯示週一至週五）</p>
     <div class="calendars-wrap">
       <div class="cal-section">
         <h3>清潔</h3>
-        <div class="calendar" id="cleanCal">
+        <!-- cal-weekday = 5 columns only -->
+        <div class="calendar cal-weekday" id="cleanCal">
           <div class="cal-header">
-            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+            <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div>
           </div>
           <div class="cal-body" id="cleanCalBody"></div>
         </div>
       </div>
       <div class="cal-section">
         <h3>洗餐具</h3>
-        <div class="calendar" id="dishCal">
+        <!-- cal-full = 7 columns -->
+        <div class="calendar cal-full" id="dishCal">
           <div class="cal-header">
             <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
           </div>
@@ -518,24 +576,18 @@
 let staff = ['Sam','祥瑋','菟菟','依婷','偲璇','若菱','林宣','翠翠','可柔'];
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
 
-// Clean calendar
-let cleanYear = 2026, cleanMonth = 3; // 0-indexed April = 3
-// Schedule clean data: { "YYYY-M-D": { juice, floor, toilet, glassDay, glassNight } }
+let cleanYear = 2026, cleanMonth = 3; // April = index 3
 let cleanData = {};
-// Dish data: { "YYYY-M-D": name }
 let dishData = {};
-// Shift data
-let shiftYear = 2026, shiftMonth = 1; // 0-indexed Feb = 1
-// { "YYYY-M-D": { opener, duty, at20, close, closed } }
+let shiftYear = 2026, shiftMonth = 1; // Feb = index 1
 let shiftData = {};
 
 let modalContext = null;
 
-// ── Pre-fill from image 1 ──
+// ── Pre-fill April 2026 ──
 function prefillApril2026() {
   const y=2026, m=3;
   const d = (day) => `${y}-${m}-${day}`;
-  // Clean
   cleanData[d(1)] = { glass:'白天：若菱\n晚上：林宣', toilet:'', juice:'', floor:'' };
   cleanData[d(2)] = { juice:'依婷', floor:'', toilet:'', glass:'' };
   cleanData[d(3)] = { toilet:'廁所：祥瑋\n刷地：偲嫺', juice:'', floor:'', glass:'' };
@@ -559,8 +611,7 @@ function prefillApril2026() {
   cleanData[d(29)] = { glass:'白天：林宣\n晚上：若菱', toilet:'', juice:'', floor:'' };
   cleanData[d(30)] = { juice:'店休', floor:'', toilet:'', glass:'' };
 
-  // Dish
-  dishData[d(2)] = 'Sam'; dishData[d(3)] = '祥瑋'; dishData[d(4)] = '菟菟'; dishData[d(5)] = '依婷'; // week 1
+  dishData[d(2)] = 'Sam'; dishData[d(3)] = '祥瑋'; dishData[d(4)] = '菟菟';
   dishData[d(5)] = '偲嫺'; dishData[d(6)] = '若菱'; dishData[d(7)] = 'Sam'; dishData[d(8)] = '林宣'; dishData[d(9)] = '依婷'; dishData[d(10)] = '菟菟'; dishData[d(11)] = '祥瑋';
   dishData[d(12)] = '偲嫺'; dishData[d(13)] = 'Sam'; dishData[d(14)] = '菟菟'; dishData[d(15)] = '若菱'; dishData[d(16)] = '林宣'; dishData[d(17)] = '可柔'; dishData[d(18)] = '若菱';
   dishData[d(19)] = '偲嫺'; dishData[d(20)] = 'Sam'; dishData[d(21)] = '依婷'; dishData[d(22)] = '祥瑋'; dishData[d(23)] = '林宣'; dishData[d(24)] = '若菱'; dishData[d(25)] = '菟菟';
@@ -585,11 +636,8 @@ function prefillFeb2026() {
   sd(13, {opener:'苑', duty:'可、俐、宣、若、瑋、思', at20:'瑋', close:'可'});
   sd(14, {opener:'苑', duty:'俐、郭、宣、若、瑋/思', at20:'俐', close:'郭'});
   sd(15, {opener:'苑', duty:'可、郭、若、瑋、翠/思', at20:'X', close:'可'});
-  sd(16, {closed:true});
-  sd(17, {closed:true});
-  sd(18, {closed:true});
-  sd(19, {closed:true});
-  sd(20, {closed:true});
+  sd(16, {closed:true}); sd(17, {closed:true}); sd(18, {closed:true});
+  sd(19, {closed:true}); sd(20, {closed:true});
   sd(21, {opener:'苑', duty:'俐、郭、宣、若、翠/思', at20:'俐／思', close:'宣'});
   sd(22, {opener:'苑', duty:'俐、郭、宣、若、翠/思', at20:'郭', close:'俐'});
   sd(23, {opener:'苑', duty:'可、俐、郭、瑋、翠', at20:'可', close:'俐'});
@@ -632,12 +680,10 @@ function addStaff() {
   if(name && !staff.includes(name)) { staff.push(name); renderStaff(); }
   inp.value='';
 }
-function removeStaff(i) {
-  staff.splice(i,1); renderStaff();
-}
+function removeStaff(i) { staff.splice(i,1); renderStaff(); }
 
 // ══════════════════════════════════════════
-//  CLEAN CALENDAR
+//  CLEAN CALENDAR (weekdays only, Mon–Fri)
 // ══════════════════════════════════════════
 function changeMonth(d) {
   cleanMonth += d;
@@ -650,35 +696,109 @@ function changeMonth(d) {
 }
 
 function renderCleanCal() {
-  renderCal('cleanCalBody', cleanYear, cleanMonth, 'clean');
+  renderWeekdayCal('cleanCalBody', cleanYear, cleanMonth, 'clean');
 }
 function renderDishCal() {
-  renderCal('dishCalBody', cleanYear, cleanMonth, 'dish');
+  renderFullCal('dishCalBody', cleanYear, cleanMonth, 'dish');
 }
 
-function renderCal(bodyId, year, month, type) {
+/**
+ * Weekday-only calendar: shows Mon–Fri columns only.
+ * Weekend days are skipped entirely.
+ */
+function renderWeekdayCal(bodyId, year, month, type) {
+  const body = document.getElementById(bodyId);
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+
+  // Find the Monday of the week containing the 1st of the month
+  const firstDay = new Date(year, month, 1);
+  // getDay(): 0=Sun,1=Mon,...,6=Sat
+  // We want Mon=0 offset. If firstDay is Sun(0), offset=6; Mon(1)=0; Tue(2)=1...
+  const firstDow = firstDay.getDay(); // 0=Sun
+  // offset from Monday: Mon=0,Tue=1,...,Fri=4,Sat=5,Sun=6
+  const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
+
+  let html = '';
+  // Total weekday cells needed: pad + actual weekdays in month
+  // We'll iterate week by week
+  let currentDate = new Date(year, month, 1 - offsetFromMon); // start from Monday of first week
+
+  // Figure out total rows needed
+  const lastDay = new Date(year, month, daysInMonth);
+  const lastDow = lastDay.getDay();
+  const offsetFromFri = (lastDow === 0) ? 2 : (lastDow <= 5 ? 5 - lastDow : 0);
+  const endDate = new Date(year, month, daysInMonth + offsetFromFri);
+
+  while(currentDate <= endDate) {
+    const dow = currentDate.getDay(); // 0=Sun
+    // Only render Mon–Fri
+    if(dow >= 1 && dow <= 5) {
+      const isCurrentMonth = (currentDate.getFullYear()===year && currentDate.getMonth()===month);
+      const day = currentDate.getDate();
+      const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
+      const isToday = (currentDate.getFullYear()===today.getFullYear() &&
+                       currentDate.getMonth()===today.getMonth() &&
+                       currentDate.getDate()===today.getDate());
+
+      // Highlight alternating weeks: week index from start
+      const weekIndex = getWeekIndex(currentDate, year, month);
+      const hl = (weekIndex % 2 === 1);
+
+      let cls = '';
+      if(!isCurrentMonth) cls = 'other-month';
+      else if(isToday) cls = 'today';
+      else if(hl) cls = 'highlighted';
+
+      let content = '';
+      if(isCurrentMonth && type==='clean') {
+        const cd = cleanData[key]||{};
+        if(cd.glass) content += `<div class="task-line">玻璃\n${cd.glass}</div>`;
+        if(cd.juice||cd.floor) content += `<div class="task-line">果汁：${cd.juice||'-'}\n刷地：${cd.floor||'-'}</div>`;
+        if(cd.toilet) content += `<div class="task-line">${cd.toilet}</div>`;
+      }
+
+      html += `<div class="cal-cell ${cls}">
+        <span class="date-num">${day}</span>
+        ${content}
+        ${isCurrentMonth ? `<button class="edit-btn" onclick='openEditModal("${type}","${key}","${day}")'>編輯</button>` : ''}
+      </div>`;
+    }
+    // Move to next day
+    currentDate = new Date(currentDate.getTime() + 86400000);
+  }
+  body.innerHTML = html;
+}
+
+function getWeekIndex(date, refYear, refMonth) {
+  // Week index relative to the first Monday on or before the 1st of refMonth
+  const firstDay = new Date(refYear, refMonth, 1);
+  const firstDow = firstDay.getDay();
+  const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
+  const weekStart = new Date(refYear, refMonth, 1 - offsetFromMon);
+  const diff = date - weekStart;
+  return Math.floor(diff / (7 * 86400000));
+}
+
+/**
+ * Full 7-column calendar for dish washing.
+ */
+function renderFullCal(bodyId, year, month, type) {
   const body = document.getElementById(bodyId);
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const prevDays = new Date(year, month, 0).getDate();
   const today = new Date();
   let html = '';
-  let weekHighlight = false;
-  let weekStart = firstDay; // track week row
-
-  // Determine which weeks to highlight (alternating, odd weeks = highlighted like image)
-  let cellIndex = 0;
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
 
   for(let i=0; i<totalCells; i++) {
     const weekRow = Math.floor(i/7);
-    const hl = (weekRow%2===1); // alternate highlight
+    const hl = (weekRow%2===1);
     if(i < firstDay) {
-      // prev month
       const d = prevDays - firstDay + i + 1;
       html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
     } else if(i >= firstDay + daysInMonth) {
-      // next month
       const d = i - firstDay - daysInMonth + 1;
       html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
     } else {
@@ -691,19 +811,10 @@ function renderCal(bodyId, year, month, type) {
       if(isToday) cls='today'; else if(hl) cls='highlighted'; else if(isWeekend) cls='weekend';
 
       let content = '';
-      if(type==='clean') {
-        const cd = cleanData[key]||{};
-        if(cd.juice||cd.floor||cd.toilet||cd.glass) {
-          if(cd.glass) content += `<div class="task-line" style="text-align: center;">玻璃\n${cd.glass} </div>`;
-          if(cd.juice||cd.floor) content += `<div class="task-line">果汁：${cd.juice||'-'}<br>刷地：${cd.floor||'-'}</div>`;
-          if(cd.toilet) content += `<div class="task-line">${cd.toilet}</div>`;
-        }
-      } else {
-        const dd = dishData[key]||'';
-        if(dd) {
-          if(dd==='店休') content=`<div class="closed-label">店休</div>`;
-          else content=`<div class="task-line"><b>${dd}</b></div>`;
-        }
+      const dd = dishData[key]||'';
+      if(dd) {
+        if(dd==='店休') content=`<div class="closed-label">店休</div>`;
+        else content=`<div class="task-line"><b>${dd}</b></div>`;
       }
       html += `<div class="cal-cell ${cls}">
         <span class="date-num">${day}</span>
@@ -718,7 +829,6 @@ function renderCal(bodyId, year, month, type) {
 // ══════════════════════════════════════════
 //  SHIFT TABLE
 // ══════════════════════════════════════════
-const OPENER_OPTIONS = ['可','郭','俐','菟','宣','若','瑋'];
 function changeShiftMonth(d) {
   shiftMonth += d;
   if(shiftMonth>11){shiftMonth=0;shiftYear++;}
@@ -738,7 +848,6 @@ function renderShiftTable() {
     const weekName = `週${WEEKDAYS[dow]}`;
     rows.push({d, key, dow, weekName, ...sd});
   }
-  // Split into two halves for side-by-side layout (like image 2)
   const half = Math.ceil(rows.length/2);
   const left = rows.slice(0,half);
   const right = rows.slice(half);
@@ -893,7 +1002,7 @@ function saveModal() {
 //  PRINT
 // ══════════════════════════════════════════
 function printSchedule() {
-  window.print(); // 直接呼叫瀏覽器列印，CSS 會自動處理好顯示 .active 面板
+  window.print();
 }
 
 // ══════════════════════════════════════════
