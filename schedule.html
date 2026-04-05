@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>排班管理系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --sage: #7a9e7e;
@@ -615,13 +616,12 @@
 
 <div class="main">
 
-  <!-- ══ PANEL 1: 清潔 & 洗餐具 ══ -->
   <div class="panel active" id="cleanPanel">
     <div class="section-header">
-      <h2 id="cleanTitle">2026 年 4 月　清潔與洗餐具</h2>
+      <h2 id="cleanTitle"></h2>
       <div class="month-nav">
         <button onclick="changeMonth(-1)">‹</button>
-        <span id="monthLabel">2026 年 4 月</span>
+        <span id="monthLabel"></span>
         <button onclick="changeMonth(1)">›</button>
       </div>
     </div>
@@ -648,13 +648,12 @@
     </div>
   </div>
 
-  <!-- ══ PANEL 2: 開店關帳值班 ══ -->
   <div class="panel" id="shiftPanel">
     <div class="section-header">
       <h2>開店關帳人員值班表</h2>
       <div class="month-nav">
         <button onclick="changeShiftMonth(-1)">‹</button>
-        <span id="shiftMonthLabel">2026 年 2 月</span>
+        <span id="shiftMonthLabel"></span>
         <button onclick="changeShiftMonth(1)">›</button>
       </div>
     </div>
@@ -662,7 +661,7 @@
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
         <thead>
-          <tr><th colspan="7" id="shiftTableTitle">2026年2月份</th></tr>
+          <tr><th colspan="7" id="shiftTableTitle"></th></tr>
           <tr>
             <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
             <th style="width:20px;background:#f0f0f0;"></th>
@@ -673,10 +672,9 @@
     </div>
   </div>
 
-  <!-- ══ PANEL 3: 人員管理 ══ -->
   <div class="panel" id="staffPanel">
     <div class="section-header"><h2>人員管理</h2></div>
-    <p class="tip">新增或刪除排班人員，變更會立即套用至所有表格。</p>
+    <p class="tip">新增或刪除排班人員，變更會立即套用至所有表格並儲存至資料庫。</p>
     <div class="staff-grid" id="staffGrid"></div>
     <div class="add-staff-row">
       <input type="text" id="newStaffInput" placeholder="輸入姓名" maxlength="10" onkeydown="if(event.key==='Enter')addStaff()">
@@ -688,7 +686,6 @@
 
 </div>
 
-<!-- ══ EDIT MODAL ══ -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <button class="close-btn" onclick="closeModal()">✕</button>
@@ -703,85 +700,42 @@
 
 <script>
 // ══════════════════════════════════════════
-//  STATE
+//  SUPABASE 設定 (請填寫你自己的專案資訊)
 // ══════════════════════════════════════════
-let staff = ['Sam','祥瑋','菟菟','依婷','偲璇','若菱','林宣','翠翠','可柔'];
+const { createClient } = supabase;
+const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co'; // 替換成你的 URL
+const SUPABASE_ANON_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww'; // 替換成你的 ANON KEY
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 通用儲存函式
+async function saveToSupabase(recordType, dateKey, dataObject) {
+  const { data, error } = await supabaseClient
+    .from('schedule_data') // 資料庫 Table 名稱
+    .upsert(
+      { 
+        id: `${recordType}_${dateKey}`, // 組合為主鍵確保唯一性
+        type: recordType, 
+        date_key: dateKey, 
+        data: dataObject 
+      },
+      { onConflict: 'id' }
+    );
+  if (error) console.error('儲存至 Supabase 失敗:', error);
+}
+
+// ══════════════════════════════════════════
+//  STATE (已清空假資料)
+// ══════════════════════════════════════════
+let staff = []; 
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
 
-let cleanYear = 2026, cleanMonth = 3; // April = index 3
+let cleanYear = new Date().getFullYear(), cleanMonth = new Date().getMonth(); 
 let cleanData = {};
 let dishData = {};
-let shiftYear = 2026, shiftMonth = 1; // Feb = index 1
+let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth(); 
 let shiftData = {};
 
 let modalContext = null;
-
-// ── Pre-fill April 2026 ──
-function prefillApril2026() {
-  const y=2026, m=3;
-  const d = (day) => `${y}-${m}-${day}`;
-  cleanData[d(1)] = { glass:'白天：若菱\n晚上：林宣', toilet:'', juice:'', floor:'' };
-  cleanData[d(2)] = { juice:'依婷', floor:'', toilet:'', glass:'' };
-  cleanData[d(3)] = { toilet:'廁所：祥瑋\n刷地：偲嫺', juice:'', floor:'', glass:'' };
-  cleanData[d(6)] = { juice:'若菱', floor:'Sam', toilet:'', glass:'' };
-  cleanData[d(7)] = { toilet:'廁所\n翠翠', juice:'', floor:'', glass:'' };
-  cleanData[d(8)] = { glass:'白天：依婷\n晚上：祥瑋', toilet:'', juice:'', floor:'' };
-  cleanData[d(9)] = { juice:'果汁\n祥瑋', floor:'', toilet:'', glass:'' };
-  cleanData[d(10)] = { toilet:'廁所：若菱\n刷地：林宣', juice:'', floor:'', glass:'' };
-  cleanData[d(13)] = { juice:'翠翠', floor:'菟菟', toilet:'', glass:'' };
-  cleanData[d(14)] = { toilet:'廁所\nSam', juice:'', floor:'', glass:'' };
-  cleanData[d(15)] = { glass:'白天：菟菟\n晚上：Sam', toilet:'', juice:'', floor:'' };
-  cleanData[d(16)] = { juice:'菟菟\n菟菟', floor:'', toilet:'', glass:'' };
-  cleanData[d(17)] = { toilet:'廁所：菟菟\n刷地：菟菟', juice:'', floor:'', glass:'' };
-  cleanData[d(20)] = { juice:'Sam', floor:'依婷', toilet:'', glass:'' };
-  cleanData[d(21)] = { toilet:'廁所\n林宣', juice:'', floor:'', glass:'' };
-  cleanData[d(22)] = { glass:'白天：林宣\n晚上：依婷', toilet:'', juice:'', floor:'' };
-  cleanData[d(23)] = { juice:'偲嫺', floor:'', toilet:'', glass:'' };
-  cleanData[d(24)] = { toilet:'廁所：偲嫺\n刷地：偲嫺', juice:'', floor:'', glass:'' };
-  cleanData[d(27)] = { juice:'翠翠', floor:'祥瑋', toilet:'', glass:'' };
-  cleanData[d(28)] = { toilet:'廁所\n依婷', juice:'', floor:'', glass:'' };
-  cleanData[d(29)] = { glass:'白天：林宣\n晚上：若菱', toilet:'', juice:'', floor:'' };
-  cleanData[d(30)] = { juice:'店休', floor:'', toilet:'', glass:'' };
-
-  dishData[d(2)] = 'Sam'; dishData[d(3)] = '祥瑋'; dishData[d(4)] = '菟菟';
-  dishData[d(5)] = '偲嫺'; dishData[d(6)] = '若菱'; dishData[d(7)] = 'Sam'; dishData[d(8)] = '林宣'; dishData[d(9)] = '依婷'; dishData[d(10)] = '菟菟'; dishData[d(11)] = '祥瑋';
-  dishData[d(12)] = '偲嫺'; dishData[d(13)] = 'Sam'; dishData[d(14)] = '菟菟'; dishData[d(15)] = '若菱'; dishData[d(16)] = '林宣'; dishData[d(17)] = '可柔'; dishData[d(18)] = '若菱';
-  dishData[d(19)] = '偲嫺'; dishData[d(20)] = 'Sam'; dishData[d(21)] = '依婷'; dishData[d(22)] = '祥瑋'; dishData[d(23)] = '林宣'; dishData[d(24)] = '若菱'; dishData[d(25)] = '菟菟';
-  dishData[d(26)] = '偲嫺'; dishData[d(27)] = '祥瑋'; dishData[d(28)] = 'Sam'; dishData[d(29)] = '林宣'; dishData[d(30)] = '店休';
-}
-
-function prefillFeb2026() {
-  const y=2026, m=1;
-  const sd = (day,data) => { shiftData[`${y}-${m}-${day}`] = data; };
-  sd(1, {closed:true});
-  sd(2, {opener:'苑', duty:'可、俐、郭、翠/Sam', at20:'俐', close:'可'});
-  sd(3, {opener:'苑', duty:'可、俐、郭、瑋、翠/Sam', at20:'可／郭', close:'俐'});
-  sd(4, {opener:'郭', duty:'俐、宣、若、瑋、翠/Sam', at20:'若', close:'宣'});
-  sd(5, {opener:'俐', duty:'可、宣、若、瑋、思', at20:'瑋、思', close:'可'});
-  sd(6, {opener:'苑', duty:'可、俐、郭、宣、若、翠/思', at20:'宣／可', close:'俐'});
-  sd(7, {opener:'苑', duty:'可、郭、宣、若、瑋、翠/思', at20:'郭／思／瑋', close:'宣'});
-  sd(8, {opener:'苑', duty:'俐、宣、若、瑋、翠/思', at20:'俐／若', close:'宣'});
-  sd(9, {opener:'苑', duty:'可、俐、郭、瑋、翠/Sam', at20:'可／sam', close:'郭'});
-  sd(10, {opener:'苑', duty:'可、郭、若、瑋、翠/Sam', at20:'郭', close:'可'});
-  sd(11, {opener:'郭', duty:'可、宣、若、翠/Sam', at20:'若', close:'宣'});
-  sd(12, {opener:'苑', duty:'可、俐、宣、若、瑋、思', at20:'宣／思', close:'可'});
-  sd(13, {opener:'苑', duty:'可、俐、宣、若、瑋、思', at20:'瑋', close:'可'});
-  sd(14, {opener:'苑', duty:'俐、郭、宣、若、瑋/思', at20:'俐', close:'郭'});
-  sd(15, {opener:'苑', duty:'可、郭、若、瑋、翠/思', at20:'X', close:'可'});
-  sd(16, {closed:true}); sd(17, {closed:true}); sd(18, {closed:true});
-  sd(19, {closed:true}); sd(20, {closed:true});
-  sd(21, {opener:'苑', duty:'俐、郭、宣、若、翠/思', at20:'俐／思', close:'宣'});
-  sd(22, {opener:'苑', duty:'俐、郭、宣、若、翠/思', at20:'郭', close:'俐'});
-  sd(23, {opener:'苑', duty:'可、俐、郭、瑋、翠', at20:'可', close:'俐'});
-  sd(24, {opener:'苑', duty:'俐、郭、宣、瑋、Sam', at20:'宣／sam', close:'俐'});
-  sd(25, {opener:'郭', duty:'可、宣、若、瑋、翠/Sam', at20:'宣', close:'可'});
-  sd(26, {opener:'郭', duty:'可、宣、若、翠/思', at20:'若', close:'可'});
-  sd(27, {opener:'俐', duty:'可、若、瑋、思', at20:'宣', close:'俐'});
-  sd(28, {opener:'苑', duty:'可、俐、宣、瑋、翠/思', at20:'可／瑋', close:'宣'});
-}
-
-prefillApril2026();
-prefillFeb2026();
 
 // ══════════════════════════════════════════
 //  TABS
@@ -809,10 +763,18 @@ function renderStaff() {
 function addStaff() {
   const inp = document.getElementById('newStaffInput');
   const name = inp.value.trim();
-  if(name && !staff.includes(name)) { staff.push(name); renderStaff(); }
+  if(name && !staff.includes(name)) { 
+    staff.push(name); 
+    renderStaff(); 
+    saveToSupabase('staff', 'all', staff); // 儲存員工列表
+  }
   inp.value='';
 }
-function removeStaff(i) { staff.splice(i,1); renderStaff(); }
+function removeStaff(i) { 
+  staff.splice(i,1); 
+  renderStaff(); 
+  saveToSupabase('staff', 'all', staff); // 儲存員工列表
+}
 
 // ══════════════════════════════════════════
 //  CLEAN CALENDAR (weekdays only, Mon–Fri)
@@ -821,10 +783,14 @@ function changeMonth(d) {
   cleanMonth += d;
   if(cleanMonth > 11) { cleanMonth=0; cleanYear++; }
   if(cleanMonth < 0) { cleanMonth=11; cleanYear--; }
-  document.getElementById('monthLabel').textContent = `${cleanYear} 年 ${cleanMonth+1} 月`;
-  document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth+1} 月　清潔與洗餐具`;
+  updateCleanLabels();
   renderCleanCal();
   renderDishCal();
+}
+
+function updateCleanLabels() {
+  document.getElementById('monthLabel').textContent = `${cleanYear} 年 ${cleanMonth+1} 月`;
+  document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth+1} 月　清潔與洗餐具`;
 }
 
 function renderCleanCal() {
@@ -947,9 +913,13 @@ function changeShiftMonth(d) {
   shiftMonth += d;
   if(shiftMonth>11){shiftMonth=0;shiftYear++;}
   if(shiftMonth<0){shiftMonth=11;shiftYear--;}
+  updateShiftLabels();
+  renderShiftTable();
+}
+
+function updateShiftLabels() {
   document.getElementById('shiftMonthLabel').textContent=`${shiftYear} 年 ${shiftMonth+1} 月`;
   document.getElementById('shiftTableTitle').textContent=`${shiftYear}年${shiftMonth+1}月份`;
-  renderShiftTable();
 }
 
 function renderShiftTable() {
@@ -1016,6 +986,7 @@ function buildShiftCells(row) {
 function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
+  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
 }
 
 function cycleOpener(key, btn) {
@@ -1027,6 +998,7 @@ function cycleOpener(key, btn) {
   shiftData[key].opener = next;
   btn.textContent = next||'　';
   btn.className = `opener-badge opener-${next}`;
+  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
 }
 
 // ══════════════════════════════════════════
@@ -1104,10 +1076,12 @@ function saveModal() {
       glass: document.getElementById('m_glass').value.trim(),
     };
     renderCleanCal();
+    saveToSupabase('clean', key, cleanData[key]); // 儲存清潔表
   } else if(type==='dish') {
     const manual = document.getElementById('m_dish_manual').value.trim();
     dishData[key] = manual;
     renderDishCal();
+    saveToSupabase('dish', key, dishData[key]); // 儲存洗餐具表
   }
   closeModal();
 }
@@ -1120,14 +1094,34 @@ function printSchedule() {
 }
 
 // ══════════════════════════════════════════
-//  INIT
+//  INIT (讀取資料並渲染)
 // ══════════════════════════════════════════
-renderCleanCal();
-renderDishCal();
-renderShiftTable();
-document.getElementById('monthLabel').textContent = `${cleanYear} 年 ${cleanMonth+1} 月`;
-document.getElementById('shiftMonthLabel').textContent = `${shiftYear} 年 ${shiftMonth+1} 月`;
-document.getElementById('shiftTableTitle').textContent = `${shiftYear}年${shiftMonth+1}月份`;
+async function initApp() {
+  // 更新介面標題為當前月份
+  updateCleanLabels();
+  updateShiftLabels();
+
+  // 從 Supabase 載入資料
+  const { data, error } = await supabaseClient.from('schedule_data').select('*');
+  if (error) {
+    console.error('載入資料失敗', error);
+  } else if (data) {
+    data.forEach(row => {
+      if (row.type === 'staff') staff = row.data || [];
+      if (row.type === 'clean') cleanData[row.date_key] = row.data;
+      if (row.type === 'dish') dishData[row.date_key] = row.data;
+      if (row.type === 'shift') shiftData[row.date_key] = row.data;
+    });
+  }
+
+  // 渲染畫面
+  renderCleanCal();
+  renderDishCal();
+  renderShiftTable();
+}
+
+// 啟動應用
+initApp();
 </script>
 </body>
 </html>
