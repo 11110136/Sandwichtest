@@ -97,17 +97,12 @@
     transition: background 0.15s, color 0.15s;
   }
   .nav-item svg { width: 18px; height: 18px; opacity: 0.7; }
-  
-  /* 選單 Hover 顏色效果 (對應圖片) */
-  .nav-purple:hover { background: #f3e8ff; color: #9333ea; } /* 新增這行 */
+  .nav-purple:hover { background: #f3e8ff; color: #9333ea; }
   .nav-indigo:hover { background: #e0e7ff; color: #4f46e5; }
   .nav-emerald:hover { background: #d1fae5; color: #059669; }
   .nav-blue:hover { background: #dbeafe; color: #2563eb; }
 
-  /* 為了不讓漢堡按鈕擋住 Topbar 的標題，我們微調一下標題位置 */
-  .topbar h1 { 
-    margin-left: 54px; 
-  }
+  .topbar h1 { margin-left: 54px; }
 
   /* ── TOP NAV ── */
   .topbar {
@@ -169,13 +164,14 @@
   .main { padding: 28px 32px; }
   .panel { display: none; }
   .panel.active { display: block; }
+  .tip { margin-bottom: 15px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
 
   /* ── SECTION HEADER ── */
   .section-header {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   .section-header h2 {
     font-family: 'Noto Serif TC', serif;
@@ -204,104 +200,45 @@
   .month-nav span { font-size: 15px; font-weight: 700; color: var(--ink); min-width: 90px; text-align: center; }
 
   /* ── STAFF MANAGER ── */
-  .staff-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
+  .staff-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
   .staff-tag {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--sage-pale);
-    border: 1.5px solid var(--sage-light);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 14px;
-    font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--sage-pale); border: 1.5px solid var(--sage-light);
+    border-radius: 20px; padding: 6px 14px; font-size: 14px; font-weight: 500;
   }
   .staff-tag .del { background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 16px; line-height: 1; padding: 0 2px; }
   .add-staff-row { display: flex; gap: 8px; }
   .add-staff-row input {
-    padding: 7px 12px;
-    border: 1.5px solid var(--border);
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    width: 160px;
-    transition: border .15s;
+    padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 6px;
+    font-family: inherit; font-size: 14px; outline: none; width: 160px; transition: border .15s;
   }
   .add-staff-row input:focus { border-color: var(--sage); }
 
   /* ── CALENDAR GRIDS ── */
-  .calendars-wrap {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-  }
-  .cal-section h3 {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 20px;
-    color: var(--sage);
-    margin-bottom: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
-  .calendar {
-    background: var(--warm-white);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
+  .calendars-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .cal-section h3 { font-family: 'Noto Serif TC', serif; font-size: 20px; color: var(--sage); margin-bottom: 10px; font-weight: 700; letter-spacing: 1px; }
+  .calendar { background: var(--warm-white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
 
-  /* ── WEEKDAY CALENDAR (5 columns: Mon–Fri) ── */
-  .cal-weekday .cal-header {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    background: var(--sage);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-  }
-  .cal-weekday .cal-body {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-  }
+  .cal-weekday .cal-header { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; }
+  .cal-weekday .cal-body { display: grid; grid-template-columns: repeat(5, 1fr); }
 
-  /* ── FULL CALENDAR (7 columns: all week) ── */
-  .cal-full .cal-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    background: var(--sage);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-  }
-  .cal-full .cal-body {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-  }
+  .cal-full .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; }
+  .cal-full .cal-body { display: grid; grid-template-columns: repeat(7, 1fr); }
 
-  .cal-header div {
-    text-align: center;
-    padding: 8px 4px;
-    letter-spacing: .5px;
-  }
+  .cal-header div { text-align: center; padding: 8px 4px; letter-spacing: .5px; }
 
   /* ── CALENDAR CELL ── */
   .cal-cell {
-    min-height: 110px;
+    min-height: 120px;
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    padding: 8px 6px;
+    padding: 6px;
     font-size: 15px;
-    vertical-align: top;
     position: relative;
     transition: background .15s;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .cal-cell:last-child { border-right: none; }
   .cal-weekday .cal-cell:nth-child(5n) { border-right: none; }
@@ -316,55 +253,50 @@
     font-size: 17px;
     font-weight: 700;
     color: var(--ink-soft);
-    margin-bottom: 6px;
-    display: block;
+    margin-bottom: 4px;
     text-align: center;
   }
   .cal-cell.other-month .date-num { color: #bbb; }
 
-  .cal-cell .task-line {
-    font-size: 15px;
-    line-height: 1.6;
+  /* ── INLINE EDIT BOX ── */
+  .inline-edit {
+    flex: 1;
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+    text-align: center;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 4px;
     color: var(--ink-soft);
-    white-space: pre-line;
-    text-align: center;
+    border-radius: 6px;
+    transition: background 0.2s, box-shadow 0.2s;
+    line-height: 1.5;
   }
-  .cal-cell .task-line b { color: var(--olive); font-size: 16px; }
-
-  .cal-cell .edit-btn {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    background: var(--sage-light);
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--olive);
-    opacity: 0;
-    transition: opacity .15s;
+  .inline-edit:empty:before {
+    content: attr(data-placeholder);
+    color: #bbb;
+    pointer-events: none;
   }
-  .cal-cell:hover .edit-btn { opacity: 1; }
-
-  .cal-cell .closed-label {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent-red);
-    text-align: center;
+  .inline-edit:focus {
+    background: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--sage-light);
   }
+  
+  .dish-edit { font-weight: 700; color: var(--olive); font-size: 15px; }
+  .dish-edit.closed-label { color: var(--accent-red); font-size: 16px; }
 
   /* ── SHIFT TABLE ── */
   .shift-wrap {
     width: 100%;
-    overflow-x: auto; /* 允許橫向滑動 */
+    overflow-x: auto; 
     -webkit-overflow-scrolling: touch;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
   }
   .shift-table {
     width: 100%;
-    min-width: 900px; /* 強制最小寬度，讓手機版可以左右滑動而不會擠壓變形 */
+    min-width: 900px;
     border-collapse: collapse;
     font-size: 15px;
     background: var(--warm-white);
@@ -383,43 +315,19 @@
     letter-spacing: 2px;
     border: none;
   }
-  .shift-table thead tr:nth-child(2) th {
-    background: #e8f0fe;
-    color: var(--ink-soft);
-    font-weight: 700;
-    font-size: 15px;
-  }
-  .shift-table td.closed-cell {
-    color: var(--accent-red);
-    font-weight: 700;
-    font-size: 15px;
-  }
-  .shift-table td.open-cell {
-    min-width: 120px;
-  }
+  .shift-table thead tr:nth-child(2) th { background: #e8f0fe; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+  .shift-table td.closed-cell { color: var(--accent-red); font-weight: 700; font-size: 15px; }
+  .shift-table td.open-cell { min-width: 120px; }
   .shift-table td input, .shift-table td select {
-    font-family: inherit;
-    font-size: 14px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 5px 6px;
-    width: 100%;
-    outline: none;
-    background: var(--cream);
-    transition: border .15s;
-    text-align: center;
+    font-family: inherit; font-size: 14px; border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 6px; width: 100%; outline: none; background: var(--cream);
+    transition: border .15s; text-align: center;
   }
   .shift-table td input:focus, .shift-table td select:focus { border-color: var(--sage); background: #fff; }
 
   .opener-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    font-family: inherit;
+    display: inline-block; padding: 4px 10px; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit;
   }
   .opener-可 { background: #ffe0b2; color: #b26a00; }
   .opener-郭 { background: #d1c4e9; color: #4a148c; }
@@ -430,278 +338,98 @@
   .opener-菟 { background: #f0f4c3; color: #827717; }
   .opener-苑 { background: #ffd54f; color: #5d4037; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.45);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: #fff;
-    border-radius: 14px;
-    padding: 28px 32px;
-    width: 440px;
-    max-width: 95vw;
-    box-shadow: 0 8px 40px rgba(0,0,0,.18);
-    position: relative;
-  }
-  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 18px; color: var(--olive); }
-  .modal .close-btn {
-    position: absolute;
-    top: 16px; right: 18px;
-    background: none; border: none; font-size: 20px; cursor: pointer; color: #888;
-  }
-  .form-group { margin-bottom: 14px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--ink-soft); }
-  .form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 8px 11px;
-    border: 1.5px solid var(--border);
-    border-radius: 7px;
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-    transition: border .15s;
-    background: var(--cream);
-  }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--sage); background: #fff; }
-  .form-group textarea { resize: vertical; min-height: 60px; }
-  .staff-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .staff-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--sage-pale);
-    border: 1.5px solid var(--border);
-    border-radius: 15px;
-    padding: 4px 12px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all .15s;
-    user-select: none;
-  }
-  .staff-checkbox input { display: none; }
-  .staff-checkbox.checked { background: var(--sage); color: #fff; border-color: var(--olive); }
-  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-
   /* ══════════════════════════════════════════
-     PRINT STYLES — 清潔＋洗餐具同頁、填滿、置中
+     PRINT STYLES — 優化雙頁面列印
      ══════════════════════════════════════════ */
   @media print {
-    @page {
-      margin: 8mm 10mm;
-    }
-
+    @page { margin: 8mm 10mm; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
     body { background: #fff !important; margin: 0; padding: 0; }
 
-    /* Hide everything except active panel */
+    /* 隱藏不需要列印的元素 */
     .topbar, .tabs, .section-header .month-nav,
-    .edit-btn, .btn, .add-staff-row,
-    #staffPanel, .modal-overlay { display: none !important; }
+    .btn, .add-staff-row, .tip,
+    #staffPanel, .global-nav { display: none !important; }
 
     .main { padding: 0 !important; margin: 0 !important; }
 
+    /* 強制顯示需要印出的兩個面板 */
     .panel { display: none !important; }
-    .panel.active { display: flex !important; flex-direction: column; height: 100vh; }
 
-    /* ── cleanPanel: fill the entire page ── */
+    /* 第1頁: 清潔與洗餐具 */
     #cleanPanel {
-      width: 100% !important;
-      height: calc(100vh - 16mm) !important;
       display: flex !important;
       flex-direction: column !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      gap: 4px !important;
+      width: 100% !important;
+      height: calc(100vh - 16mm) !important; /* 填滿第一頁 */
+      page-break-after: always !important; /* 強制分頁 */
+      break-after: page !important;
     }
 
-    /* Title row */
-    #cleanPanel .section-header {
+    /* 第2頁: 排班表 */
+    #shiftPanel {
+      display: block !important;
       width: 100% !important;
+      page-break-before: always !important; /* 從第二頁開始 */
+      break-before: page !important;
+    }
+
+    /* 讓第二頁的排班表標題強制置中 */
+    #shiftPanel .section-header {
+      display: flex !important;
       justify-content: center !important;
-      margin-bottom: 4px !important;
-    }
-    #cleanPanel .section-header h2 {
-      font-size: 22px !important;
-      text-align: center !important;
-    }
-
-    /* Two calendars side by side, filling width & remaining height */
-    #cleanPanel .calendars-wrap {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 10px !important;
       width: 100% !important;
-      flex: 1 !important;
-      align-items: stretch !important;
+      margin-top: 10mm !important;
+      margin-bottom: 15px !important;
     }
-
-    #cleanPanel .cal-section {
-      display: flex !important;
-      flex-direction: column !important;
-      height: 100% !important;
-    }
-
-    #cleanPanel .cal-section h3 {
-      font-size: 17px !important;
-      margin-bottom: 4px !important;
+    #shiftPanel .section-header h2 {
       text-align: center !important;
+      width: 100% !important;
     }
 
-    /* Calendar fills remaining height */
-    #cleanPanel .calendar {
-      flex: 1 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      border-radius: 4px !important;
-      overflow: hidden !important;
-      box-shadow: none !important;
-    }
-
-    /* Cal header */
-    #cleanPanel .cal-header div {
-      padding: 6px 2px !important;
-      font-size: 16px !important;
-    }
-
-    /* Cal body fills all space */
-    #cleanPanel .cal-body {
-      flex: 1 !important;
-      /* grid rows auto-stretch to fill */
-      align-content: stretch !important;
-    }
-
-    /* ── 清潔 weekday grid ── */
-    #cleanPanel #cleanCalBody {
-      display: grid !important;
-      grid-template-columns: repeat(5, 1fr) !important;
-      /* auto rows that stretch evenly */
-      grid-auto-rows: 1fr !important;
-      height: 100% !important;
-    }
-
-    /* ── 洗餐具 full-week grid ── */
-    #cleanPanel #dishCalBody {
-      display: grid !important;
-      grid-template-columns: repeat(7, 1fr) !important;
-      grid-auto-rows: 1fr !important;
-      height: 100% !important;
-    }
-
-    /* ── Calendar cells ── */
+    /* 清潔區塊內文填滿 */
+    #cleanPanel .section-header { width: 100% !important; justify-content: center !important; margin-bottom: 4px !important; }
+    #cleanPanel .calendars-wrap { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; flex: 1 !important; align-items: stretch !important; }
+    #cleanPanel .cal-section { display: flex !important; flex-direction: column !important; height: 100% !important; }
+    #cleanPanel .cal-section h3 { font-size: 17px !important; margin-bottom: 4px !important; text-align: center !important; }
+    #cleanPanel .calendar { flex: 1 !important; display: flex !important; flex-direction: column !important; border-radius: 4px !important; box-shadow: none !important; }
+    #cleanPanel .cal-header div { padding: 6px 2px !important; font-size: 16px !important; }
+    #cleanPanel .cal-body { flex: 1 !important; align-content: stretch !important; }
+    #cleanPanel #cleanCalBody { display: grid !important; grid-template-columns: repeat(5, 1fr) !important; grid-auto-rows: 1fr !important; height: 100% !important; }
+    #cleanPanel #dishCalBody { display: grid !important; grid-template-columns: repeat(7, 1fr) !important; grid-auto-rows: 1fr !important; height: 100% !important; }
+    
     #cleanPanel .cal-cell {
-      min-height: unset !important;
-      height: auto !important;
-      padding: 4px 3px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: center !important;
-      border-right: 1px solid #ccc !important;
-      border-bottom: 1px solid #ccc !important;
-      overflow: hidden !important;
+      min-height: unset !important; height: auto !important; padding: 4px 3px !important;
+      display: flex !important; flex-direction: column !important; align-items: center !important;
+      border-right: 1px solid #ccc !important; border-bottom: 1px solid #ccc !important;
     }
+    #cleanPanel .cal-cell .date-num { font-size: 15px !important; margin-bottom: 3px !important; font-weight: 700 !important; line-height: 1.1 !important; }
 
-    #cleanPanel .cal-cell .date-num {
-      font-size: 15px !important;
-      margin-bottom: 3px !important;
-      font-weight: 700 !important;
-      line-height: 1.1 !important;
+    /* Inline Edit 在列印時隱藏外框，呈現純文字 */
+    .inline-edit {
+        box-shadow: none !important; background: transparent !important; border: none !important;
+        font-size: 13px !important;
     }
+    .dish-edit { font-size: 20px !important; font-weight: 700 !important; }
 
-    /* 清潔 cell text */
-    #cleanPanel #cleanCalBody .cal-cell .task-line {
-      font-size: 13px !important;
-      line-height: 1.4 !important;
-      text-align: center !important;
-      white-space: pre-line !important;
-    }
-
-    /* 洗餐具 cell text — LARGE, fills the cell */
-    #cleanPanel #dishCalBody .cal-cell {
-      justify-content: center !important;
-    }
-    #cleanPanel #dishCalBody .cal-cell .task-line {
-      font-size: 20px !important;
-      font-weight: 700 !important;
-      line-height: 1.2 !important;
-      text-align: center !important;
-    }
-    #cleanPanel #dishCalBody .cal-cell .task-line b {
-      font-size: 22px !important;
-      color: var(--olive) !important;
-    }
-    #cleanPanel #dishCalBody .cal-cell .closed-label {
-      font-size: 18px !important;
-      font-weight: 700 !important;
-      color: var(--accent-red) !important;
-    }
-    #cleanPanel #dishCalBody .cal-cell .date-num {
-      font-size: 13px !important;
-      color: #888 !important;
-      font-weight: 600 !important;
-    }
-
-    /* Background colors preserved */
-    #cleanPanel .cal-cell.highlighted { background: #eaf2eb !important; }
-    #cleanPanel .cal-cell.today { background: #fffbea !important; }
-    #cleanPanel .cal-cell.weekend { background: #faf5f5 !important; }
-    #cleanPanel .cal-cell.other-month { background: #f7f7f5 !important; }
-    #cleanPanel .cal-header { background: #7a9e7e !important; color: #fff !important; }
-
-    /* Shift panel print (unchanged) */
     .shift-table { font-size: 11px; }
     .shift-table th, .shift-table td { padding: 4px 5px; }
+    h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
   }
-  /* ── RESPONSIVE (手機版優化) ── */
+
+  /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
     .calendars-wrap { grid-template-columns: 1fr; }
     .main { padding: 16px; }
-
-    /* Topbar 縮小並調整間距 */
     .topbar { padding: 0 12px; height: 52px; }
     .topbar h1 { font-size: 15px; margin-left: 45px; letter-spacing: 0; }
     .topbar-actions { gap: 6px; }
     .topbar-actions .btn { padding: 6px 10px; font-size: 12px; }
-
-    /* Tabs 標籤列允許橫向滑動 */
     .tabs { padding: 0 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .tab { padding: 12px 16px; font-size: 13px; }
-
-    /* 標題與月份切換縮小 */
     .section-header h2 { font-size: 18px; }
     .month-nav button { width: 28px; height: 28px; font-size: 14px; }
     .month-nav span { font-size: 14px; min-width: 80px; }
-
-    /* 彈出視窗滿版 */
-    .modal { width: 92vw; padding: 20px; }
-    /* ── 解決列印時標題與表格斷開的問題 ── */
-    h2, h3, .section-header {
-      page-break-after: avoid !important;
-      break-after: avoid !important;
-    }
-    
-    /* 讓排班表可以正常跨頁，且行內不被切斷 */
-    #shiftPanel { display: block !important; width: 100% !important; }
-    .shift-table { page-break-inside: auto !important; }
-    .shift-table tr { 
-      page-break-inside: avoid !important; 
-      break-inside: avoid !important; 
-    }
-    /* 讓跨頁的表格自動重複表頭 */
-    .shift-table thead { display: table-header-group !important; }
   }
 </style>
 </head>
@@ -756,7 +484,7 @@
         <button onclick="changeMonth(1)">›</button>
       </div>
     </div>
-    <p class="tip">點擊日期格右下角「編輯」按鈕可輸入當天負責人員（清潔表格僅顯示週一至週五）</p>
+    <p class="tip">點擊下方日曆空白處即可直接輸入內容，輸入完點選旁邊即會自動儲存。(支援按Enter換行)</p>
     <div class="calendars-wrap">
       <div class="cal-section">
         <h3>清潔</h3>
@@ -812,51 +540,31 @@
       <input type="text" id="newStaffInput" placeholder="輸入姓名" maxlength="10" onkeydown="if(event.key==='Enter')addStaff()">
       <button class="btn btn-sage" onclick="addStaff()">＋ 新增</button>
     </div>
-    <div class="divider"></div>
-    <p class="tip">預設高亮週次（每隔一週背景上色，對應原表格的綠色行）</p>
   </div>
 
-</div>
-
-<div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <button class="close-btn" onclick="closeModal()">✕</button>
-    <h3 id="modalTitle">編輯排班</h3>
-    <div id="modalContent"></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" style="border-color:var(--border);color:var(--ink-muted);" onclick="closeModal()">取消</button>
-      <button class="btn btn-sage" onclick="saveModal()">儲存</button>
-    </div>
-  </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════
-//  SUPABASE 設定 (請填寫你自己的專案資訊)
+//  SUPABASE 設定
 // ══════════════════════════════════════════
 const { createClient } = supabase;
-const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co'; // 替換成你的 URL
-const SUPABASE_ANON_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww'; // 替換成你的 ANON KEY
+const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co'; 
+const SUPABASE_ANON_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww'; 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 通用儲存函式
 async function saveToSupabase(recordType, dateKey, dataObject) {
   const { data, error } = await supabaseClient
-    .from('schedule_data') // 資料庫 Table 名稱
+    .from('schedule_data') 
     .upsert(
-      { 
-        id: `${recordType}_${dateKey}`, // 組合為主鍵確保唯一性
-        type: recordType, 
-        date_key: dateKey, 
-        data: dataObject 
-      },
+      { id: `${recordType}_${dateKey}`, type: recordType, date_key: dateKey, data: dataObject },
       { onConflict: 'id' }
     );
   if (error) console.error('儲存至 Supabase 失敗:', error);
 }
 
 // ══════════════════════════════════════════
-//  STATE (已清空假資料)
+//  STATE
 // ══════════════════════════════════════════
 let staff = []; 
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
@@ -866,8 +574,6 @@ let cleanData = {};
 let dishData = {};
 let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth(); 
 let shiftData = {};
-
-let modalContext = null;
 
 // ══════════════════════════════════════════
 //  TABS
@@ -887,37 +593,29 @@ function switchTab(id) {
 function renderStaff() {
   const g = document.getElementById('staffGrid');
   g.innerHTML = staff.map((s,i) => `
-    <div class="staff-tag">
-      ${s}
-      <button class="del" onclick="removeStaff(${i})">×</button>
-    </div>`).join('');
+    <div class="staff-tag">${s}<button class="del" onclick="removeStaff(${i})">×</button></div>`
+  ).join('');
 }
 function addStaff() {
   const inp = document.getElementById('newStaffInput');
   const name = inp.value.trim();
   if(name && !staff.includes(name)) { 
-    staff.push(name); 
-    renderStaff(); 
-    saveToSupabase('staff', 'all', staff); // 儲存員工列表
+    staff.push(name); renderStaff(); saveToSupabase('staff', 'all', staff); 
   }
   inp.value='';
 }
 function removeStaff(i) { 
-  staff.splice(i,1); 
-  renderStaff(); 
-  saveToSupabase('staff', 'all', staff); // 儲存員工列表
+  staff.splice(i,1); renderStaff(); saveToSupabase('staff', 'all', staff); 
 }
 
 // ══════════════════════════════════════════
-//  CLEAN CALENDAR (weekdays only, Mon–Fri)
+//  CLEAN & DISH CALENDAR
 // ══════════════════════════════════════════
 function changeMonth(d) {
   cleanMonth += d;
   if(cleanMonth > 11) { cleanMonth=0; cleanYear++; }
   if(cleanMonth < 0) { cleanMonth=11; cleanYear--; }
-  updateCleanLabels();
-  renderCleanCal();
-  renderDishCal();
+  updateCleanLabels(); renderCleanCal(); renderDishCal();
 }
 
 function updateCleanLabels() {
@@ -925,12 +623,8 @@ function updateCleanLabels() {
   document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth+1} 月　清潔與洗餐具`;
 }
 
-function renderCleanCal() {
-  renderWeekdayCal('cleanCalBody', cleanYear, cleanMonth, 'clean');
-}
-function renderDishCal() {
-  renderFullCal('dishCalBody', cleanYear, cleanMonth, 'dish');
-}
+function renderCleanCal() { renderWeekdayCal('cleanCalBody', cleanYear, cleanMonth, 'clean'); }
+function renderDishCal() { renderFullCal('dishCalBody', cleanYear, cleanMonth, 'dish'); }
 
 function renderWeekdayCal(bodyId, year, month, type) {
   const body = document.getElementById(bodyId);
@@ -940,8 +634,6 @@ function renderWeekdayCal(bodyId, year, month, type) {
   const firstDay = new Date(year, month, 1);
   const firstDow = firstDay.getDay();
   const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
-
-  let html = '';
   let currentDate = new Date(year, month, 1 - offsetFromMon);
 
   const lastDay = new Date(year, month, daysInMonth);
@@ -949,37 +641,34 @@ function renderWeekdayCal(bodyId, year, month, type) {
   const offsetFromFri = (lastDow === 0) ? 2 : (lastDow <= 5 ? 5 - lastDow : 0);
   const endDate = new Date(year, month, daysInMonth + offsetFromFri);
 
+  let html = '';
   while(currentDate <= endDate) {
     const dow = currentDate.getDay();
     if(dow >= 1 && dow <= 5) {
       const isCurrentMonth = (currentDate.getFullYear()===year && currentDate.getMonth()===month);
       const day = currentDate.getDate();
       const key = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`;
-      const isToday = (currentDate.getFullYear()===today.getFullYear() &&
-                       currentDate.getMonth()===today.getMonth() &&
-                       currentDate.getDate()===today.getDate());
-
-      const weekIndex = getWeekIndex(currentDate, year, month);
-      const hl = (weekIndex % 2 === 1);
+      const isToday = (currentDate.getFullYear()===today.getFullYear() && currentDate.getMonth()===today.getMonth() && currentDate.getDate()===today.getDate());
+      const hl = (getWeekIndex(currentDate, year, month) % 2 === 1);
 
       let cls = '';
-      if(!isCurrentMonth) cls = 'other-month';
-      else if(isToday) cls = 'today';
-      else if(hl) cls = 'highlighted';
+      if(!isCurrentMonth) cls = 'other-month'; else if(isToday) cls = 'today'; else if(hl) cls = 'highlighted';
 
       let content = '';
-      if(isCurrentMonth && type==='clean') {
-        const cd = cleanData[key]||{};
-        if(cd.glass) content += `<div class="task-line">玻璃\n${cd.glass}</div>`;
-        if(cd.juice||cd.floor) content += `<div class="task-line">果汁：${cd.juice||'-'}\n刷地：${cd.floor||'-'}</div>`;
-        if(cd.toilet) content += `<div class="task-line">${cd.toilet}</div>`;
+      if(isCurrentMonth) {
+        let cd = cleanData[key] || '';
+        // 相容舊有以物件儲存的資料，並轉為純文字
+        if (typeof cd === 'object') {
+            const parts = [];
+            if (cd.glass) parts.push(`玻璃\n${cd.glass}`);
+            if (cd.juice || cd.floor) parts.push(`果汁：${cd.juice||'-'}\n刷地：${cd.floor||'-'}`);
+            if (cd.toilet) parts.push(`${cd.toilet}`);
+            cd = parts.join('\n');
+        }
+        content = `<div class="inline-edit" contenteditable="true" onblur="saveCleanData('${key}', this)" data-placeholder="點擊輸入清潔事項">${cd}</div>`;
       }
 
-      html += `<div class="cal-cell ${cls}">
-        <span class="date-num">${day}</span>
-        ${content}
-        ${isCurrentMonth ? `<button class="edit-btn" onclick='openEditModal("${type}","${key}","${day}")'>編輯</button>` : ''}
-      </div>`;
+      html += `<div class="cal-cell ${cls}"><span class="date-num">${day}</span>${content}</div>`;
     }
     currentDate = new Date(currentDate.getTime() + 86400000);
   }
@@ -988,10 +677,8 @@ function renderWeekdayCal(bodyId, year, month, type) {
 
 function getWeekIndex(date, refYear, refMonth) {
   const firstDay = new Date(refYear, refMonth, 1);
-  const firstDow = firstDay.getDay();
-  const offsetFromMon = (firstDow === 0) ? 6 : firstDow - 1;
-  const weekStart = new Date(refYear, refMonth, 1 - offsetFromMon);
-  const diff = date - weekStart;
+  const offsetFromMon = (firstDay.getDay() === 0) ? 6 : firstDay.getDay() - 1;
+  const diff = date - new Date(refYear, refMonth, 1 - offsetFromMon);
   return Math.floor(diff / (7 * 86400000));
 }
 
@@ -1007,11 +694,8 @@ function renderFullCal(bodyId, year, month, type) {
   for(let i=0; i<totalCells; i++) {
     const weekRow = Math.floor(i/7);
     const hl = (weekRow%2===1);
-    if(i < firstDay) {
-      const d = prevDays - firstDay + i + 1;
-      html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
-    } else if(i >= firstDay + daysInMonth) {
-      const d = i - firstDay - daysInMonth + 1;
+    if(i < firstDay || i >= firstDay + daysInMonth) {
+      const d = i < firstDay ? prevDays - firstDay + i + 1 : i - firstDay - daysInMonth + 1;
       html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
     } else {
       const day = i - firstDay + 1;
@@ -1022,20 +706,28 @@ function renderFullCal(bodyId, year, month, type) {
       let cls = '';
       if(isToday) cls='today'; else if(hl) cls='highlighted'; else if(isWeekend) cls='weekend';
 
-      let content = '';
-      const dd = dishData[key]||'';
-      if(dd) {
-        if(dd==='店休') content=`<div class="closed-label">店休</div>`;
-        else content=`<div class="task-line"><b>${dd}</b></div>`;
-      }
+      const dd = dishData[key] || '';
+      const isClosed = (dd === '店休');
       html += `<div class="cal-cell ${cls}">
         <span class="date-num">${day}</span>
-        ${content}
-        <button class="edit-btn" onclick='openEditModal("${type}","${key}","${day}")'>編輯</button>
+        <div class="inline-edit dish-edit ${isClosed ? 'closed-label' : ''}" contenteditable="true" onblur="saveDishData('${key}', this)" data-placeholder="輸入人員">${dd}</div>
       </div>`;
     }
   }
   body.innerHTML = html;
+}
+
+function saveCleanData(key, el) {
+  cleanData[key] = el.innerText;
+  saveToSupabase('clean', key, cleanData[key]);
+}
+
+function saveDishData(key, el) {
+  const text = el.innerText.trim();
+  dishData[key] = text;
+  saveToSupabase('dish', key, dishData[key]);
+  if (text === '店休') el.classList.add('closed-label');
+  else el.classList.remove('closed-label');
 }
 
 // ══════════════════════════════════════════
@@ -1045,8 +737,7 @@ function changeShiftMonth(d) {
   shiftMonth += d;
   if(shiftMonth>11){shiftMonth=0;shiftYear++;}
   if(shiftMonth<0){shiftMonth=11;shiftYear--;}
-  updateShiftLabels();
-  renderShiftTable();
+  updateShiftLabels(); renderShiftTable();
 }
 
 function updateShiftLabels() {
@@ -1061,200 +752,65 @@ function renderShiftTable() {
     const key = `${shiftYear}-${shiftMonth}-${d}`;
     const sd = shiftData[key]||{};
     const dow = new Date(shiftYear, shiftMonth, d).getDay();
-    const weekName = `週${WEEKDAYS[dow]}`;
-    rows.push({d, key, dow, weekName, ...sd});
+    rows.push({d, key, dow, weekName: `週${WEEKDAYS[dow]}`, ...sd});
   }
-  const half = Math.ceil(rows.length/2);
-  const left = rows.slice(0,half);
-  const right = rows.slice(half);
+  const left = rows.slice(0, Math.ceil(rows.length/2));
+  const right = rows.slice(Math.ceil(rows.length/2));
 
   let html = '';
-  const maxRows = Math.max(left.length, right.length);
-  for(let i=0;i<maxRows;i++) {
-    const l=left[i], r=right[i];
+  for(let i=0;i<Math.max(left.length, right.length);i++) {
     html += `<tr>`;
-    if(l) html += buildShiftCells(l);
-    else html += `<td colspan="6"></td>`;
+    html += left[i] ? buildShiftCells(left[i]) : `<td colspan="6"></td>`;
     html += `<td style="width:8px;background:#e8e8e8;"></td>`;
-    if(r) html += buildShiftCells(r);
-    else html += `<td colspan="6"></td>`;
+    html += right[i] ? buildShiftCells(right[i]) : `<td colspan="6"></td>`;
     html += `</tr>`;
   }
   document.getElementById('shiftBody').innerHTML = html;
 }
 
 function buildShiftCells(row) {
-  if(row.closed) {
-    return `
-      <td><b>${row.d}.</b></td>
-      <td>(${row.weekName})</td>
-      <td class="closed-cell">店休</td>
-      <td class="closed-cell" colspan="3">店休</td>`;
-  }
+  if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="4">店休</td>`;
   const openerColor = row.opener?`opener-${row.opener}`:'';
-  const closerColor = row.close?`opener-${row.close}`:''; // 新增：讀取關帳人員顏色
+  const closerColor = row.close?`opener-${row.close}`:'';
   return `
-    <td><b>${row.d}.</b></td>
-    <td>(${row.weekName})</td>
-    <td>
-      <button class="opener-badge ${openerColor}"
-        onclick="cycleOpener('${row.key}',this)"
-        title="點擊切換開店人員"
-      >${row.opener||'　'}</button>
-    </td>
-    <td class="open-cell">
-      <input value="${row.duty||''}" placeholder="當天值班人員"
-        onblur="saveShiftField('${row.key}','duty',this.value)">
-    </td>
-    <td>
-      <input value="${row.at20||''}" placeholder="20:00" style="width:70px;"
-        onblur="saveShiftField('${row.key}','at20',this.value)">
-    </td>
-    <td>
-      <button class="opener-badge ${closerColor}"
-        onclick="cycleCloser('${row.key}',this)"
-        title="點擊切換關帳人員"
-      >${row.close||'　'}</button>
-    </td>`;
+    <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
+    <td><button class="opener-badge ${openerColor}" onclick="cycleOpener('${row.key}',this)">${row.opener||'　'}</button></td>
+    <td class="open-cell"><input value="${row.duty||''}" placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.value)"></td>
+    <td><input value="${row.at20||''}" placeholder="20:00" style="width:70px;" onblur="saveShiftField('${row.key}','at20',this.value)"></td>
+    <td><button class="opener-badge ${closerColor}" onclick="cycleCloser('${row.key}',this)">${row.close||'　'}</button></td>`;
 }
 
 function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
-  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
+  saveToSupabase('shift', key, shiftData[key]);
 }
 
 function cycleOpener(key, btn) {
   const opts = ['可','郭','俐','菟','宣','若','店休',''];
   if(!shiftData[key]) shiftData[key]={};
-  const cur = shiftData[key].opener||'';
-  const idx = opts.indexOf(cur);
-  const next = opts[(idx+1)%opts.length];
-  shiftData[key].opener = next;
-  btn.textContent = next||'　';
-  btn.className = `opener-badge opener-${next}`;
-  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
+  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
+  shiftData[key].opener = next; btn.textContent = next||'　'; btn.className = `opener-badge opener-${next}`;
+  saveToSupabase('shift', key, shiftData[key]);
 }
 
 function cycleCloser(key, btn) {
-  // 這裡的選項陣列與開店相同，若有關帳專屬人員可自行增減
   const opts = ['可','郭','俐','菟','宣',''];
   if(!shiftData[key]) shiftData[key]={};
-  const cur = shiftData[key].close||'';
-  const idx = opts.indexOf(cur);
-  const next = opts[(idx+1)%opts.length];
-  shiftData[key].close = next;
-  btn.textContent = next||'　';
-  // 這裡直接沿用 opener-badge 的樣式與顏色
-  btn.className = `opener-badge opener-${next}`;
-  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
+  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
+  shiftData[key].close = next; btn.textContent = next||'　'; btn.className = `opener-badge opener-${next}`;
+  saveToSupabase('shift', key, shiftData[key]);
 }
 
 // ══════════════════════════════════════════
-//  MODAL
+//  PRINT & INIT
 // ══════════════════════════════════════════
-function openEditModal(type, key, day) {
-  modalContext = {type, key, day};
-  const modal = document.getElementById('editModal');
-  const title = document.getElementById('modalTitle');
-  const content = document.getElementById('modalContent');
+function printSchedule() { window.print(); }
 
-  if(type==='clean') {
-    const cd = cleanData[key]||{};
-    title.textContent = `清潔 — ${cleanYear}年${cleanMonth+1}月${day}日`;
-    content.innerHTML = `
-      <div class="form-group">
-        <label>🧃 果汁負責人</label>
-        <textarea id="m_juice" rows="2" placeholder="人員姓名">${cd.juice||''}</textarea>
-      </div>
-      <div class="form-group">
-        <label>🧹 刷地負責人</label>
-        <input id="m_floor" value="${cd.floor||''}" placeholder="人員姓名">
-      </div>
-      <div class="form-group">
-        <label>🚽 廁所負責人</label>
-        <textarea id="m_toilet" rows="2" placeholder="廁所：OO\n刷地：OO">${cd.toilet||''}</textarea>
-      </div>
-      <div class="form-group">
-        <label>🪟 玻璃（白天/晚上）</label>
-        <textarea id="m_glass" rows="2" placeholder="白天：OO\n晚上：OO">${cd.glass||''}</textarea>
-      </div>`;
-  } else if(type==='dish') {
-    const dd = dishData[key]||'';
-    title.textContent = `洗餐具 — ${cleanYear}年${cleanMonth+1}月${day}日`;
-    content.innerHTML = `
-      <div class="form-group">
-        <label>今日洗餐具人員</label>
-        <div class="staff-checkboxes" id="dishCheckboxes">
-          ${staff.map(s=>`
-            <label class="staff-checkbox ${dd===s?'checked':''}">
-              <input type="radio" name="dish_staff" value="${s}" ${dd===s?'checked':''} onchange="updateCheck(this)"> ${s}
-            </label>`).join('')}
-          <label class="staff-checkbox ${dd==='店休'?'checked':''}">
-            <input type="radio" name="dish_staff" value="店休" ${dd==='店休'?'checked':''} onchange="updateCheck(this)"> 店休
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>或手動輸入</label>
-        <input id="m_dish_manual" value="${dd}" placeholder="手動輸入">
-      </div>`;
-  }
-  modal.classList.add('open');
-}
-
-function updateCheck(radio) {
-  document.querySelectorAll('.staff-checkbox').forEach(lbl => lbl.classList.remove('checked'));
-  radio.closest('.staff-checkbox').classList.add('checked');
-  document.getElementById('m_dish_manual').value = radio.value;
-}
-
-function closeModal() {
-  document.getElementById('editModal').classList.remove('open');
-  modalContext = null;
-}
-
-function saveModal() {
-  if(!modalContext) return;
-  const {type, key} = modalContext;
-  if(type==='clean') {
-    cleanData[key] = {
-      juice: document.getElementById('m_juice').value.trim(),
-      floor: document.getElementById('m_floor').value.trim(),
-      toilet: document.getElementById('m_toilet').value.trim(),
-      glass: document.getElementById('m_glass').value.trim(),
-    };
-    renderCleanCal();
-    saveToSupabase('clean', key, cleanData[key]); // 儲存清潔表
-  } else if(type==='dish') {
-    const manual = document.getElementById('m_dish_manual').value.trim();
-    dishData[key] = manual;
-    renderDishCal();
-    saveToSupabase('dish', key, dishData[key]); // 儲存洗餐具表
-  }
-  closeModal();
-}
-
-// ══════════════════════════════════════════
-//  PRINT
-// ══════════════════════════════════════════
-function printSchedule() {
-  window.print();
-}
-
-// ══════════════════════════════════════════
-//  INIT (讀取資料並渲染)
-// ══════════════════════════════════════════
 async function initApp() {
-  // 更新介面標題為當前月份
-  updateCleanLabels();
-  updateShiftLabels();
-
-  // 從 Supabase 載入資料
+  updateCleanLabels(); updateShiftLabels();
   const { data, error } = await supabaseClient.from('schedule_data').select('*');
-  if (error) {
-    console.error('載入資料失敗', error);
-  } else if (data) {
+  if (!error && data) {
     data.forEach(row => {
       if (row.type === 'staff') staff = row.data || [];
       if (row.type === 'clean') cleanData[row.date_key] = row.data;
@@ -1262,31 +818,16 @@ async function initApp() {
       if (row.type === 'shift') shiftData[row.date_key] = row.data;
     });
   }
-
-  // 渲染畫面
-  renderCleanCal();
-  renderDishCal();
-  renderShiftTable();
+  renderCleanCal(); renderDishCal(); renderShiftTable();
 }
 
-  // ══════════════════════════════════════════
-//  全域導覽選單 (Global Nav Toggle)
-// ══════════════════════════════════════════
-function toggleGlobalMenu() {
-  const menu = document.getElementById('global-nav-menu');
-  menu.classList.toggle('hidden');
-}
-
-// 點擊選單外部時，自動關閉選單
-document.addEventListener('click', function(event) {
+function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
+document.addEventListener('click', function(e) {
   const nav = document.querySelector('.global-nav');
   const menu = document.getElementById('global-nav-menu');
-  if (nav && !nav.contains(event.target) && !menu.classList.contains('hidden')) {
-    menu.classList.add('hidden');
-  }
+  if (nav && !nav.contains(e.target) && !menu.classList.contains('hidden')) menu.classList.add('hidden');
 });
 
-// 啟動應用
 initApp();
 </script>
 </body>
