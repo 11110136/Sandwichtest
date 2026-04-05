@@ -494,7 +494,6 @@
      ══════════════════════════════════════════ */
   @media print {
     @page {
-      size: A4 landscape;
       margin: 8mm 10mm;
     }
 
@@ -759,10 +758,11 @@
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
         <thead>
-          <tr><th colspan="7" id="shiftTableTitle"></th></tr>
+          <tr><th colspan="13" id="shiftTableTitle"></th></tr>
           <tr>
             <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
-            <th style="width:20px;background:#f0f0f0;"></th>
+            <th style="width:8px;background:#e8e8e8; border-top:none; border-bottom:none;"></th>
+            <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
           </tr>
         </thead>
         <tbody id="shiftBody"></tbody>
@@ -1058,6 +1058,7 @@ function buildShiftCells(row) {
       <td class="closed-cell" colspan="3">店休</td>`;
   }
   const openerColor = row.opener?`opener-${row.opener}`:'';
+  const closerColor = row.close?`opener-${row.close}`:''; // 新增：讀取關帳人員顏色
   return `
     <td><b>${row.d}.</b></td>
     <td>(${row.weekName})</td>
@@ -1076,8 +1077,10 @@ function buildShiftCells(row) {
         onblur="saveShiftField('${row.key}','at20',this.value)">
     </td>
     <td>
-      <input value="${row.close||''}" placeholder="關帳" style="width:60px;"
-        onblur="saveShiftField('${row.key}','close',this.value)">
+      <button class="opener-badge ${closerColor}"
+        onclick="cycleCloser('${row.key}',this)"
+        title="點擊切換關帳人員"
+      >${row.close||'　'}</button>
     </td>`;
 }
 
@@ -1095,6 +1098,20 @@ function cycleOpener(key, btn) {
   const next = opts[(idx+1)%opts.length];
   shiftData[key].opener = next;
   btn.textContent = next||'　';
+  btn.className = `opener-badge opener-${next}`;
+  saveToSupabase('shift', key, shiftData[key]); // 儲存排班
+}
+
+function cycleCloser(key, btn) {
+  // 這裡的選項陣列與開店相同，若有關帳專屬人員可自行增減
+  const opts = ['可','郭','俐','菟','宣',''];
+  if(!shiftData[key]) shiftData[key]={};
+  const cur = shiftData[key].close||'';
+  const idx = opts.indexOf(cur);
+  const next = opts[(idx+1)%opts.length];
+  shiftData[key].close = next;
+  btn.textContent = next||'　';
+  // 這裡直接沿用 opener-badge 的樣式與顏色
   btn.className = `opener-badge opener-${next}`;
   saveToSupabase('shift', key, shiftData[key]); // 儲存排班
 }
