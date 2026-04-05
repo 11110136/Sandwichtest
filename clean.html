@@ -120,10 +120,10 @@
   .cal-cell.other-month .date-num { color: #bbb; }
 
   /* ── INLINE EDIT BOX ── */
-  .inline-edit { flex: 1; width: 100%; outline: none; font-size: 14px; text-align: center; white-space: pre-wrap; word-break: break-word; padding: 4px; color: var(--ink-soft); border-radius: 6px; transition: background 0.2s, box-shadow 0.2s; line-height: 1.5; }
-  .inline-edit:empty:before { content: attr(data-placeholder); color: #bbb; pointer-events: none; }
+  /* 將原本 dish-edit 的樣式統一合併進來，確保全部都是粗體綠色且置中 */
+  .inline-edit { flex: 1; width: 100%; outline: none; font-size: 15px; font-weight: 700; color: var(--olive); text-align: center; white-space: pre-wrap; word-break: break-word; padding: 4px; border-radius: 6px; transition: background 0.2s, box-shadow 0.2s; line-height: 1.5; }
+  .inline-edit:empty:before { content: attr(data-placeholder); color: #bbb; pointer-events: none; font-weight: normal; }
   .inline-edit:focus { background: #fff; box-shadow: inset 0 0 0 1.5px var(--sage-light); }
-  .dish-edit { font-weight: 700; color: var(--olive); font-size: 15px; }
   .dish-edit.closed-label { color: var(--accent-red); font-size: 16px; }
 
   /* ── SHIFT TABLE ── */
@@ -167,8 +167,7 @@
   .quick-btn.name-btn:hover { background: #e2e8f0; border-color: #cbd5e1; }
   
   /* ── 大字體模式 (Large Font Mode) ── */
-  body.large-font .inline-edit { font-size: 18px; line-height: 1.6; }
-  body.large-font .dish-edit { font-size: 20px; }
+  body.large-font .inline-edit { font-size: 20px; line-height: 1.6; }
   body.large-font .shift-table td input { font-size: 18px; padding: 8px; }
   body.large-font .shift-table th, body.large-font .shift-table td { font-size: 17px; }
   body.large-font .opener-badge { font-size: 16px; padding: 6px 14px; }
@@ -200,7 +199,7 @@
     #cleanPanel .cal-cell { min-height: unset !important; height: auto !important; padding: 4px 3px !important; display: flex !important; flex-direction: column !important; align-items: center !important; border-right: 1px solid #ccc !important; border-bottom: 1px solid #ccc !important; }
     #cleanPanel .cal-cell .date-num { font-size: 15px !important; margin-bottom: 3px !important; font-weight: 700 !important; line-height: 1.1 !important; }
     .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 13px !important; }
-    .dish-edit { font-size: 20px !important; font-weight: 700 !important; }
+    .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
     .shift-table { font-size: 11px; }
     .shift-table th, .shift-table td { padding: 4px 5px; }
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
@@ -606,7 +605,7 @@ function cycleCloser(key, btn) {
 // ══════════════════════════════════════════
 //  快速輸入面板邏輯 (Quick Input Logic)
 // ══════════════════════════════════════════
-const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃", "白天", "晚上", "公區", "洗區"];
+const QUICK_TASKS = ["果汁", "廁所", "刷地", "玻璃", "白天", "晚上"];
 let activeCell = null;
 
 function initQuickInput() {
@@ -615,7 +614,8 @@ function initQuickInput() {
     const btn = document.createElement('button');
     btn.className = 'quick-btn task-btn';
     btn.innerText = task;
-    btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(task, 'task'); };
+    // 使用 pointerdown 解決手機/平版點擊衝突問題
+    btn.onpointerdown = (e) => { e.preventDefault(); insertTextToCell(task, 'task'); };
     tasksContainer.appendChild(btn);
   });
 
@@ -626,9 +626,10 @@ function initQuickInput() {
     }
   });
 
-  document.addEventListener('mousedown', (e) => {
+  // 改為 pointerdown，確保點擊旁邊空白處能 100% 關閉面板
+  document.addEventListener('pointerdown', (e) => {
     const panel = document.getElementById('quick-input-panel');
-    if (!panel.contains(e.target) && e.target !== activeCell && !e.target.classList.contains('editable-cell')) {
+    if (!panel.classList.contains('hidden') && !panel.contains(e.target) && !e.target.classList.contains('editable-cell')) {
       closeQuickInput();
     }
   });
@@ -644,7 +645,8 @@ function updateQuickNamesPanel() {
     const btn = document.createElement('button');
     btn.className = 'quick-btn name-btn';
     btn.innerText = name;
-    btn.onmousedown = (e) => { e.preventDefault(); insertTextToCell(name, 'name'); };
+    // 統一使用 pointerdown
+    btn.onpointerdown = (e) => { e.preventDefault(); insertTextToCell(name, 'name'); };
     namesContainer.appendChild(btn);
   });
 
@@ -655,7 +657,7 @@ function updateQuickNamesPanel() {
   closeBtn.style.color = '#b91c1c';
   closeBtn.style.borderColor = '#fecaca';
   closeBtn.innerText = '店休';
-  closeBtn.onmousedown = (e) => { e.preventDefault(); insertTextToCell('店休', 'name'); };
+  closeBtn.onpointerdown = (e) => { e.preventDefault(); insertTextToCell('店休', 'name'); };
   namesContainer.appendChild(closeBtn);
 }
 
