@@ -142,14 +142,7 @@
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
   .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
-  .opener-可 { background: #ffe0b2; color: #b26a00; }
-  .opener-郭 { background: #d1c4e9; color: #4a148c; }
-  .opener-俐 { background: #b3e5fc; color: #01579b; }
-  .opener-宣 { background: #c8e6c9; color: #1b5e20; }
-  .opener-若 { background: #f8bbd0; color: #880e4f; }
-  .opener-瑋 { background: #dcedc8; color: #33691e; }
-  .opener-菟 { background: #f0f4c3; color: #827717; }
-  .opener-苑 { background: #ffd54f; color: #5d4037; }
+  
 
   /* ── 快速輸入面板 ── */
   #quick-input-panel {
@@ -377,6 +370,31 @@ let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth();
 let shiftData = {};
 let isLargeFont = false;
 
+// 👇👇👇 新增這段：自動調色盤與抓色函數 👇👇👇
+const STAFF_COLORS = [
+  { bg: '#ffe0b2', text: '#b26a00' }, // 橘
+  { bg: '#d1c4e9', text: '#4a148c' }, // 紫
+  { bg: '#b3e5fc', text: '#01579b' }, // 藍
+  { bg: '#c8e6c9', text: '#1b5e20' }, // 綠
+  { bg: '#f8bbd0', text: '#880e4f' }, // 粉
+  { bg: '#dcedc8', text: '#33691e' }, // 淺綠
+  { bg: '#f0f4c3', text: '#827717' }, // 黃綠
+  { bg: '#ffd54f', text: '#5d4037' }, // 黃
+  { bg: '#ffcdd2', text: '#b71c1c' }, // 紅
+  { bg: '#b2dfdb', text: '#004d40' }, // 藍綠
+  { bg: '#cfd8dc', text: '#263238' }, // 灰綠
+  { bg: '#f48fb1', text: '#880e4f' }  // 玫瑰
+];
+
+function getStaffStyle(name) {
+  if (!name || name === '店休' || name === '未填') return '';
+  const index = staff.indexOf(name);
+  if (index === -1) return ''; 
+  const color = STAFF_COLORS[index % STAFF_COLORS.length]; // 依序循環指派顏色
+  return `background-color: ${color.bg}; color: ${color.text}; border-color: ${color.bg};`;
+}
+// 👆👆👆 新增結束 👆👆👆
+
 // ══════════════════════════════════════════
 //  大字體功能
 // ══════════════════════════════════════════
@@ -409,9 +427,10 @@ document.addEventListener('click', function(e) {
 // ══════════════════════════════════════════
 function renderStaff() {
   const g = document.getElementById('staffGrid');
-  g.innerHTML = staff.map((s,i) => `
-    <div class="staff-tag">${s}<button class="del" onclick="removeStaff(${i})">×</button></div>`
-  ).join('');
+  g.innerHTML = staff.map((s,i) => {
+    const style = getStaffStyle(s); // 取得專屬顏色
+    return `<div class="staff-tag" style="${style}">${s}<button class="del" style="color: inherit; opacity: 0.7;" onclick="removeStaff(${i})">×</button></div>`;
+  }).join('');
   
   updateQuickNamesPanel();
 }
@@ -666,17 +685,16 @@ function renderShiftTable() {
 function buildShiftCells(row) {
   if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="4">店休</td>`;
   
-  // 漏填檢查：如果不是店休且 opener 是空的，背景變紅
   const openerClass = !row.opener ? 'missing-opener' : '';
-  const openerColor = row.opener?`opener-${row.opener}`:'';
-  const closerColor = row.close?`opener-${row.close}`:'';
+  const openerStyle = getStaffStyle(row.opener); // 取代原本的 color class
+  const closerStyle = getStaffStyle(row.close);  // 取代原本的 color class
 
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
-    <td class="${openerClass}"><button class="opener-badge ${openerColor}" onclick="cycleOpener('${row.key}',this)">${row.opener||'未填'}</button></td>
+    <td class="${openerClass}"><button class="opener-badge" style="${openerStyle}" onclick="cycleOpener('${row.key}',this)">${row.opener||'未填'}</button></td>
     <td class="open-cell"><input class="editable-cell" value="${row.duty||''}" data-key="${row.key}" data-field="duty" placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.value); updateShiftStats();"></td>
     <td><input class="editable-cell" value="${row.at20||''}" data-key="${row.key}" data-field="at20" placeholder="20:00" style="width:70px;" onblur="saveShiftField('${row.key}','at20',this.value)"></td>
-    <td><button class="opener-badge ${closerColor}" onclick="cycleCloser('${row.key}',this)">${row.close||'　'}</button></td>`;
+    <td><button class="opener-badge" style="${closerStyle}" onclick="cycleCloser('${row.key}',this)">${row.close||'　'}</button></td>`;
 }
 
 function saveShiftField(key, field, value) {
@@ -691,7 +709,8 @@ function cycleOpener(key, btn) {
   const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
   shiftData[key].opener = next; 
   btn.textContent = next||'未填'; 
-  btn.className = `opener-badge opener-${next}`;
+  btn.className = `opener-badge`;
+  btn.style.cssText = getStaffStyle(next); // 動態套用樣式
   btn.parentElement.className = !next ? 'missing-opener' : '';
   saveToSupabase('shift', key, shiftData[key]);
   updateShiftStats();
@@ -703,7 +722,8 @@ function cycleCloser(key, btn) {
   const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
   shiftData[key].close = next; 
   btn.textContent = next||'　'; 
-  btn.className = `opener-badge opener-${next}`;
+  btn.className = `opener-badge`;
+  btn.style.cssText = getStaffStyle(next); // 動態套用樣式
   saveToSupabase('shift', key, shiftData[key]);
   updateShiftStats();
 }
@@ -762,6 +782,7 @@ function updateQuickNamesPanel() {
     const btn = document.createElement('button');
     btn.className = 'quick-btn name-btn';
     btn.innerText = name;
+    btn.style.cssText = getStaffStyle(name);
     bindQuickButton(btn, name, 'name');
     namesContainer.appendChild(btn);
   });
