@@ -686,8 +686,8 @@ function buildShiftCells(row) {
   if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="4">店休</td>`;
   
   const openerClass = !row.opener ? 'missing-opener' : '';
-  const openerStyle = getStaffStyle(row.opener); // 取代原本的 color class
-  const closerStyle = getStaffStyle(row.close);  // 取代原本的 color class
+  const openerStyle = getStaffStyle(row.opener) || 'background-color: #e2e8f0; color: #475569;';
+  const closerStyle = getStaffStyle(row.close) || 'background-color: #e2e8f0; color: #475569;';
 
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
@@ -703,29 +703,37 @@ function saveShiftField(key, field, value) {
   saveToSupabase('shift', key, shiftData[key]);
 }
 
+// 在這裡定義你想要的固定選項 (不再跟隨人員管理連動)
+const FIXED_OPENERS = ['可', '俐', '郭', '菟', '宣', '若', '瑋', '店休', '']; 
+const FIXED_CLOSERS = ['可', '俐', '郭', '菟', '宣', '若', '瑋', ''];
+
 function cycleOpener(key, btn) {
-  const opts = [...staff, '店休', ''];
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
-  shiftData[key].opener = next; 
-  btn.textContent = next||'未填'; 
-  btn.className = `opener-badge`;
-  btn.style.cssText = getStaffStyle(next); // 動態套用樣式
-  btn.parentElement.className = !next ? 'missing-opener' : '';
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
+  const opts = FIXED_OPENERS; // 改為讀取固定陣列
+  if(!shiftData[key]) shiftData[key]={};
+  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
+  shiftData[key].opener = next; 
+  btn.textContent = next||'未填'; 
+  btn.className = `opener-badge`;
+  
+  // 若選項名字不在人員清單中，給予預設的灰藍色按鈕樣式
+  btn.style.cssText = getStaffStyle(next) || 'background-color: #e2e8f0; color: #475569;'; 
+  btn.parentElement.className = !next ? 'missing-opener' : '';
+  saveToSupabase('shift', key, shiftData[key]);
+  updateShiftStats();
 }
 
 function cycleCloser(key, btn) {
-  const opts = [...staff, ''];
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
-  shiftData[key].close = next; 
-  btn.textContent = next||'　'; 
-  btn.className = `opener-badge`;
-  btn.style.cssText = getStaffStyle(next); // 動態套用樣式
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
+  const opts = FIXED_CLOSERS; // 改為讀取固定陣列
+  if(!shiftData[key]) shiftData[key]={};
+  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
+  shiftData[key].close = next; 
+  btn.textContent = next||'　'; 
+  btn.className = `opener-badge`;
+  
+  // 若選項名字不在人員清單中，給予預設的灰藍色按鈕樣式
+  btn.style.cssText = getStaffStyle(next) || 'background-color: #e2e8f0; color: #475569;'; 
+  saveToSupabase('shift', key, shiftData[key]);
+  updateShiftStats();
 }
 
 // ══════════════════════════════════════════
