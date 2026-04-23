@@ -141,8 +141,9 @@
   
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
-  .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
-  
+  /* 調整 badge 的聚焦樣式，讓點擊時不會有醜醜的黑框 */
+  .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s;}
+  .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sage-light); }
 
   /* ── 快速輸入面板 ── */
   #quick-input-panel {
@@ -321,7 +322,7 @@
     <div id="shiftStats" class="stats-container">
       </div>
     
-    <p class="tip">提示：紅底表示尚未填寫開店人員。直接點擊欄位輸入；開店/關帳人員可點擊按鈕切換顏色標記。</p>
+    <p class="tip">提示：紅底表示尚未填寫開店人員。直接點擊欄位即可叫出快速面板選人。</p>
     
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
@@ -430,7 +431,6 @@ function getStaffStyle(name) {
   const index = staff.indexOf(name);
   if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
   const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
-  // 加上 border: none 確保呈現漂亮的純色方塊
   return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
 }
 
@@ -728,45 +728,21 @@ function buildShiftCells(row) {
   const openerStyle = getStaffStyle(row.opener);
   const closerStyle = getStaffStyle(row.close);
 
+  /* 改動重點：把 <button onclick="..."> 變成有 tabindex="0" 的 <div class="editable-cell">
+     這樣點擊時就會觸發 focusin 事件並叫出快速面板！
+  */
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
-    <td class="${openerClass}"><button class="opener-badge" style="${openerStyle}" onclick="cycleOpener('${row.key}',this)">${row.opener||'未填'}</button></td>
+    <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
     <td class="open-cell"><input class="editable-cell" value="${row.duty||''}" data-key="${row.key}" data-field="duty" placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.value); updateShiftStats();"></td>
     <td><input class="editable-cell" value="${row.at20||''}" data-key="${row.key}" data-field="at20" placeholder="20:00" style="width:70px;" onblur="saveShiftField('${row.key}','at20',this.value)"></td>
-    <td><button class="opener-badge" style="${closerStyle}" onclick="cycleCloser('${row.key}',this)">${row.close||'　'}</button></td>`;
+    <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||'　'}</div></td>`;
 }
 
 function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
   saveToSupabase('shift', key, shiftData[key]);
-}
-
-// 👇 修改：動態抓取你設定的人員名單，不再寫死！
-function cycleOpener(key, btn) {
-  // 動態組合：所有員工名單 + 店休 + 未填(空字串)
-  const opts = [...staff, '店休', '']; 
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
-  shiftData[key].opener = next; 
-  btn.textContent = next||'未填'; 
-  btn.className = `opener-badge`;
-  btn.style.cssText = getStaffStyle(next); 
-  btn.parentElement.className = !next ? 'missing-opener' : '';
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
-}
-
-function cycleCloser(key, btn) {
-  const opts = [...staff, '']; // 關帳選項：所有員工 + 空字串
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
-  shiftData[key].close = next; 
-  btn.textContent = next||'　'; 
-  btn.className = `opener-badge`;
-  btn.style.cssText = getStaffStyle(next); 
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
 }
 
 // ══════════════════════════════════════════
@@ -828,14 +804,23 @@ function updateQuickNamesPanel() {
     namesContainer.appendChild(btn);
   });
 
+  // 店休按鈕
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-btn name-btn';
   closeBtn.style.cssText = getStaffStyle('店休');
   closeBtn.innerText = '店休';
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
+  
+  // 新增：清除按鈕 (方便點錯時取消選取)
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'quick-btn name-btn';
+  clearBtn.style.cssText = 'background-color: #f1f5f9; color: #64748b; border: none;';
+  clearBtn.innerText = '✖ 清除';
+  bindQuickButton(clearBtn, '', 'clear'); 
+  namesContainer.appendChild(clearBtn);
 
-  // 全套範本按鈕 (自訂淺藍色單色樣式)
+  // 全套範本按鈕
   const templateBtn = document.createElement('button');
   templateBtn.className = 'quick-btn task-btn';
   templateBtn.style.background = '#e0f2fe';
@@ -876,9 +861,19 @@ function insertTextToCell(text, type) {
 
   const isInput = (activeCell.tagName === 'INPUT');
   let currentVal = isInput ? activeCell.value : activeCell.innerText;
+  
+  // 如果原本的文字是預設的「未填」或「空白」，就先清空它
+  if (!isInput && (currentVal === '未填' || currentVal === '　')) currentVal = ''; 
+
+  const field = activeCell.getAttribute('data-field');
   let newVal = currentVal;
 
-  if (type === 'task') {
+  if (type === 'clear') {
+    newVal = '';
+  } else if (field === 'opener' || field === 'close') {
+    // 改動重點：如果是開店或關帳，點選名字時「直接替換」取代舊名字
+    newVal = text;
+  } else if (type === 'task') {
     if (text === '玻璃') {
       newVal += (newVal.trim().length > 0 && !newVal.endsWith('\n') ? '\n' : '') + '玻璃\n';
     } else {
@@ -895,19 +890,34 @@ function insertTextToCell(text, type) {
   }
 
   if (isInput) {
+    // 處理輸入框 (如當天值班)
     activeCell.value = newVal;
     const key = activeCell.getAttribute('data-key');
-    const field = activeCell.getAttribute('data-field');
     if (key && field) saveShiftField(key, field, newVal);
     updateShiftStats();
     activeCell.focus(); 
   } else {
-    activeCell.innerText = newVal;
+    // 處理方塊按鈕 (如開店、關帳、洗餐具)
     const key = activeCell.getAttribute('data-key');
-    if (key) {
-      if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
-      else saveCleanData(key, activeCell);
+    
+    if (field === 'opener' || field === 'close') {
+        activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
+        activeCell.style.cssText = getStaffStyle(newVal);
+        if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
+        
+        if (key) {
+            saveShiftField(key, field, newVal);
+            updateShiftStats();
+        }
+    } else {
+        activeCell.innerText = newVal;
+        if (key) {
+          if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
+          else saveCleanData(key, activeCell);
+        }
     }
+    
+    // 讓游標保持在最後面
     const range = document.createRange();
     const sel = window.getSelection();
     range.selectNodeContents(activeCell);
@@ -971,7 +981,6 @@ async function autoGenerateSchedule() {
       let base64Image = null;
       let mimeType = null;
 
-      // 處理圖片轉換為 Base64
       if (imageInput.files && imageInput.files[0]) {
           const file = imageInput.files[0];
           mimeType = file.type;
@@ -983,13 +992,12 @@ async function autoGenerateSchedule() {
           });
       }
 
-      // 呼叫本地端的 Node.js API
       const response = await fetch('http://localhost:3000/api/generate-schedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
               year: shiftYear,
-              month: shiftMonth, // 傳送 0-11 的月份，讓後端與金鑰對齊
+              month: shiftMonth,
               daysInMonth: daysInMonth,
               firstDayDow: firstDayDow,
               staffList: staff,
@@ -1004,7 +1012,6 @@ async function autoGenerateSchedule() {
 
       const aiData = result.data;
 
-      // 解析 JSON 並寫入 Supabase 與前端狀態
       if (aiData.clean) {
           Object.assign(cleanData, aiData.clean);
           for (const key in aiData.clean) await saveToSupabase('clean', key, aiData.clean[key]);
@@ -1021,7 +1028,6 @@ async function autoGenerateSchedule() {
           }
       }
       
-      // 重新渲染日曆與表格
       renderCleanCal(); 
       renderDishCal(); 
       renderShiftTable();
