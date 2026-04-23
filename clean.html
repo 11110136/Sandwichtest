@@ -158,13 +158,11 @@
   .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; }
   .quick-btn {
     padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--border); background: var(--cream);
+    cursor: pointer; border: none; background: var(--cream);
     color: var(--ink-soft); transition: all 0.15s; font-family: inherit;
   }
-  .quick-btn.task-btn { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-  .quick-btn.task-btn:hover { background: #dcfce7; border-color: #86efac; }
-  .quick-btn.name-btn { background: #f8fafc; border-color: #e2e8f0; color: #334155; }
-  .quick-btn.name-btn:hover { background: #e2e8f0; border-color: #cbd5e1; }
+  .quick-btn.task-btn { background: #f0fdf4; color: #166534; }
+  .quick-btn.task-btn:hover { background: #dcfce7; }
   
   /* ── 大字體模式 ── */
   body.large-font .inline-edit { font-size: 20px; line-height: 1.6; }
@@ -410,7 +408,7 @@ let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth();
 let shiftData = {};
 let isLargeFont = false;
 
-// 👇👇👇 新增這段：自動調色盤與抓色函數 👇👇👇
+// 👇👇👇 自動調色盤與抓色函數 👇👇👇
 const STAFF_COLORS = [
   { bg: '#ffe0b2', text: '#b26a00' }, // 橘
   { bg: '#d1c4e9', text: '#4a148c' }, // 紫
@@ -427,13 +425,14 @@ const STAFF_COLORS = [
 ];
 
 function getStaffStyle(name) {
-  if (!name || name === '店休' || name === '未填') return '';
+  if (!name || name === '未填') return 'background-color: #e2e8f0; color: #475569; border: none;';
+  if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
   const index = staff.indexOf(name);
-  if (index === -1) return ''; 
-  const color = STAFF_COLORS[index % STAFF_COLORS.length]; // 依序循環指派顏色
-  return `background-color: ${color.bg}; color: ${color.text}; border-color: ${color.bg};`;
+  if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
+  const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
+  // 加上 border: none 確保呈現漂亮的純色方塊
+  return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
 }
-// 👆👆👆 新增結束 👆👆👆
 
 // ══════════════════════════════════════════
 //  大字體功能
@@ -468,7 +467,7 @@ document.addEventListener('click', function(e) {
 function renderStaff() {
   const g = document.getElementById('staffGrid');
   g.innerHTML = staff.map((s,i) => {
-    const style = getStaffStyle(s); // 取得專屬顏色
+    const style = getStaffStyle(s); 
     return `<div class="staff-tag" style="${style}">${s}<button class="del" style="color: inherit; opacity: 0.7;" onclick="removeStaff(${i})">×</button></div>`;
   }).join('');
   
@@ -726,8 +725,8 @@ function buildShiftCells(row) {
   if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="4">店休</td>`;
   
   const openerClass = !row.opener ? 'missing-opener' : '';
-  const openerStyle = getStaffStyle(row.opener) || 'background-color: #e2e8f0; color: #475569;';
-  const closerStyle = getStaffStyle(row.close) || 'background-color: #e2e8f0; color: #475569;';
+  const openerStyle = getStaffStyle(row.opener);
+  const closerStyle = getStaffStyle(row.close);
 
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
@@ -743,37 +742,31 @@ function saveShiftField(key, field, value) {
   saveToSupabase('shift', key, shiftData[key]);
 }
 
-// 在這裡定義你想要的固定選項 (不再跟隨人員管理連動)
-const FIXED_OPENERS = ['可', '俐', '郭', '菟', '宣', '若', '瑋', '店休', '']; 
-const FIXED_CLOSERS = ['可', '俐', '郭', '菟', '宣', '若', '瑋', ''];
-
+// 👇 修改：動態抓取你設定的人員名單，不再寫死！
 function cycleOpener(key, btn) {
-  const opts = FIXED_OPENERS; // 改為讀取固定陣列
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
-  shiftData[key].opener = next; 
-  btn.textContent = next||'未填'; 
-  btn.className = `opener-badge`;
-  
-  // 若選項名字不在人員清單中，給予預設的灰藍色按鈕樣式
-  btn.style.cssText = getStaffStyle(next) || 'background-color: #e2e8f0; color: #475569;'; 
-  btn.parentElement.className = !next ? 'missing-opener' : '';
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
+  // 動態組合：所有員工名單 + 店休 + 未填(空字串)
+  const opts = [...staff, '店休', '']; 
+  if(!shiftData[key]) shiftData[key]={};
+  const next = opts[(opts.indexOf(shiftData[key].opener||'') + 1) % opts.length];
+  shiftData[key].opener = next; 
+  btn.textContent = next||'未填'; 
+  btn.className = `opener-badge`;
+  btn.style.cssText = getStaffStyle(next); 
+  btn.parentElement.className = !next ? 'missing-opener' : '';
+  saveToSupabase('shift', key, shiftData[key]);
+  updateShiftStats();
 }
 
 function cycleCloser(key, btn) {
-  const opts = FIXED_CLOSERS; // 改為讀取固定陣列
-  if(!shiftData[key]) shiftData[key]={};
-  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
-  shiftData[key].close = next; 
-  btn.textContent = next||'　'; 
-  btn.className = `opener-badge`;
-  
-  // 若選項名字不在人員清單中，給予預設的灰藍色按鈕樣式
-  btn.style.cssText = getStaffStyle(next) || 'background-color: #e2e8f0; color: #475569;'; 
-  saveToSupabase('shift', key, shiftData[key]);
-  updateShiftStats();
+  const opts = [...staff, '']; // 關帳選項：所有員工 + 空字串
+  if(!shiftData[key]) shiftData[key]={};
+  const next = opts[(opts.indexOf(shiftData[key].close||'') + 1) % opts.length];
+  shiftData[key].close = next; 
+  btn.textContent = next||'　'; 
+  btn.className = `opener-badge`;
+  btn.style.cssText = getStaffStyle(next); 
+  saveToSupabase('shift', key, shiftData[key]);
+  updateShiftStats();
 }
 
 // ══════════════════════════════════════════
@@ -837,19 +830,17 @@ function updateQuickNamesPanel() {
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-btn name-btn';
-  closeBtn.style.background = '#fef2f2';
-  closeBtn.style.color = '#b91c1c';
-  closeBtn.style.borderColor = '#fecaca';
+  closeBtn.style.cssText = getStaffStyle('店休');
   closeBtn.innerText = '店休';
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
 
-  // 新增全套清潔範本按鈕
+  // 全套範本按鈕 (自訂淺藍色單色樣式)
   const templateBtn = document.createElement('button');
   templateBtn.className = 'quick-btn task-btn';
   templateBtn.style.background = '#e0f2fe';
   templateBtn.style.color = '#0369a1';
-  templateBtn.style.borderColor = '#bae6fd';
+  templateBtn.style.border = 'none';
   templateBtn.innerText = '📋 全套範本';
   bindQuickButton(templateBtn, "玻璃：\n刷地：\n廁所：", 'template');
   namesContainer.appendChild(templateBtn);
