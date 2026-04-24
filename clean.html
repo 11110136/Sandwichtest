@@ -182,22 +182,24 @@
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
     #cleanPanel { 
-      display: flex !important; 
-      flex-direction: column !important; 
-      width: 100% !important; 
-      height: 93vh !important; /* 將高度縮小到 93%，留出底部空間 */
-      padding-bottom: 10px !important; /* 加上一點底部內距防壓迫 */
-      page-break-after: always !important; 
-      break-after: page !important; 
-    }
+    display: flex !important; 
+    flex-direction: column !important; 
+    width: 100% !important; 
+    /* 捨棄 vh，改用 mm。A4高297mm，設定255mm可保留足夠的上下邊距 */
+    height: 255mm !important; 
+    max-height: 255mm !important; 
+    page-break-after: always !important; 
+    break-after: page !important; 
+  }
     #shiftPanel { 
-      display: flex !important; 
-      flex-direction: column !important; 
-      width: 100% !important; 
-      height: calc(100vh - 16mm) !important; /* 讓整個面板高度等於紙張高度 */
-      page-break-before: always !important; 
-      break-before: page !important; 
-    }
+    display: flex !important; 
+    flex-direction: column !important; 
+    width: 100% !important; 
+    height: 255mm !important; 
+    max-height: 255mm !important; 
+    page-break-before: always !important; 
+    break-before: page !important; 
+  }
     #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 10mm !important; margin-bottom: 15px !important; }
     #shiftPanel .section-header h2 { text-align: center !important; width: 100% !important; }
     #cleanPanel .section-header { width: 100% !important; justify-content: center !important; margin-bottom: 4px !important; }
