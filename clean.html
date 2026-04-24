@@ -197,11 +197,30 @@
     #cleanPanel #dishCalBody { grid-template-columns: repeat(7, 1fr) !important; }
     #cleanPanel .cal-cell { min-height: unset !important; height: auto !important; padding: 4px 3px !important; display: flex !important; flex-direction: column !important; align-items: center !important; border-right: 1px solid #ccc !important; border-bottom: 1px solid #ccc !important; }
     #cleanPanel .cal-cell .date-num { font-size: 15px !important; margin-bottom: 3px !important; font-weight: 700 !important; line-height: 1.1 !important; }
-    .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 13px !important; }
+    .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 18px !important; }
     .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
     .shift-table { font-size: 11px; }
     .shift-table th, .shift-table td { padding: 4px 5px; }
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
+
+    /* 加入以下這段針對值班表的調整 */
+    .shift-table { 
+      min-width: auto !important; /* 關鍵：解除 900px 限制，讓表格能隨紙張縮放 */
+      width: 100% !important; 
+    }
+    .shift-table th, .shift-table td { 
+      padding: 3px 4px !important; /* 縮小儲存格內距，爭取水平空間 */
+      font-size: 11px !important;  /* 可視需求微調大小 */
+      word-break: keep-all !important; /* 防止文字不自然換行 */
+    }
+    .shift-table td input {
+      padding: 2px !important;
+      font-size: 11px !important;
+    }
+    .opener-badge {
+      padding: 2px 6px !important; /* 縮小姓名標籤 */
+      font-size: 11px !important;
+    }
   }
 
   @media (max-width: 900px) {
