@@ -182,7 +182,14 @@
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
     #cleanPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: calc(100vh - 16mm) !important; page-break-after: always !important; break-after: page !important; }
-    #shiftPanel { display: block !important; width: 100% !important; page-break-before: always !important; break-before: page !important; }
+    #shiftPanel { 
+      display: flex !important; 
+      flex-direction: column !important; 
+      width: 100% !important; 
+      height: calc(100vh - 16mm) !important; /* 讓整個面板高度等於紙張高度 */
+      page-break-before: always !important; 
+      break-before: page !important; 
+    }
     #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 10mm !important; margin-bottom: 15px !important; }
     #shiftPanel .section-header h2 { text-align: center !important; width: 100% !important; }
     #cleanPanel .section-header { width: 100% !important; justify-content: center !important; margin-bottom: 4px !important; }
@@ -210,17 +217,28 @@
     }
     .shift-table th, .shift-table td { 
       padding: 3px 4px !important; /* 縮小儲存格內距，爭取水平空間 */
-      font-size: 11px !important;  /* 可視需求微調大小 */
+      font-size: 15px !important;  /* 可視需求微調大小 */
       word-break: keep-all !important; /* 防止文字不自然換行 */
     }
     .shift-table td input {
       padding: 2px !important;
-      font-size: 11px !important;
+      font-size: 15px !important;
     }
     .opener-badge {
       padding: 2px 6px !important; /* 縮小姓名標籤 */
-      font-size: 11px !important;
+      font-size: 15px !important;
     }
+    /* 讓包裹表格的容器填滿剩下的垂直空間 */
+  .shift-wrap { 
+    flex: 1 !important; 
+    display: flex !important;
+    height: 100% !important;
+  }
+  
+  /* 讓表格本身的高度 100%，裡面的列 (tr) 就會自動均分拉長 */
+  .shift-table { 
+    height: 100% !important; 
+  }
   }
 
   @media (max-width: 900px) {
