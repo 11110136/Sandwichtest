@@ -289,7 +289,10 @@
     .shift-table td:nth-child(4),
     .shift-table th:nth-child(11),
     .shift-table td:nth-child(11) {
-      width: auto !important;
+      width: 250px !important;        
+      max-width: 250px !important;    
+      white-space: normal !important; 
+      word-break: break-word !important; 
     }
   }
 
@@ -440,6 +443,16 @@
 </div>
 
 <div id="quick-input-panel" class="hidden">
+  <div class="quick-section" id="quick-color-section" style="display:none;">
+    <div class="quick-title">🎨 標記顏色 (請先反白選取文字)</div>
+    <div id="quick-colors-container" class="quick-btns">
+      <button class="quick-btn color-btn" style="color:#e11d48; background:#ffe4e6;" data-color="#e11d48">紅</button>
+      <button class="quick-btn color-btn" style="color:#2563eb; background:#dbeafe;" data-color="#2563eb">藍</button>
+      <button class="quick-btn color-btn" style="color:#059669; background:#d1fae5;" data-color="#059669">綠</button>
+      <button class="quick-btn color-btn" style="color:#9333ea; background:#f3e8ff;" data-color="#9333ea">紫</button>
+      <button class="quick-btn color-btn" style="color:#3d3d3d; background:#f1f5f9;" data-color="#3d3d3d">復原</button>
+    </div>
+  </div>
   <div class="quick-section">
     <div class="quick-title">👥 快速人員</div>
     <div id="quick-names-container" class="quick-btns"></div>
@@ -449,6 +462,7 @@
     <div id="quick-tasks-container" class="quick-btns"></div>
   </div>
 </div>
+
 <div id="aiModal" class="modal-overlay">
   <div class="modal-content">
     <h2 style="margin-bottom: 15px; color: var(--olive);">🤖 AI 智慧排班助手</h2>
@@ -760,6 +774,7 @@ function updateShiftStats() {
           if (dayData.opener && staff.includes(dayData.opener)) stats[dayData.opener]++;
           if (dayData.close && staff.includes(dayData.close)) stats[dayData.close]++;
           if (dayData.duty) {
+              // 包含 HTML 標籤也不影響，依然能正確統計名字出現次數
               staff.forEach(name => { if(dayData.duty.includes(name)) stats[name]++; });
           }
       }
@@ -830,11 +845,12 @@ function buildShiftCells(row) {
   const openerStyle = getStaffStyle(row.opener);
   const closerStyle = getStaffStyle(row.close);
 
+  // 當天值班與 20:00 改為 onblur 儲存 this.innerHTML 來保留顏色格式
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
-    <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerText); updateShiftStats();">${row.duty||''}</div></td>
-    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerText)">${row.at20||''}</div></td>
+    <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerHTML); updateShiftStats();">${row.duty||''}</div></td>
+    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML)">${row.at20||''}</div></td>
     <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||'　'}</div></td>`;
 }
 
@@ -867,6 +883,33 @@ function initQuickInput() {
     btn.innerText = task;
     bindQuickButton(btn, task, 'task');
     tasksContainer.appendChild(btn);
+  });
+
+  // 顏色按鈕邏輯綁定
+  document.querySelectorAll('#quick-colors-container .color-btn').forEach(btn => {
+    const action = (e) => {
+      e.preventDefault(); // 阻止失焦，讓文字保持被選取反白狀態
+      const color = btn.getAttribute('data-color');
+      if (!activeCell) return;
+
+      if (color === '#3d3d3d') {
+        document.execCommand('removeFormat', false, null); // 復原格式
+        document.execCommand('foreColor', false, '#3d3d3d');
+      } else {
+        document.execCommand('styleWithCSS', false, true); // 用 span style 取代舊版 font 標籤
+        document.execCommand('foreColor', false, color);
+      }
+
+      // 觸發儲存更新 (限定只有 duty 欄位才儲存顏色)
+      const field = activeCell.getAttribute('data-field');
+      const key = activeCell.getAttribute('data-key');
+      if (field === 'duty' && key) {
+         saveShiftField(key, field, activeCell.innerHTML);
+         updateShiftStats();
+      }
+    };
+    btn.addEventListener('mousedown', action);
+    btn.addEventListener('touchstart', action, { passive: false });
   });
 
   document.addEventListener('focusin', (e) => {
@@ -911,7 +954,7 @@ function updateQuickNamesPanel() {
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
   
-  // 新增：清除按鈕 (方便點錯時取消選取)
+  // 新增：清除按鈕
   const clearBtn = document.createElement('button');
   clearBtn.className = 'quick-btn name-btn';
   clearBtn.style.cssText = 'background-color: #f1f5f9; color: #64748b; border: none;';
@@ -934,6 +977,17 @@ function showQuickInput(cell) {
   const panel = document.getElementById('quick-input-panel');
   const rect = cell.getBoundingClientRect();
   
+  // 依照欄位屬性，決定是否顯示「顏色標記」區塊 (限定只有當天值班 duty 才顯示)
+  const field = cell.getAttribute('data-field');
+  const colorSection = document.getElementById('quick-color-section');
+  if (colorSection) {
+     if (field === 'duty') {
+        colorSection.style.display = 'block';
+     } else {
+        colorSection.style.display = 'none';
+     }
+  }
+  
   let topPos = rect.bottom + window.scrollY + 5;
   let leftPos = rect.left + window.scrollX;
 
@@ -949,27 +1003,64 @@ function showQuickInput(cell) {
   panel.classList.remove('hidden');
 }
 
-function closeQuickInput() {
-  const panel = document.getElementById('quick-input-panel');
-  if (panel) panel.classList.add('hidden');
-  activeCell = null;
+// 將游標放置在輸入框最後面的輔助函數
+function placeCaretAtEnd(el) {
+  el.focus();
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 function insertTextToCell(text, type) {
   if (!activeCell) return;
 
   const field = activeCell.getAttribute('data-field');
-  const isInput = (activeCell.tagName === 'INPUT');
   
-  let currentVal = isInput ? activeCell.value : activeCell.innerText;
-  if (!isInput && (currentVal === '未填' || currentVal === '　')) currentVal = ''; 
+  // ── 處理富文本 (Rich Text) 欄位：當天值班、20:00 ──
+  if (field === 'duty' || field === 'at20') {
+    let currentText = activeCell.innerText.trim();
+    let currentHtml = activeCell.innerHTML;
+
+    if (type === 'clear') {
+      activeCell.innerHTML = '';
+    } else {
+      let appendHtml = '';
+      if (type === 'task') {
+        if (text === '玻璃') appendHtml = (currentText ? '<br>' : '') + '玻璃<br>';
+        else appendHtml = (currentText && !currentText.endsWith('\n') ? '<br>' : '') + text + '：';
+      } else if (type === 'template') {
+        appendHtml = (currentText ? '<br>' : '') + text.replace(/\n/g, '<br>');
+      } else {
+        // 插入人名時，判斷前面是否需要加頓號
+        if (currentText.endsWith('：') || currentText.endsWith('\n') || currentText === '') {
+          appendHtml = text;
+        } else {
+          appendHtml = '、' + text;
+        }
+      }
+      activeCell.innerHTML = currentHtml + appendHtml;
+    }
+
+    const key = activeCell.getAttribute('data-key');
+    if (key) { saveShiftField(key, field, activeCell.innerHTML); updateShiftStats(); }
+    
+    placeCaretAtEnd(activeCell);
+    return; // 提早結束，不執行下方舊有的單純文字邏輯
+  }
+
+  // ── 處理純文字 (Plain Text) 欄位：開店、關帳、清潔等 ──
+  let currentVal = activeCell.innerText;
+  if (currentVal === '未填' || currentVal === '　') currentVal = ''; 
 
   let newVal = currentVal;
 
   if (type === 'clear') {
     newVal = '';
   } else if (field === 'opener') {
-    if (currentVal === '' || currentVal === '未填') newVal = text;
+    if (currentVal === '') newVal = text;
     else if (!currentVal.includes(text)) newVal = currentVal + '、' + text;
   } else if (field === 'close') {
     newVal = text;
@@ -985,37 +1076,20 @@ function insertTextToCell(text, type) {
 
   const key = activeCell.getAttribute('data-key');
   
-  if (isInput) {
-    activeCell.value = newVal;
-    if (key && field) { saveShiftField(key, field, newVal); updateShiftStats(); }
-    activeCell.focus();
+  if (field === 'opener' || field === 'close') {
+    activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
+    activeCell.style.cssText = getStaffStyle(newVal);
+    if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
+    if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
   } else {
-    if (field === 'opener' || field === 'close') {
-      activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
-      activeCell.style.cssText = getStaffStyle(newVal);
-      if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
-      if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
-    } else if (field === 'duty' || field === 'at20') {
-      // 處理改版後的多行值班欄位
-      activeCell.innerText = newVal;
-      if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
-    } else {
-      activeCell.innerText = newVal;
-      if (key) {
-        if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
-        else saveCleanData(key, activeCell);
-      }
+    activeCell.innerText = newVal;
+    if (key) {
+      if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
+      else saveCleanData(key, activeCell);
     }
-    
-    // 讓游標保持在最後面
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(activeCell);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-    activeCell.focus();
   }
+  
+  placeCaretAtEnd(activeCell);
 }
 
 // ══════════════════════════════════════════
