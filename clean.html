@@ -265,6 +265,24 @@
     }
     
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
+    /* 針對「20:00」欄位進行寬度限制 (左半邊是第5欄，右半邊是第12欄) */
+    .shift-table th:nth-child(5),
+    .shift-table td:nth-child(5),
+    .shift-table th:nth-child(12),
+    .shift-table td:nth-child(12) {
+      width: 85px !important;       /* 限制寬度，大約剛好是二到三個名字塞得下的空間 */
+      max-width: 85px !important; 
+      white-space: normal !important;
+      word-break: break-all !important; /* 超過寬度自動斷行，不會撐破表格 */
+    }
+
+    /* 放寬「當天值班」欄位 (左半邊第4欄，右半邊第11欄) 讓它盡量填滿剩下空間 */
+    .shift-table th:nth-child(4),
+    .shift-table td:nth-child(4),
+    .shift-table th:nth-child(11),
+    .shift-table td:nth-child(11) {
+      width: auto !important;
+    }
   }
 
   @media (max-width: 900px) {
@@ -415,12 +433,12 @@
 
 <div id="quick-input-panel" class="hidden">
   <div class="quick-section">
-    <div class="quick-title">🧹 快速事項</div>
-    <div id="quick-tasks-container" class="quick-btns"></div>
-  </div>
-  <div class="quick-section">
     <div class="quick-title">👥 快速人員</div>
     <div id="quick-names-container" class="quick-btns"></div>
+  </div>
+  <div class="quick-section">
+    <div class="quick-title">🧹 快速事項</div>
+    <div id="quick-tasks-container" class="quick-btns"></div>
   </div>
 </div>
 <div id="aiModal" class="modal-overlay">
@@ -491,10 +509,9 @@ const STAFF_COLORS = [
 function getStaffStyle(name) {
   if (!name || name === '未填') return 'background-color: #e2e8f0; color: #475569; border: none;';
   if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
-  const index = staff.indexOf(name);
-  if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
-  const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
-  return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
+  
+  // 統一使用符合系統風格的顏色 (淺綠底、深綠字、帶一點邊框)
+  return 'background-color: var(--sage-pale); color: var(--olive); border: 1px solid var(--sage-light);';
 }
 
 // ══════════════════════════════════════════
@@ -933,8 +950,19 @@ function insertTextToCell(text, type) {
 
   if (type === 'clear') {
     newVal = '';
-  } else if (field === 'opener' || field === 'close') {
-    // 改動重點：如果是開店或關帳，點選名字時「直接替換」取代舊名字
+  } else if (field === 'opener') {
+    // 開店：允許多人，使用「、」隔開，並防止重複加入相同名字
+    if (currentVal === '' || currentVal === '未填') {
+      newVal = text;
+    } else {
+      if (!currentVal.includes(text)) {
+        newVal = currentVal + '、' + text;
+      } else {
+        newVal = currentVal; 
+      }
+    }
+  } else if (field === 'close') {
+    // 關帳：維持單人，直接替換
     newVal = text;
   } else if (type === 'task') {
     if (text === '玻璃') {
