@@ -506,12 +506,26 @@ const STAFF_COLORS = [
   { bg: '#f48fb1', text: '#880e4f' }  // 玫瑰
 ];
 
-function getStaffStyle(name) {
+// 加入 isUnified 參數：如果是 true 就用統一綠色，false 就用專屬顏色
+function getStaffStyle(name, isUnified = false) {
   if (!name || name === '未填') return 'background-color: #e2e8f0; color: #475569; border: none;';
+  
+  // 快速面板強制使用統一風格
+  if (isUnified) {
+    if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
+    return 'background-color: var(--sage-pale); color: var(--olive); border: 1px solid var(--sage-light);';
+  }
+
+  // 表格與人員管理維持彩色風格
   if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
   
-  // 統一使用符合系統風格的顏色 (淺綠底、深綠字、帶一點邊框)
-  return 'background-color: var(--sage-pale); color: var(--olive); border: 1px solid var(--sage-light);';
+  // 處理帶新人(多人開店)的情況：擷取頓號前「第一個人」的名字來上色
+  const firstName = name.split('、')[0];
+  const index = staff.indexOf(firstName);
+  
+  if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
+  const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
+  return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
 }
 
 // ══════════════════════════════════════════
