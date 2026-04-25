@@ -136,8 +136,15 @@
   .shift-table thead tr:nth-child(2) th { background: #e8f0fe; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
   .shift-table td.closed-cell { color: var(--accent-red); font-weight: 700; font-size: 15px; }
   .shift-table td.open-cell { min-width: 120px; }
-  .shift-table td input { font-family: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; width: 100%; outline: none; background: var(--cream); transition: border .15s; text-align: center; }
-  .shift-table td input:focus { border-color: var(--sage); background: #fff; }
+  
+  /* 支援多行的欄位設定 */
+  .shift-table td input, 
+  .shift-input-div { 
+    font-family: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; width: 100%; min-height: 30px; outline: none; background: var(--cream); transition: border .15s; text-align: center; word-break: break-word; line-height: 1.4;
+  }
+  .shift-table td input:focus, 
+  .shift-input-div:focus { border-color: var(--sage); background: #fff; }
+  .shift-input-div:empty:before { content: attr(data-placeholder); color: #999; pointer-events: none; }
   
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
@@ -167,12 +174,12 @@
   
   /* ── 大字體模式 ── */
   body.large-font .inline-edit { font-size: 20px; line-height: 1.6; }
-  body.large-font .shift-table td input { font-size: 18px; padding: 8px; }
+  body.large-font .shift-table td input, 
+  body.large-font .shift-input-div { font-size: 18px; padding: 8px; }
   body.large-font .shift-table th, body.large-font .shift-table td { font-size: 17px; }
   body.large-font .opener-badge { font-size: 16px; padding: 6px 14px; }
   body.large-font .cal-cell .date-num { font-size: 20px; }
 
-  /* ── PRINT STYLES ── */
   /* ── PRINT STYLES ── */
   @media print {
     @page { margin: 8mm 10mm; }
@@ -247,7 +254,8 @@
     }
 
     /* 3. 強制解除 input 的預設寬度，避免撐破表格 */
-    .shift-table td input {
+    .shift-table td input,
+    .shift-input-div {
       padding: 1px !important;
       font-size: 13px !important;
       width: 100% !important;
@@ -822,14 +830,11 @@ function buildShiftCells(row) {
   const openerStyle = getStaffStyle(row.opener);
   const closerStyle = getStaffStyle(row.close);
 
-  /* 改動重點：把 <button onclick="..."> 變成有 tabindex="0" 的 <div class="editable-cell">
-     這樣點擊時就會觸發 focusin 事件並叫出快速面板！
-  */
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
-    <td class="open-cell"><input class="editable-cell" value="${row.duty||''}" data-key="${row.key}" data-field="duty" placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.value); updateShiftStats();"></td>
-    <td><input class="editable-cell" value="${row.at20||''}" data-key="${row.key}" data-field="at20" placeholder="20:00" style="width:70px;" onblur="saveShiftField('${row.key}','at20',this.value)"></td>
+    <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerText); updateShiftStats();">${row.duty||''}</div></td>
+    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerText)">${row.at20||''}</div></td>
     <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||'　'}</div></td>`;
 }
 
@@ -893,7 +898,7 @@ function updateQuickNamesPanel() {
     const btn = document.createElement('button');
     btn.className = 'quick-btn name-btn';
     btn.innerText = name;
-    btn.style.cssText = getStaffStyle(name);
+    btn.style.cssText = getStaffStyle(name, true);
     bindQuickButton(btn, name, 'name');
     namesContainer.appendChild(btn);
   });
@@ -901,7 +906,7 @@ function updateQuickNamesPanel() {
   // 店休按鈕
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-btn name-btn';
-  closeBtn.style.cssText = getStaffStyle('店休');
+  closeBtn.style.cssText = getStaffStyle('店休', true);
   closeBtn.innerText = '店休';
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
@@ -953,73 +958,53 @@ function closeQuickInput() {
 function insertTextToCell(text, type) {
   if (!activeCell) return;
 
+  const field = activeCell.getAttribute('data-field');
   const isInput = (activeCell.tagName === 'INPUT');
-  let currentVal = isInput ? activeCell.value : activeCell.innerText;
   
-  // 如果原本的文字是預設的「未填」或「空白」，就先清空它
+  let currentVal = isInput ? activeCell.value : activeCell.innerText;
   if (!isInput && (currentVal === '未填' || currentVal === '　')) currentVal = ''; 
 
-  const field = activeCell.getAttribute('data-field');
   let newVal = currentVal;
 
   if (type === 'clear') {
     newVal = '';
   } else if (field === 'opener') {
-    // 開店：允許多人，使用「、」隔開，並防止重複加入相同名字
-    if (currentVal === '' || currentVal === '未填') {
-      newVal = text;
-    } else {
-      if (!currentVal.includes(text)) {
-        newVal = currentVal + '、' + text;
-      } else {
-        newVal = currentVal; 
-      }
-    }
+    if (currentVal === '' || currentVal === '未填') newVal = text;
+    else if (!currentVal.includes(text)) newVal = currentVal + '、' + text;
   } else if (field === 'close') {
-    // 關帳：維持單人，直接替換
     newVal = text;
   } else if (type === 'task') {
-    if (text === '玻璃') {
-      newVal += (newVal.trim().length > 0 && !newVal.endsWith('\n') ? '\n' : '') + '玻璃\n';
-    } else {
-      newVal += (newVal.trim().length > 0 && !newVal.endsWith('\n') ? '\n' : '') + text + '：';
-    }
+    if (text === '玻璃') newVal += (newVal.trim() ? '\n' : '') + '玻璃\n';
+    else newVal += (newVal.trim() && !newVal.endsWith('\n') ? '\n' : '') + text + '：';
   } else if (type === 'template') {
-    newVal += (newVal.trim().length > 0 && !newVal.endsWith('\n') ? '\n' : '') + text;
+    newVal += (newVal.trim() ? '\n' : '') + text;
   } else { 
-    if (newVal.endsWith('：') || newVal.endsWith('\n') || newVal.trim() === '') {
-      newVal += text;
-    } else {
-      newVal += '、' + text;
-    }
+    if (newVal.endsWith('：') || newVal.endsWith('\n') || newVal.trim() === '') newVal += text;
+    else newVal += '、' + text;
   }
 
+  const key = activeCell.getAttribute('data-key');
+  
   if (isInput) {
-    // 處理輸入框 (如當天值班)
     activeCell.value = newVal;
-    const key = activeCell.getAttribute('data-key');
-    if (key && field) saveShiftField(key, field, newVal);
-    updateShiftStats();
-    activeCell.focus(); 
+    if (key && field) { saveShiftField(key, field, newVal); updateShiftStats(); }
+    activeCell.focus();
   } else {
-    // 處理方塊按鈕 (如開店、關帳、洗餐具)
-    const key = activeCell.getAttribute('data-key');
-    
     if (field === 'opener' || field === 'close') {
-        activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
-        activeCell.style.cssText = getStaffStyle(newVal);
-        if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
-        
-        if (key) {
-            saveShiftField(key, field, newVal);
-            updateShiftStats();
-        }
+      activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
+      activeCell.style.cssText = getStaffStyle(newVal);
+      if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
+      if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
+    } else if (field === 'duty' || field === 'at20') {
+      // 處理改版後的多行值班欄位
+      activeCell.innerText = newVal;
+      if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
     } else {
-        activeCell.innerText = newVal;
-        if (key) {
-          if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
-          else saveCleanData(key, activeCell);
-        }
+      activeCell.innerText = newVal;
+      if (key) {
+        if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
+        else saveCleanData(key, activeCell);
+      }
     }
     
     // 讓游標保持在最後面
