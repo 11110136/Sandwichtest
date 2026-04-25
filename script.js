@@ -20,7 +20,8 @@ const leaveImages = {
     0: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop", 
     1: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop", 
     2: "./images/level3.png", 
-    3: "./images/level4.jpg", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: ""  
+    3: "./images/level4.jpg", 
+    4: "./images/level5.jpg", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: ""  
 };
 
 const STATION_IMAGE_URL = "./images/第四版工作分配表.png";
