@@ -173,36 +173,43 @@
   body.large-font .cal-cell .date-num { font-size: 20px; }
 
   /* ── PRINT STYLES ── */
+  /* ── PRINT STYLES ── */
   @media print {
     @page { margin: 8mm 10mm; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: #fff !important; margin: 0; padding: 0; }
+    
+    /* 隱藏非列印元素 */
     .topbar, .tabs, .section-header .month-nav, .btn, .add-staff-row, .tip,
     #staffPanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats { display: none !important; } 
+    
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
+
+    /* 1. 捨棄固定的 mm 高度，改用 vh 讓它自動適應紙張直向/橫向 */
     #cleanPanel { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    width: 100% !important; 
-    /* 捨棄 vh，改用 mm。A4高297mm，設定255mm可保留足夠的上下邊距 */
-    height: 255mm !important; 
-    max-height: 255mm !important; 
-    page-break-after: always !important; 
-    break-after: page !important; 
-  }
+      display: flex !important; 
+      flex-direction: column !important; 
+      width: 100% !important; 
+      height: 98vh !important;  /* 使用視窗高度比例，防止跨頁 */
+      max-height: 98vh !important; 
+      page-break-after: always !important; 
+      break-after: page !important; 
+    }
     #shiftPanel { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    width: 100% !important; 
-    height: 255mm !important; 
-    max-height: 255mm !important; 
-    page-break-before: always !important; 
-    break-before: page !important; 
-  }
-    #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 10mm !important; margin-bottom: 15px !important; }
+      display: flex !important; 
+      flex-direction: column !important; 
+      width: 100% !important; 
+      height: 98vh !important;  /* 使用視窗高度比例，防止跨頁 */
+      max-height: 98vh !important; 
+      page-break-before: always !important; 
+      break-before: page !important; 
+    }
+
+    #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 5mm !important; margin-bottom: 10px !important; }
     #shiftPanel .section-header h2 { text-align: center !important; width: 100% !important; }
     #cleanPanel .section-header { width: 100% !important; justify-content: center !important; margin-bottom: 4px !important; }
+    
     #cleanPanel .calendars-wrap { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; flex: 1 !important; align-items: stretch !important; }
     #cleanPanel .cal-section { display: flex !important; flex-direction: column !important; height: 100% !important; }
     #cleanPanel .cal-section h3 { font-size: 17px !important; margin-bottom: 4px !important; text-align: center !important; }
@@ -214,41 +221,50 @@
     #cleanPanel #dishCalBody { grid-template-columns: repeat(7, 1fr) !important; }
     #cleanPanel .cal-cell { min-height: unset !important; height: auto !important; padding: 4px 3px !important; display: flex !important; flex-direction: column !important; align-items: center !important; border-right: 1px solid #ccc !important; border-bottom: 1px solid #ccc !important; }
     #cleanPanel .cal-cell .date-num { font-size: 15px !important; margin-bottom: 3px !important; font-weight: 700 !important; line-height: 1.1 !important; }
+    
     .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 18px !important; }
     .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
-    .shift-table { font-size: 11px; }
-    .shift-table th, .shift-table td { padding: 4px 5px; }
-    h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
 
-    /* 加入以下這段針對值班表的調整 */
+    /* 2. 針對值班表的壓縮與斷行處理 */
+    .shift-wrap { 
+      flex: 1 !important; 
+      display: block !important; /* 改用 block 避免 Flex 在部分瀏覽器列印時高度異常 */
+      height: 100% !important;
+      width: 100% !important;
+    }
+    
     .shift-table { 
-      min-width: auto !important; /* 關鍵：解除 900px 限制，讓表格能隨紙張縮放 */
+      min-width: auto !important; 
       width: 100% !important; 
+      height: auto !important; /* 取消 100% 強制延展，讓內容自適應高度 */
     }
+    
     .shift-table th, .shift-table td { 
-      padding: 3px 4px !important; /* 縮小儲存格內距，爭取水平空間 */
-      font-size: 15px !important;  /* 可視需求微調大小 */
-      word-break: keep-all !important; /* 防止文字不自然換行 */
+      padding: 3px 2px !important; /* 極小化內距，爭取水平空間 */
+      font-size: 13px !important; /* 字體稍微調小以容納完整文字 */
+      word-break: break-word !important; /* 允許過長文字自動換行 */
+      white-space: normal !important;
     }
+
+    /* 3. 強制解除 input 的預設寬度，避免撐破表格 */
     .shift-table td input {
-      padding: 2px !important;
-      font-size: 15px !important;
+      padding: 1px !important;
+      font-size: 13px !important;
+      width: 100% !important;
+      min-width: 0 !important; /* 核心關鍵：取消預設最小寬度 */
+      box-sizing: border-box !important;
+      border: none !important; /* 列印時去框線更清爽乾淨 */
+      background: transparent !important;
+      text-align: center !important;
     }
+
     .opener-badge {
-      padding: 2px 6px !important; /* 縮小姓名標籤 */
-      font-size: 15px !important;
+      padding: 2px 4px !important; 
+      font-size: 12px !important;
+      white-space: nowrap !important; /* 姓名標籤不換行 */
     }
-    /* 讓包裹表格的容器填滿剩下的垂直空間 */
-  .shift-wrap { 
-    flex: 1 !important; 
-    display: flex !important;
-    height: 100% !important;
-  }
-  
-  /* 讓表格本身的高度 100%，裡面的列 (tr) 就會自動均分拉長 */
-  .shift-table { 
-    height: 100% !important; 
-  }
+    
+    h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
   }
 
   @media (max-width: 900px) {
