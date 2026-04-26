@@ -771,11 +771,18 @@ function updateShiftStats() {
   Object.keys(shiftData).forEach(key => {
       if (key.startsWith(`${shiftYear}-${shiftMonth}-`)) {
           const dayData = shiftData[key];
-          if (dayData.opener && staff.includes(dayData.opener)) stats[dayData.opener]++;
-          if (dayData.close && staff.includes(dayData.close)) stats[dayData.close]++;
-          if (dayData.duty) {
+          
+          // 1. 統計「關帳」人員 (close 欄位)
+          if (dayData.close && staff.includes(dayData.close)) {
+              stats[dayData.close]++;
+          }
+          
+          // 2. 統計「20:00」人員 (at20 欄位)
+          if (dayData.at20) {
               // 包含 HTML 標籤也不影響，依然能正確統計名字出現次數
-              staff.forEach(name => { if(dayData.duty.includes(name)) stats[name]++; });
+              staff.forEach(name => { 
+                  if(dayData.at20.includes(name)) stats[name]++; 
+              });
           }
       }
   });
@@ -850,7 +857,7 @@ function buildShiftCells(row) {
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
     <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerHTML); updateShiftStats();">${row.duty||''}</div></td>
-    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML)">${row.at20||''}</div></td>
+    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML); updateShiftStats();">${row.at20||''}</div></td>
     <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||'　'}</div></td>`;
 }
 
