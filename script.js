@@ -174,6 +174,8 @@ function updateData(day, field, val, element) {
         const dateObj = new Date(year, currentMonth, day);
         const dayIdx = dateObj.getDay();
         const isWeekday = (dayIdx >= 1 && dayIdx <= 5);
+        
+        // 原本的開店/關帳未填寫警告邏輯
         if (isWeekday && (field === 'open' || field === 'close')) {
             if (!val || val.trim() === '') {
                 element.classList.add('warning-cell');
@@ -181,6 +183,36 @@ function updateData(day, field, val, element) {
                 element.classList.remove('warning-cell');
             }
         }
+
+        // --- [新增] 手動輸入時的防呆衝突檢查 ---
+        if (field === 't20' || field === 'dish' || field === 'close') {
+            const currentT20 = fullYearData[currentMonth][day].t20 || "";
+            const currentDish = fullYearData[currentMonth][day].dish || "";
+            const currentClose = fullYearData[currentMonth][day].close || "";
+            
+            let hasConflict = false;
+            let conflictNames = [];
+            
+            // 透過 QUICK_NAMES 陣列來比對是否有重複的人名
+            QUICK_NAMES.forEach(name => {
+                if (currentT20.includes(name) && (currentDish.includes(name) || currentClose.includes(name))) {
+                    hasConflict = true;
+                    conflictNames.push(name);
+                }
+            });
+
+            if (hasConflict) {
+                element.classList.add('warning-cell'); // 套用紅框警告
+                element.title = `⚠️ 衝突：${conflictNames.join(', ')} 不能同時排在 20:00 與 洗餐具/關帳`;
+            } else {
+                // 如果沒有衝突，且不是原本平日關帳為空的警告情況，就移除警告紅框
+                if (!(isWeekday && field === 'close' && (!val || val.trim() === ''))) {
+                    element.classList.remove('warning-cell');
+                }
+                element.title = "";
+            }
+        }
+        // -------------------------------------
     }
 
     autoSaveIndicator.classList.add('opacity-100');
@@ -190,7 +222,6 @@ function updateData(day, field, val, element) {
         autoSaveIndicator.classList.remove('opacity-100');
     }, 800);
 }
-
 function toggleEditMode() {
     if (isEditMode) {
         isEditMode = false;
@@ -561,12 +592,37 @@ function insertTextToCell(text, type) {
         const cellDay = activeCell.getAttribute('data-day');
         const colLabel = activeCell.getAttribute('data-label');
         
-        if (colLabel !== '休假人員' && cellDay) {
-            const currentLeaveData = fullYearData[currentMonth]?.[cellDay]?.leave || "";
-            if (currentLeaveData.includes(text)) {
-                const confirmSchedule = confirm(`⚠️ 系統提示：\n\n【${text}】在 ${currentMonth + 1}/${cellDay} 當天已經劃休假了喔！\n\n確定還要強制將他排入這格嗎？`);
-                if (!confirmSchedule) {
-                    return; 
+        if (cellDay) {
+            // --- [新增] 衝突檢查：20:00 與 洗餐具/關帳 互斥 ---
+            const currentT20 = fullYearData[currentMonth]?.[cellDay]?.t20 || "";
+            const currentDish = fullYearData[currentMonth]?.[cellDay]?.dish || "";
+            const currentClose = fullYearData[currentMonth]?.[cellDay]?.close || "";
+
+            if (colLabel === '洗餐具' || colLabel === '關帳') {
+                if (currentT20.includes(text)) {
+                    alert(`⚠️ 系統提示：\n\n【${text}】已經排在「20:00」欄位，不能再排入「${colLabel}」！`);
+                    return; // 終止執行，不寫入儲存格
+                }
+            } else if (colLabel === '20:00') {
+                let conflictCols = [];
+                if (currentDish.includes(text)) conflictCols.push('洗餐具');
+                if (currentClose.includes(text)) conflictCols.push('關帳');
+                
+                if (conflictCols.length > 0) {
+                    alert(`⚠️ 系統提示：\n\n【${text}】已經排在「${conflictCols.join('與')}」欄位，不能再排入「20:00」！`);
+                    return; // 終止執行，不寫入儲存格
+                }
+            }
+            // ----------------------------------------------
+
+            // 原本的休假檢查
+            if (colLabel !== '休假人員') {
+                const currentLeaveData = fullYearData[currentMonth]?.[cellDay]?.leave || "";
+                if (currentLeaveData.includes(text)) {
+                    const confirmSchedule = confirm(`⚠️ 系統提示：\n\n【${text}】在 ${currentMonth + 1}/${cellDay} 當天已經劃休假了喔！\n\n確定還要強制將他排入這格嗎？`);
+                    if (!confirmSchedule) {
+                        return; 
+                    }
                 }
             }
         }
@@ -618,7 +674,6 @@ function insertTextToCell(text, type) {
 
     const inputEvent = new Event('input', { bubbles: true });
     activeCell.dispatchEvent(inputEvent);
-    
 }
 
 initQuickInput();
