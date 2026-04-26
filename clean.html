@@ -766,35 +766,47 @@ function updateShiftLabels() {
 
 function updateShiftStats() {
   const stats = {};
-  staff.forEach(name => stats[name] = 0);
+  
+  // 1. 初始化每個人的統計結構，將關帳與20:00分開
+  staff.forEach(name => {
+      stats[name] = { close: 0, at20: 0 };
+  });
   
   Object.keys(shiftData).forEach(key => {
       if (key.startsWith(`${shiftYear}-${shiftMonth}-`)) {
           const dayData = shiftData[key];
           
-          // 1. 統計「關帳」人員 (close 欄位)
+          // 2. 統計「關帳」人員 (close 欄位)
           if (dayData.close && staff.includes(dayData.close)) {
-              stats[dayData.close]++;
+              stats[dayData.close].close++;
           }
           
-          // 2. 統計「20:00」人員 (at20 欄位)
+          // 3. 統計「20:00」人員 (at20 欄位)
           if (dayData.at20) {
-              // 包含 HTML 標籤也不影響，依然能正確統計名字出現次數
               staff.forEach(name => { 
-                  if(dayData.at20.includes(name)) stats[name]++; 
+                  if(dayData.at20.includes(name)) stats[name].at20++; 
               });
           }
       }
   });
 
+  // 4. 將結果轉換為 HTML 顯示
   const statsHtml = Object.entries(stats)
-      .filter(([name, count]) => count > 0)
-      .map(([name, count]) => `<div class="stat-card">${name}: ${count} 次</div>`)
+      // 過濾掉兩個欄位都是 0 的人
+      .filter(([name, counts]) => counts.close > 0 || counts.at20 > 0)
+      .map(([name, counts]) => {
+          let details = [];
+          // 判斷哪個欄位有數字，就加上對應的標籤
+          if (counts.close > 0) details.push(`關帳: ${counts.close}`);
+          if (counts.at20 > 0) details.push(`20:00: ${counts.at20}`);
+          
+          // 顯示格式例如： 姓名 (關帳: 2 | 20:00: 1)
+          return `<div class="stat-card">${name} (${details.join(' | ')})</div>`;
+      })
       .join('');
   
   document.getElementById('shiftStats').innerHTML = statsHtml || '<span style="color:#999">本月尚無排班統計資料</span>';
 }
-
 async function copyLastMonthShift() {
   if (!confirm('確定要複製上個月的「開店」與「關帳」人員配置嗎？(這將覆蓋本月對應欄位)')) return;
 
