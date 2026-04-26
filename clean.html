@@ -874,6 +874,12 @@ function bindQuickButton(btn, text, type) {
   btn.addEventListener('mousedown', action);
   btn.addEventListener('touchstart', action, { passive: false });
 }
+// 補上這個隱藏面板的函數
+function closeQuickInput() {
+  const panel = document.getElementById('quick-input-panel');
+  if (panel) panel.classList.add('hidden');
+  activeCell = null;
+}
 
 function initQuickInput() {
   const tasksContainer = document.getElementById('quick-tasks-container');
@@ -930,6 +936,8 @@ function initQuickInput() {
   
   document.addEventListener('mousedown', hidePanel);
   document.addEventListener('touchstart', hidePanel, { passive: true });
+  // 👉 新增這一行：監聽滾動事件，一滾動就關閉面板
+  window.addEventListener('scroll', closeQuickInput, true);
 }
 
 function updateQuickNamesPanel() {
