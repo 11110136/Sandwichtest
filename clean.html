@@ -378,6 +378,7 @@
     <div class="month-tool-bar no-print">
       <button class="btn btn-outline" style="color:var(--olive); border-color:var(--olive)" onclick="autoFillPeriodicClean()">🔄 設定週期清潔預填</button>
     </div>
+    <div id="cleanStats" class="stats-container"></div>
     <p class="tip">點擊下方日曆空白處即可輸入，或利用跳出的「快速面板」直接點選名字與事項。</p>
     <div class="calendars-wrap">
       <div class="cal-section">
@@ -609,6 +610,7 @@ function changeMonth(d) {
   if(cleanMonth > 11) { cleanMonth=0; cleanYear++; }
   if(cleanMonth < 0) { cleanMonth=11; cleanYear--; }
   updateCleanLabels(); renderCleanCal(); renderDishCal();
+  updateCleanStats();
 }
 
 function updateCleanLabels() {
@@ -711,6 +713,7 @@ function renderFullCal(bodyId, year, month, type) {
 function saveCleanData(key, el) {
   cleanData[key] = el.innerText;
   saveToSupabase('clean', key, cleanData[key]);
+  updateCleanStats();
 }
 
 function saveDishData(key, el) {
@@ -719,6 +722,7 @@ function saveDishData(key, el) {
   saveToSupabase('dish', key, dishData[key]);
   if (text === '店休') el.classList.add('closed-label');
   else el.classList.remove('closed-label');
+  updateCleanStats();
 }
 
 // ══════════════════════════════════════════
@@ -746,6 +750,7 @@ async function autoFillPeriodicClean() {
       }
   }
   renderCleanCal();
+  updateCleanStats();
   alert(`已將「${task}」自動填入本月所有週${WEEKDAYS[dayOfWeek]}！`);
 }
 
@@ -877,6 +882,61 @@ function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
   saveToSupabase('shift', key, shiftData[key]);
+}
+
+  // ══════════════════════════════════════════
+//  清潔與洗餐具統計功能
+// ══════════════════════════════════════════
+function updateCleanStats() {
+  const stats = {};
+  
+  // 1. 初始化每個人的統計結構，將清潔與洗餐具分開
+  staff.forEach(name => {
+      stats[name] = { clean: 0, dish: 0 };
+  });
+  
+  // 2. 統計「清潔」人員
+  Object.keys(cleanData).forEach(key => {
+      if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
+          const text = cleanData[key];
+          if (typeof text === 'string') {
+              staff.forEach(name => {
+                  // 只要該儲存格文字包含人名，就計為 1 次
+                  if (text.includes(name)) stats[name].clean++;
+              });
+          }
+      }
+  });
+
+  // 3. 統計「洗餐具」人員
+  Object.keys(dishData).forEach(key => {
+      if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
+          const text = dishData[key];
+          if (typeof text === 'string') {
+              staff.forEach(name => {
+                  if (text.includes(name)) stats[name].dish++;
+              });
+          }
+      }
+  });
+
+  // 4. 將結果轉換為 HTML 顯示
+  const statsHtml = Object.entries(stats)
+      // 過濾掉兩個欄位都是 0 的人
+      .filter(([name, counts]) => counts.clean > 0 || counts.dish > 0)
+      .map(([name, counts]) => {
+          let details = [];
+          if (counts.clean > 0) details.push(`清潔: ${counts.clean}`);
+          if (counts.dish > 0) details.push(`洗餐具: ${counts.dish}`);
+          
+          return `<div class="stat-card">${name} (${details.join(' | ')})</div>`;
+      })
+      .join('');
+  
+  const container = document.getElementById('cleanStats');
+  if (container) {
+      container.innerHTML = statsHtml || '<span style="color:#999">本月尚無清潔與洗餐具統計資料</span>';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1142,6 +1202,7 @@ async function initApp() {
   renderCleanCal(); 
   renderDishCal(); 
   renderShiftTable();
+  updateCleanStats();
 }
 
 // ══════════════════════════════════════════
@@ -1222,6 +1283,7 @@ async function autoGenerateSchedule() {
       renderCleanCal(); 
       renderDishCal(); 
       renderShiftTable();
+      updateCleanStats();
       closeAIModal();
       alert('🎉 AI 排班大功告成！已自動套用並儲存。');
 
