@@ -82,7 +82,7 @@
   .panel.active { display: block; }
   .tip { margin-bottom: 15px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
 
-  /* ── TOOLBAR & STATS (NEW) ── */
+  /* ── TOOLBAR & STATS ── */
   .month-tool-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
   .stats-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; background: #fff; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
   .stat-card { background: var(--sage-pale); padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: 700; color: var(--olive); border: 1px solid var(--sage-light); }
@@ -148,7 +148,7 @@
   
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
-  /* 調整 badge 的聚焦樣式，讓點擊時不會有醜醜的黑框 */
+  /* 調整 badge 的聚焦樣式 */
   .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s;}
   .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sage-light); }
 
@@ -180,6 +180,50 @@
   body.large-font .opener-badge { font-size: 16px; padding: 6px 14px; }
   body.large-font .cal-cell .date-num { font-size: 20px; }
 
+  /* ── MOBILE STYLES (手機版優化) ── */
+  @media (max-width: 900px) {
+    .calendars-wrap { grid-template-columns: 1fr; }
+    .main { padding: 12px; }
+    
+    /* 頂部導覽列支援換行與橫向捲動 */
+    .topbar { height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+    .topbar h1 { font-size: 16px; margin-left: 45px; width: 100%; letter-spacing: 1px; margin-bottom: 4px; }
+    .topbar-actions { width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+    .topbar-actions::-webkit-scrollbar { display: none; } /* 隱藏醜醜的捲軸 */
+    .topbar-actions .btn { padding: 6px 12px; font-size: 13px; flex-shrink: 0; }
+    
+    /* 分頁標籤縮小與隱藏捲軸 */
+    .tabs { padding: 0 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { padding: 10px 16px; font-size: 13px; }
+    
+    /* 月份標題與按鈕 */
+    .section-header h2 { font-size: 18px; }
+    .month-nav button { width: 28px; height: 28px; font-size: 14px; }
+    .month-nav span { font-size: 14px; min-width: 80px; }
+    .cal-section h3 { font-size: 18px; }
+    
+    /* 日曆格子縮小，避免手機螢幕過長 */
+    .cal-cell { min-height: 80px; padding: 4px; }
+    .cal-cell .date-num { font-size: 14px; margin-bottom: 2px; }
+    .inline-edit { font-size: 13px; line-height: 1.3; }
+    .dish-edit.closed-label { font-size: 14px; }
+    
+    /* 排班表內容微調，增加可視範圍 */
+    .shift-table th, .shift-table td { padding: 6px 4px; font-size: 13px; }
+    .opener-badge { font-size: 12px; padding: 3px 8px; }
+    .shift-input-div { font-size: 13px; min-height: 26px; padding: 4px; }
+  }
+
+  /* 針對更小的手機螢幕 (如 iPhone SE) 進一步微調 */
+  @media (max-width: 400px) {
+    .cal-full .cal-header div { font-size: 13px; padding: 4px 0; }
+    .cal-full .cal-cell { padding: 2px; min-height: 70px; }
+    .cal-full .inline-edit { font-size: 12px; padding: 1px; }
+    .stat-card { font-size: 12px; padding: 4px 8px; }
+    .quick-btn { padding: 5px 10px; font-size: 13px; }
+  }
+
   /* ── PRINT STYLES ── */
   @media print {
     @page { margin: 8mm 10mm; }
@@ -193,12 +237,11 @@
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
 
-    /* 1. 捨棄固定的 mm 高度，改用 vh 讓它自動適應紙張直向/橫向 */
     #cleanPanel { 
       display: flex !important; 
       flex-direction: column !important; 
       width: 100% !important; 
-      height: 98vh !important;  /* 使用視窗高度比例，防止跨頁 */
+      height: 98vh !important;
       max-height: 98vh !important; 
       page-break-after: always !important; 
       break-after: page !important; 
@@ -207,7 +250,7 @@
       display: flex !important; 
       flex-direction: column !important; 
       width: 100% !important; 
-      height: 98vh !important;  /* 使用視窗高度比例，防止跨頁 */
+      height: 98vh !important; 
       max-height: 98vh !important; 
       page-break-before: always !important; 
       break-before: page !important; 
@@ -232,10 +275,9 @@
     .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 18px !important; }
     .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
 
-    /* 2. 針對值班表的壓縮與斷行處理 */
     .shift-wrap { 
       flex: 1 !important; 
-      display: block !important; /* 改用 block 避免 Flex 在部分瀏覽器列印時高度異常 */
+      display: block !important;
       height: 100% !important;
       width: 100% !important;
     }
@@ -243,25 +285,24 @@
     .shift-table { 
       min-width: auto !important; 
       width: 100% !important; 
-      height: auto !important; /* 取消 100% 強制延展，讓內容自適應高度 */
+      height: auto !important;
     }
     
     .shift-table th, .shift-table td { 
-      padding: 3px 2px !important; /* 極小化內距，爭取水平空間 */
-      font-size: 13px !important; /* 字體稍微調小以容納完整文字 */
-      word-break: break-word !important; /* 允許過長文字自動換行 */
+      padding: 3px 2px !important; 
+      font-size: 13px !important; 
+      word-break: break-word !important; 
       white-space: normal !important;
     }
 
-    /* 3. 強制解除 input 的預設寬度，避免撐破表格 */
     .shift-table td input,
     .shift-input-div {
       padding: 1px !important;
       font-size: 13px !important;
       width: 100% !important;
-      min-width: 0 !important; /* 核心關鍵：取消預設最小寬度 */
+      min-width: 0 !important; 
       box-sizing: border-box !important;
-      border: none !important; /* 列印時去框線更清爽乾淨 */
+      border: none !important;
       background: transparent !important;
       text-align: center !important;
     }
@@ -269,22 +310,21 @@
     .opener-badge {
       padding: 2px 4px !important; 
       font-size: 12px !important;
-      white-space: nowrap !important; /* 姓名標籤不換行 */
+      white-space: nowrap !important;
     }
     
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
-    /* 針對「20:00」欄位進行寬度限制 (左半邊是第5欄，右半邊是第12欄) */
+
     .shift-table th:nth-child(5),
     .shift-table td:nth-child(5),
     .shift-table th:nth-child(12),
     .shift-table td:nth-child(12) {
-      width: 85px !important;       /* 限制寬度，大約剛好是二到三個名字塞得下的空間 */
+      width: 85px !important;       
       max-width: 85px !important; 
       white-space: normal !important;
-      word-break: break-all !important; /* 超過寬度自動斷行，不會撐破表格 */
+      word-break: break-all !important; 
     }
 
-    /* 放寬「當天值班」欄位 (左半邊第4欄，右半邊第11欄) 讓它盡量填滿剩下空間 */
     .shift-table th:nth-child(4),
     .shift-table td:nth-child(4),
     .shift-table th:nth-child(11),
@@ -295,21 +335,7 @@
       word-break: break-word !important; 
     }
   }
-
-  @media (max-width: 900px) {
-    .calendars-wrap { grid-template-columns: 1fr; }
-    .main { padding: 16px; }
-    .topbar { padding: 0 12px; height: 52px; }
-    .topbar h1 { font-size: 15px; margin-left: 45px; letter-spacing: 0; }
-    .topbar-actions { gap: 6px; }
-    .topbar-actions .btn { padding: 6px 10px; font-size: 12px; }
-    .tabs { padding: 0 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-    .tab { padding: 12px 16px; font-size: 13px; }
-    .section-header h2 { font-size: 18px; }
-    .month-nav button { width: 28px; height: 28px; font-size: 14px; }
-    .month-nav span { font-size: 14px; min-width: 80px; }
-  }
-  </style>
+</style>
 </head>
 <body>
 <div class="global-nav no-print">
