@@ -309,29 +309,6 @@
     .month-nav button { width: 28px; height: 28px; font-size: 14px; }
     .month-nav span { font-size: 14px; min-width: 80px; }
   }
-
-    /* ── AI MODAL ── */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5); z-index: 3000;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: all 0.2s ease;
-    backdrop-filter: blur(3px);
-  }
-  .modal-overlay.active { opacity: 1; visibility: visible; }
-  .modal-content {
-    background: #fff; width: 90%; max-width: 450px;
-    border-radius: var(--radius); padding: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  }
-  .modal-content textarea {
-    width: 100%; height: 80px; padding: 10px; margin-top: 6px;
-    border: 1px solid var(--border); border-radius: 6px;
-    font-family: inherit; font-size: 14px; resize: vertical; margin-bottom: 16px;
-    outline: none; transition: border 0.2s;
-  }
-  .modal-content textarea:focus { border-color: var(--sage); }
-  .modal-content .btn-row { display: flex; gap: 10px; justify-content: flex-end; }
   </style>
 </head>
 <body>
@@ -352,7 +329,6 @@
 <div class="topbar">
   <h1>📋 清潔與值班管理系統</h1>
   <div class="topbar-actions">
-    <button class="btn btn-sage" onclick="openAIModal()">🤖 AI 自動排班</button>
     <button class="btn btn-outline" onclick="toggleFontSize()">🔠 字體大小</button>
     <button class="btn btn-outline" onclick="switchTab('staffPanel')">👥 管理人員</button>
     <button class="btn btn-white" onclick="printSchedule()">🖨️ 列印排班表</button>
@@ -461,23 +437,6 @@
   <div class="quick-section">
     <div class="quick-title">🧹 快速事項</div>
     <div id="quick-tasks-container" class="quick-btns"></div>
-  </div>
-</div>
-
-<div id="aiModal" class="modal-overlay">
-  <div class="modal-content">
-    <h2 style="margin-bottom: 15px; color: var(--olive);">🤖 AI 智慧排班助手</h2>
-
-    <label style="font-size: 14px; font-weight: 700; color: var(--ink-soft);">1. 上傳休假圖表 (可選)：</label>
-    <input type="file" id="aiLeaveImage" accept="image/png, image/jpeg, image/webp, image/heic" style="margin: 8px 0 15px 0; width: 100%;">
-
-    <label style="font-size: 14px; font-weight: 700; color: var(--ink-soft);">2. 文字補充需求 (可選)：</label>
-    <textarea id="aiLeaveInput" placeholder="例如：這週五要提早大掃除，請多排一人..."></textarea>
-
-    <div class="btn-row">
-      <button class="btn btn-outline" style="color: var(--ink); border-color: var(--border);" onclick="closeAIModal()">取消</button>
-      <button class="btn btn-sage" onclick="autoGenerateSchedule()">✨ 讓 AI 開始排班</button>
-    </div>
   </div>
 </div>
 
@@ -895,20 +854,26 @@ function updateCleanStats() {
       stats[name] = { clean: 0, dish: 0 };
   });
   
-  // 2. 統計「清潔」人員
+  // 2. 統計「清潔」人員 (限定週一到週五)
   Object.keys(cleanData).forEach(key => {
       if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
-          const text = cleanData[key];
-          if (typeof text === 'string') {
-              staff.forEach(name => {
-                  // 只要該儲存格文字包含人名，就計為 1 次
-                  if (text.includes(name)) stats[name].clean++;
-              });
+          // 取得該日期的 Date 物件，確認是否為週一至週五
+          const parts = key.split('-');
+          const dateObj = new Date(parts[0], parts[1], parts[2]);
+          const dow = dateObj.getDay();
+          
+          if (dow >= 1 && dow <= 5) {
+              const text = cleanData[key];
+              if (typeof text === 'string') {
+                  staff.forEach(name => {
+                      if (text.includes(name)) stats[name].clean++;
+                  });
+              }
           }
       }
   });
 
-  // 3. 統計「洗餐具」人員
+  // 3. 統計「洗餐具」人員 (不限平假日，原本洗餐具就是整週都有)
   Object.keys(dishData).forEach(key => {
       if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
           const text = dishData[key];
@@ -1203,96 +1168,6 @@ async function initApp() {
   renderDishCal(); 
   renderShiftTable();
   updateCleanStats();
-}
-
-// ══════════════════════════════════════════
-//  AI 排班小幫手 (連接 Node.js 後端)
-// ══════════════════════════════════════════
-function openAIModal() {
-  document.getElementById('aiModal').classList.add('active');
-}
-
-function closeAIModal() {
-  document.getElementById('aiModal').classList.remove('active');
-  document.getElementById('aiLeaveInput').value = '';
-  document.getElementById('aiLeaveImage').value = '';
-}
-
-async function autoGenerateSchedule() {
-  const leaveData = document.getElementById('aiLeaveInput').value.trim();
-  const imageInput = document.getElementById('aiLeaveImage');
-  const daysInMonth = new Date(shiftYear, shiftMonth + 1, 0).getDate();
-  const firstDayDow = new Date(shiftYear, shiftMonth, 1).getDay();
-  
-  const btn = document.querySelector('#aiModal .btn-sage');
-  const originalText = btn.innerText;
-  btn.innerText = '⏳ AI 正在看圖並運算中...';
-  btn.disabled = true;
-
-  try {
-      let base64Image = null;
-      let mimeType = null;
-
-      if (imageInput.files && imageInput.files[0]) {
-          const file = imageInput.files[0];
-          mimeType = file.type;
-          base64Image = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result.split(',')[1]); 
-              reader.onerror = error => reject(error);
-              reader.readAsDataURL(file);
-          });
-      }
-
-      const response = await fetch('http://localhost:3000/api/generate-schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              year: shiftYear,
-              month: shiftMonth,
-              daysInMonth: daysInMonth,
-              firstDayDow: firstDayDow,
-              staffList: staff,
-              leaveData: leaveData,
-              image: base64Image,
-              mimeType: mimeType
-          })
-      });
-
-      const result = await response.json();
-      if (!result.success) throw new Error(result.message);
-
-      const aiData = result.data;
-
-      if (aiData.clean) {
-          Object.assign(cleanData, aiData.clean);
-          for (const key in aiData.clean) await saveToSupabase('clean', key, aiData.clean[key]);
-      }
-      if (aiData.dish) {
-          Object.assign(dishData, aiData.dish);
-          for (const key in aiData.dish) await saveToSupabase('dish', key, aiData.dish[key]);
-      }
-      if (aiData.shift) {
-          for (const key in aiData.shift) {
-              if (!shiftData[key]) shiftData[key] = {};
-              Object.assign(shiftData[key], aiData.shift[key]);
-              await saveToSupabase('shift', key, shiftData[key]);
-          }
-      }
-      
-      renderCleanCal(); 
-      renderDishCal(); 
-      renderShiftTable();
-      updateCleanStats();
-      closeAIModal();
-      alert('🎉 AI 排班大功告成！已自動套用並儲存。');
-
-  } catch (error) {
-      alert('排班失敗：' + error.message);
-  } finally {
-      btn.innerText = originalText;
-      btn.disabled = false;
-  }
 }
 
 initApp();
