@@ -3,48 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每週金庫盤點系統</title>
+    <title>金庫換錢週紀錄表</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 自訂卷軸，避免手機版表格太擠 */
         .table-container { overflow-x: auto; }
-        table { min-width: 700px; }
+        table { min-width: 900px; }
 
         @media print {
-            /* 設定紙張為直向 (Portrait)，保留適當邊距 */
-            @page { size: portrait; margin: 10mm; }
+            /* 已經移除 @page 強制預設橫向與邊距的設定，讓使用者自行在列印視窗調整 */
             
             .no-print { display: none !important; }
             body { background-color: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; width: 100%; margin: 0; padding: 0; border: none !important; }
             
-            /* 解除列印時的寬度限制與捲軸，解決表格被壓縮的問題 */
             .table-container { overflow-x: visible !important; }
             table { min-width: 100% !important; width: 100% !important; border-collapse: collapse !important; }
             
-            /* 【字體放大】微調列印時的字體與間距 */
-            td, th { border: 1px solid #d1d5db !important; padding: 8px 4px !important; font-size: 13px !important; }
+            td, th { border: 1px solid #94a3b8 !important; padding: 6px 4px !important; font-size: 13px !important; }
             input { border: none !important; background: transparent !important; width: 100% !important; text-align: center !important; font-size: 14px !important; font-weight: bold !important; }
             
             .date-line { border-bottom: 1px solid black !important; }
             textarea::placeholder { color: transparent !important; }
             
-            /* 列印顏色保留 */
             .print-bg-dark { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .print-bg-gray { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .print-bg-yellow { background-color: #fefce8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            
-            .print-text-large { font-size: 16px !important; }
-            .print-text-xl { font-size: 20px !important; }
+            .print-bg-gray { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-bg-indigo { background-color: #e0e7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+        
+        /* 讓輸入框填滿儲存格且無外框 */
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            min-height: 36px;
+            text-align: center;
+            background-color: transparent;
+            outline: none;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .cell-input:focus {
+            background-color: #e0f2fe;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-2 md:p-6 min-h-screen font-sans text-gray-800">
 
+    <!-- 導覽列 -->
     <div class="fixed top-4 left-4 z-[990] no-print">
         <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow-md transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
@@ -52,261 +61,231 @@
             </svg>
         </button>
         <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden transition-all origin-top-left">
-            <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-                值班系統
-            </a>
-            <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-                每週收銀結算
-            </a>
-            <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-                庫存盤點系統
-            </a>
-            <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                清潔與值班管理系統
-            </a>
+            <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-gray-50 transition-colors">值班系統</a>
+            <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">每週收銀結算</a>
+            <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">庫存盤點系統</a>
+            <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors">清潔與值班管理系統</a>
         </div>
     </div>
     
-    <div class="max-w-5xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg container border border-gray-200 pt-16 md:pt-8 mt-12 md:mt-0 relative z-10">
         
+        <!-- 標題與日期 -->
         <div class="border-b-2 border-gray-800 pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div class="w-full shrink-1">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 tracking-wider whitespace-nowrap">每週金庫結算表</h1>
-                <p class="text-sm text-gray-500 uppercase tracking-tighter mt-1">WEEKLY CASH RECONCILIATION FORM</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 tracking-wider whitespace-nowrap">金庫換錢週紀錄表</h1>
+                <p class="text-sm text-gray-500 uppercase tracking-tighter mt-1">VAULT EXCHANGE WEEKLY RECORD</p>
             </div>
-            <div class="w-full md:w-auto shrink-0 min-w-[280px] text-left md:text-right flex flex-col items-start md:items-end">
-                <label class="block text-sm font-bold text-gray-600 mb-1">結算週別 (日期區間)</label>
-                <input type="text" id="reportDate" placeholder="例: 2026/03/16 - 03/22" class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-left md:text-center py-1 px-2 w-full bg-transparent text-base md:text-lg font-bold text-gray-700">
+            <div class="w-full md:w-auto shrink-0 min-w-[320px] text-left md:text-right flex flex-col items-start md:items-end">
+                <label class="block text-sm font-bold text-gray-600 mb-1">紀錄期間 (年/月/日)</label>
+                <div class="flex items-center gap-2 w-full">
+                    <input type="text" id="reportDate" value="2026 /    /    至 2026 /    /    " class="date-line border-b border-gray-300 focus:outline-none focus:border-blue-500 text-left md:text-center py-1 px-2 w-full bg-transparent text-lg font-bold text-gray-700 tracking-widest">
+                </div>
             </div>
         </div>
 
+        <!-- 金庫現有的錢 -->
+        <div class="bg-indigo-50/60 print-bg-indigo border border-indigo-100 rounded-xl p-4 md:p-5 mb-6 shadow-sm">
+            <h2 class="text-lg font-bold text-indigo-900 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                金庫現有庫存 (單位：個)
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-2">
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$1000</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="1000">
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$500</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="500">
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$100</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="100">
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$50</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="50">
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$10</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="10">
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm">
+                    <label class="block text-[15pt] font-bold text-gray-500 text-center mb-1">$5</label>
+                    <input type="number" min="0" class="current-qty w-full text-center font-bold text-lg text-slate-800 focus:outline-none" data-val="5">
+                </div>
+            </div>
+            <!-- 已改為靠左對齊，並移除預設的 NT$ 0 -->
+            <div class="flex items-center justify-start mt-3 pl-2 border-t border-indigo-200 pt-3 h-10">
+                <span class="text-gray-600 font-bold mr-3">現有總金額:</span>
+                <span id="currentTotalText" class="text-indigo-700 font-bold text-2xl tracking-wide min-w-[150px]"></span>
+            </div>
+        </div>
+
+        <!-- 換錢紀錄主表格 -->
         <div class="table-container mb-6">
-            <table class="w-full border-collapse border border-gray-300 text-base md:text-lg">
-                <thead class="bg-slate-800 text-white print-bg-dark text-center">
+            <table class="w-full border-collapse border border-slate-300">
+                <thead class="bg-slate-800 text-white print-bg-dark text-center text-sm md:text-base">
                     <tr>
-                        <th class="border border-slate-700 p-2 md:p-3 w-[14%] font-bold tracking-wide">面額</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">一</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">二</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">三</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">四</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">五</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold">六</th>
-                        <th class="border border-slate-700 p-2 w-[9%] font-bold text-red-300">日</th>
-                        <th class="border border-slate-700 p-2 w-[23%] font-bold tracking-wide">週小計</th>
+                        <th class="border border-slate-600 p-2 w-[8%] font-bold">日期</th>
+                        <th class="border border-slate-600 p-2 w-[8%] font-bold">動作</th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$1000<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$500<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$100<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$50<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$10<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[10%] font-bold">$5<br><span class="text-xs font-normal text-slate-300">(個)</span></th>
+                        <th class="border border-slate-600 p-2 w-[12%] font-bold tracking-wide">合計金額</th>
+                        <th class="border border-slate-600 p-2 w-[12%] font-bold">換錢人<br>簽名</th>
                     </tr>
                 </thead>
-                <tbody id="inventoryTableBody">
-                    <tr class="bg-gray-100 print-bg-gray">
-                        <td colspan="9" class="border border-gray-300 p-2 font-bold text-gray-700 text-left pl-4 text-sm md:text-base print-text-large">百鈔與大鈔 (Notes)</td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="1000">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">1,000 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="1000" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="500">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">500 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="500" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="100">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">100 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="100" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
-                    
-                    <tr class="bg-gray-100 print-bg-gray">
-                        <td colspan="9" class="border border-gray-300 p-2 font-bold text-gray-700 text-left pl-4 text-sm md:text-base print-text-large">零錢 (Coins)</td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="50">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">50 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="50" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="10">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">10 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="10" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
-                    <tr class="cash-row hover:bg-blue-50/50 transition-colors" data-val="5">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-slate-800">5 元</td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-1 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="1"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-2 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="2"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-3 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="3"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-4 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="4"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-5 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="5"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-6 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="6"></td>
-                        <td class="border border-gray-300 p-1"><input type="number" min="0" class="qty-input day-7 w-full text-center bg-transparent focus:outline-none font-bold text-gray-800 text-base md:text-lg" data-val="5" data-day="7"></td>
-                        <td class="border border-gray-300 p-2 text-right pr-4 font-mono text-blue-700 font-bold week-subtotal-cell"></td>
-                    </tr>
+                <tbody id="exchangeTableBody">
+                    <!-- 使用 JavaScript 動態生成週一至週日 -->
                 </tbody>
-
-                <tfoot>
-                    <tr class="bg-gray-50 print-bg-gray">
-                        <td class="border border-gray-300 p-2 text-center font-bold text-gray-700 text-sm md:text-base">每日金庫<br>剩餘</td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-1"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-2"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-3"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-4"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-5"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-slate-800 day-total day-6"></td>
-                        <td class="border border-gray-300 p-1 text-center font-bold text-red-500 day-total day-7"></td>
-                        
-                        <td rowspan="2" class="border border-gray-300 p-3 md:p-4 text-center align-top bg-yellow-50 print-bg-yellow">
-                            <div class="font-bold text-base md:text-lg text-gray-800 print-text-large mb-2">當週總計:</div>
-                            <div>
-                                <span id="grandTotal" class="text-blue-800 font-bold text-2xl md:text-3xl print-text-xl"></span>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="border border-gray-300 p-2 text-center font-bold text-gray-600 text-sm md:text-base">當天關帳人<br>簽名</td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        <td class="border border-gray-300 p-1 align-middle h-16 md:h-20 bg-white"></td>
-                        </tr>
-                </tfoot>
             </table>
         </div>
 
+        <!-- 備註與主管簽名 -->
         <div class="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 break-inside-avoid mt-8">
-            
             <div class="border border-gray-300 rounded-xl p-5 flex flex-col bg-white h-full shadow-sm">
-                <label for="remarksInput" class="block text-base md:text-lg font-bold text-gray-700 mb-2 print-text-large">本週備註事項 (Remarks):</label>
-                <textarea id="remarksInput" class="w-full flex-grow border border-gray-200 rounded-lg p-3 text-gray-800 text-base md:text-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none min-h-[140px] print:border print:border-gray-300 print:bg-white print:min-h-[100px]" placeholder="可點擊此處輸入備註，或直接留白列印出來手寫..."></textarea>
+                <label for="remarksInput" class="block text-base font-bold text-gray-700 mb-2">本週備註事項 (Remarks):</label>
+                <textarea id="remarksInput" class="w-full flex-grow border border-gray-200 rounded-lg p-3 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[100px] print:border print:border-gray-300 print:bg-white" placeholder="若有特殊換錢狀況請註明..."></textarea>
             </div>
-
             <div class="border border-gray-300 rounded-xl p-5 flex flex-col items-center justify-end bg-white h-full shadow-sm">
-                <div class="w-full max-w-[320px] h-24 md:h-32 border-b-2 border-gray-800 mb-4 bg-white"></div>
-                <p class="text-lg md:text-xl font-bold text-gray-700 tracking-wide print-text-large">主管/核實人簽名</p>
-                <div class="text-sm text-gray-400 italic mt-1">(Signature of Manager)</div>
+                <div class="w-full max-w-[280px] h-20 border-b-2 border-gray-800 mb-3 bg-white"></div>
+                <p class="text-lg font-bold text-gray-700 tracking-wide">主管/核實人簽名</p>
             </div>
-            
         </div>
 
+        <!-- 功能按鈕 -->
         <div class="mt-10 flex flex-wrap justify-center gap-3 md:gap-4 no-print relative">
-            <button onclick="window.print()" class="w-36 md:w-44 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200 text-base md:text-lg">
+            <button onclick="window.print()" class="w-36 md:w-44 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 列印紙本
             </button>
-            <button id="btnSubmitData" onclick="submitToCloud()" class="w-36 md:w-44 flex justify-center items-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200 text-base md:text-lg">
+            <button id="btnSubmitData" onclick="submitToCloud()" class="w-36 md:w-44 flex justify-center items-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 md:py-4 rounded-lg shadow transition duration-200">
                 上傳數據
             </button>
-            <button onclick="resetForm()" class="w-36 md:w-44 flex justify-center items-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 md:py-4 rounded-lg transition duration-200 text-base md:text-lg shadow-sm">
+            <button onclick="resetForm()" class="w-36 md:w-44 flex justify-center items-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 md:py-4 rounded-lg shadow-sm transition duration-200">
                 清除內容
             </button>
         </div>
 
+        <!-- Loading Overlay -->
         <div id="loadingOverlay" class="fixed inset-0 z-[2000] hidden bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-emerald-500 mb-4"></div>
             <p class="text-white font-bold tracking-widest text-lg">資料上傳中，請稍候...</p>
         </div>
-
-        <div class="text-xs text-gray-400 mt-8 text-center uppercase tracking-widest no-print">
-            End of Inventory Report
-        </div>
     </div>
 
     <script>
-        // 設定面額與邏輯
         const denominations = [1000, 500, 100, 50, 10, 5];
-        const inputs = document.querySelectorAll('.qty-input');
-
-        inputs.forEach(input => {
-            input.addEventListener('input', calculate);
-        });
-
-        // 7天盤點計算邏輯
-        function calculate() {
-            let grandTotal = 0;
-            let dayTotals = [0, 0, 0, 0, 0, 0, 0];
-
-            denominations.forEach(val => {
-                let weekQty = 0;
-                const row = document.querySelector(`.cash-row[data-val="${val}"]`);
-                if(!row) return;
-
-                // 統計星期一到星期日的數值
-                for(let day = 1; day <= 7; day++) {
-                    const input = row.querySelector(`.qty-input.day-${day}`);
-                    const qty = parseInt(input.value) || 0;
-                    weekQty += qty;
-                    dayTotals[day-1] += (qty * val);
-                }
-
-                const weekSubtotal = weekQty * val;
-                grandTotal += weekSubtotal;
-
-                // 更新畫面中的當列「週小計」，若為 0 則顯示空白
-                row.querySelector('.week-subtotal-cell').textContent = weekSubtotal > 0 ? weekSubtotal.toLocaleString('zh-TW') : '';
+        const days = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+        
+        // 動態生成表格結構
+        function renderTable() {
+            const tbody = document.getElementById('exchangeTableBody');
+            let html = '';
+            
+            days.forEach((dayName, index) => {
+                const dayNum = index + 1;
+                const isWeekend = (dayNum >= 6);
+                const dayColor = isWeekend ? 'text-red-600' : 'text-slate-800';
+                const bgClass = (dayNum % 2 === 0) ? 'bg-slate-50 print-bg-gray' : 'bg-white';
+                
+                html += `
+                    <!-- 換出列 -->
+                    <tr class="${bgClass} border-b border-gray-200">
+                        <td rowspan="2" class="border border-slate-300 p-2 text-center font-bold ${dayColor} text-lg align-middle">${dayName}</td>
+                        <td class="border border-slate-300 p-2 text-center font-bold text-red-600 bg-red-50/30">換出</td>
+                        ${denominations.map(val => `
+                            <td class="border border-slate-300 p-0 hover:bg-blue-50 transition-colors">
+                                <input type="number" min="0" class="cell-input qty-out day-${dayNum}" data-val="${val}" data-day="${dayNum}">
+                            </td>
+                        `).join('')}
+                        <td class="border border-slate-300 p-2 text-right font-mono font-bold text-red-700 subtotal-out-${dayNum} bg-red-50/30"></td>
+                        <td rowspan="2" class="border border-slate-300 p-1 bg-white align-middle">
+                            <!-- 簽名空格 -->
+                        </td>
+                    </tr>
+                    <!-- 換入列 -->
+                    <tr class="${bgClass} border-b-2 border-slate-400">
+                        <td class="border border-slate-300 p-2 text-center font-bold text-emerald-600 bg-emerald-50/30">換入</td>
+                        ${denominations.map(val => `
+                            <td class="border border-slate-300 p-0 hover:bg-blue-50 transition-colors">
+                                <input type="number" min="0" class="cell-input qty-in day-${dayNum}" data-val="${val}" data-day="${dayNum}">
+                            </td>
+                        `).join('')}
+                        <td class="border border-slate-300 p-2 text-right font-mono font-bold text-emerald-700 subtotal-in-${dayNum} bg-emerald-50/30"></td>
+                    </tr>
+                `;
             });
+            tbody.innerHTML = html;
+            
+            // 綁定事件
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', calculateTotals);
+            });
+        }
 
-            // 更新「每日金庫剩餘」列，若為 0 則顯示空白
+        // 計算總金額邏輯
+        function calculateTotals() {
+            // 1. 計算「金庫現有庫存」
+            let currentVaultTotal = 0;
+            document.querySelectorAll('.current-qty').forEach(input => {
+                const val = parseInt(input.getAttribute('data-val'));
+                const qty = parseInt(input.value) || 0;
+                currentVaultTotal += (val * qty);
+            });
+            
+            // 若為 0 則回傳空白字串，印出來時就會乾淨留白
+            document.getElementById('currentTotalText').textContent = currentVaultTotal > 0 ? `NT$ ${currentVaultTotal.toLocaleString('zh-TW')}` : '';
+
+            // 2. 計算表格內每一天的「換出」與「換入」合計金額
             for(let day = 1; day <= 7; day++) {
-                const dtCell = document.querySelector(`.day-total.day-${day}`);
-                if(dtCell) {
-                    dtCell.textContent = dayTotals[day-1] > 0 ? dayTotals[day-1].toLocaleString('zh-TW') : '';
-                }
-            }
+                let outSum = 0;
+                let inSum = 0;
+                
+                // 換出加總
+                document.querySelectorAll(`.qty-out.day-${day}`).forEach(input => {
+                    const val = parseInt(input.getAttribute('data-val'));
+                    const qty = parseInt(input.value) || 0;
+                    outSum += (val * qty);
+                });
+                
+                // 換入加總
+                document.querySelectorAll(`.qty-in.day-${day}`).forEach(input => {
+                    const val = parseInt(input.getAttribute('data-val'));
+                    const qty = parseInt(input.value) || 0;
+                    inSum += (val * qty);
+                });
 
-            // 更新總計，若為 0 則顯示空白
-            document.getElementById('grandTotal').textContent = grandTotal > 0 ? 'NT$ ' + grandTotal.toLocaleString('zh-TW') : '';
+                // 更新顯示 (金額大於0才顯示)
+                const outCell = document.querySelector(`.subtotal-out-${day}`);
+                const inCell = document.querySelector(`.subtotal-in-${day}`);
+                
+                if(outCell) outCell.textContent = outSum > 0 ? `$ ${outSum.toLocaleString('zh-TW')}` : '';
+                if(inCell) inCell.textContent = inSum > 0 ? `$ ${inSum.toLocaleString('zh-TW')}` : '';
+            }
         }
 
-        // 格式清除功能
+        // 清除內容
         function resetForm() {
-            if(confirm('確定要清空所有數量與備註嗎？')) {
-                inputs.forEach(input => input.value = '');
-                document.getElementById('reportDate').value = '';
-                document.getElementById('remarksInput').value = '';
-                calculate();
+            if(confirm('確定要清空所有輸入的數量與備註嗎？')) {
+                // 只清除數字輸入框跟備註欄，保留日期的 / / 格式
+                document.querySelectorAll('input[type="number"], textarea').forEach(input => {
+                    input.value = '';
+                });
+                document.getElementById('reportDate').value = '2026 /    /    至 2026 /    /    '; // 重置為有底線格式
+                calculateTotals();
             }
         }
 
-        // 導航列控制
+        // 導覽列控制
         function toggleGlobalMenu() {
             document.getElementById('global-nav-menu').classList.toggle('hidden');
         }
-
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('global-nav-menu');
             const btn = document.getElementById('global-nav-btn');
@@ -315,46 +294,25 @@
             }
         });
 
-        // ==============================================
-        // 後端 Apps Script 上傳邏輯 (背景自動計算總數量)
-        // ==============================================
+        // 雲端上傳邏輯
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzvxtZPmYJD5EmPxAGQnfRmoZrODO3tx_26OWFY20_3ASmUb2ejmkudcPvB-G65cA5VAA/exec";
 
         async function submitToCloud() {
             const dateVal = document.getElementById('reportDate').value.trim();
-            if (!dateVal) {
-                alert("請先填寫「結算週別」喔！");
+            // 若為完全沒填過的預設值，提示必填
+            if (!dateVal || dateVal === "2026 /    /    至 2026 /    /    ") {
+                alert("請先填寫「紀錄期間」喔！");
                 document.getElementById('reportDate').focus();
                 return;
             }
 
-            // 自己計算出當週各面額的總數量 (傳給後端雲端用)
-            const getWeekQty = (val) => {
-                let qty = 0;
-                const row = document.querySelector(`.cash-row[data-val="${val}"]`);
-                if(row) {
-                    for(let day = 1; day <= 7; day++) {
-                        const input = row.querySelector(`.qty-input.day-${day}`);
-                        qty += parseInt(input.value) || 0;
-                    }
-                }
-                return qty.toString();
-            };
-            
-            const totalText = document.getElementById('grandTotal').innerText;
-            const totalVal = totalText.replace(/[^\d]/g, '') || "0"; 
+            const currentTotalStr = document.getElementById('currentTotalText').innerText.replace(/[^\d]/g, '') || "0";
 
-            // 傳送數據與備註給 Google Sheets
             const payload = {
                 date: dateVal,
-                cash1000: getWeekQty(1000),
-                cash500: getWeekQty(500),
-                cash100: getWeekQty(100),
-                coin50: getWeekQty(50),
-                coin10: getWeekQty(10),
-                coin5: getWeekQty(5),
-                total: totalVal, 
-                remarks: document.getElementById('remarksInput').value
+                currentTotal: currentTotalStr,
+                remarks: document.getElementById('remarksInput').value,
+                action: "vault_exchange_update"
             };
 
             document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -369,7 +327,7 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    alert("✅ 盤點數據已成功上傳至雲端！");
+                    alert("✅ 換錢紀錄已成功上傳至雲端！");
                     resetForm();
                 } else {
                     alert("❌ 上傳失敗：" + result.message);
@@ -381,6 +339,11 @@
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
+
+        // 初始化
+        window.onload = () => {
+            renderTable();
+        };
     </script>
 </body>
 </html>
