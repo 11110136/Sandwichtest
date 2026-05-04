@@ -61,31 +61,72 @@
 
   // --- 商品主表 (前端靜態) ---
   const initialInventory = [
-    { id: 1,  name: '火腿S',       spec: '20條/箱',            unit: '箱', systemStock: 1.1,  alertLevel: 0.5,  tag: '每日' },
-    { id: 2,  name: '沙拉S',       spec: '600公克/包',          unit: '包', systemStock: 63.0, alertLevel: 50,   tag: '每日' },
-    { id: 3,  name: '水煮蛋',      spec: '顆',                  unit: '顆', systemStock: 400.0,alertLevel: 400,  tag: '每日' },
-    { id: 4,  name: '涼麵條',      spec: '3公斤/包',            unit: '包', systemStock: 27.0, alertLevel: 13,   tag: '每日' },
-    { id: 5,  name: '涼麵',        spec: '206公克/盒',          unit: '盒', systemStock: 26.0, alertLevel: 35,   tag: '每日' },
-    { id: 6,  name: '小黃瓜(箱)',  spec: '15~18公斤/箱',        unit: '箱', systemStock: 2.0,  alertLevel: 2,    tag: '每日' },
-    { id: 7,  name: '番茄(箱)',    spec: '8公斤/箱;200克/盒',    unit: '箱', systemStock: 3.0,  alertLevel: 2,    tag: '每日' },
-    { id: 8,  name: '鮮乳',        spec: '936毫升/盒',          unit: '盒', systemStock: 9.0,  alertLevel: 14,   tag: '每日' },
-    { id: 9,  name: '豆腐',        spec: '看有幾盒',            unit: '盒', systemStock: 17.0, alertLevel: 3,    tag: '每日' },
-    { id: 10, name: '木瓜(顆)',    spec: '13顆/箱',             unit: '顆', systemStock: 49.0, alertLevel: 1,    tag: '每日' },
-    { id: 11, name: '涼麵醬(原味)',spec: '80g/包',              unit: '包', systemStock: 63.0, alertLevel: 103,  tag: '每日' },
-    { id: 12, name: '涼麵醬(辣味)',spec: '80g/包',              unit: '包', systemStock: 37.0, alertLevel: 106,  tag: '每日' },
-    { id: 13, name: '二砂',        spec: '50公斤/包',           unit: '包', systemStock: 1.2,  alertLevel: 0.3,  tag: '每周' },
-    { id: 14, name: '金蘭甲級醬油',spec: '5公升/罐',            unit: '罐', systemStock: 5.0,  alertLevel: 2,    tag: '每周' },
-    { id: 15, name: '鹽S',         spec: '1000公克/包, 24包/箱', unit: '包', systemStock: 18.0, alertLevel: 1,    tag: '每周' },
-    { id: 16, name: '幸福醋',      spec: '5.5公升/罐',          unit: '罐', systemStock: 6.5,  alertLevel: 1,    tag: '每周' },
-    { id: 17, name: '芝麻醬',      spec: '2.7公升/罐, 6罐/箱',   unit: '罐', systemStock: 4.0,  alertLevel: 2,    tag: '每周' },
-    { id: 18, name: '金味王醬油',  spec: '5公升/罐',            unit: '罐', systemStock: 3.8,  alertLevel: 1,    tag: '每周' },
-    { id: 19, name: '金梅油膏',    spec: '4.5公斤/罐',          unit: '罐', systemStock: 5.8,  alertLevel: 1,    tag: '每周' },
-    { id: 20, name: '細砂糖S',     spec: '25公斤/包',           unit: '包', systemStock: 6.0,  alertLevel: 0.2,  tag: '每周' },
-    { id: 32, name: '冬瓜磚',      spec: '30塊/箱',             unit: '箱', systemStock: 22.0, alertLevel: 6,    tag: '每周' },
-    { id: 38, name: '味噌',        spec: '9公斤/箱',            unit: '箱', systemStock: 2.2,  alertLevel: 0.8,  tag: '每周' },
-    { id: 46, name: '吸管',        spec: '100支/包',            unit: '包', systemStock: 6.0,  alertLevel: 0.5,  tag: '每周' },
-    { id: 50, name: '紙520湯杯',   spec: '50個/條',             unit: '條', systemStock: 22.0, alertLevel: 2,    tag: '每周' },
-    { id: 56, name: '熱感應發票紙',spec: '650個/包',            unit: '包', systemStock: 122.0,alertLevel: 1,    tag: '每周' },
+    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', systemStock: 1.2, alertLevel: 0.5, tag: '每日' },
+    { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日' },
+    { id: 3, name: '水煮蛋', spec: '50顆/包', unit: '顆', systemStock: 1200.0, alertLevel: 400, tag: '每日' },
+    { id: 4, name: '涼麵條', spec: '3公斤/包', unit: '包', systemStock: 22.0, alertLevel: 12, tag: '每日' },
+    { id: 5, name: '涼麵', spec: '206公克/盒', unit: '盒', systemStock: 66.0, alertLevel: 35, tag: '每日' },
+    { id: 6, name: '小黃瓜(箱)', spec: '15~18公斤/箱', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日' },
+    { id: 7, name: '番茄(箱)', spec: '8公斤/箱；200克/顆', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日' },
+    { id: 8, name: '鮮乳', spec: '936毫升/罐', unit: '罐', systemStock: 17.0, alertLevel: 20, tag: '每日' },
+    { id: 9, name: '豆腐', spec: '看有幾盒', unit: '盒', systemStock: 7.0, alertLevel: 3, tag: '每日' },
+    { id: 10, name: '木瓜(顆)', spec: '13顆/箱', unit: '顆', systemStock: 31.0, alertLevel: 1, tag: '每日' },
+    { id: 11, name: '涼麵醬(原味)', spec: '80g/包', unit: '包', systemStock: 185.0, alertLevel: 103, tag: '每日' },
+    { id: 12, name: '涼麵醬(辣味)', spec: '80g/包', unit: '包', systemStock: 197.0, alertLevel: 94, tag: '每日' },
+    { id: 13, name: '二砂', spec: '50公斤/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
+    { id: 14, name: '金蘭甲級醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 15, name: '鹽S', spec: '1000公克/包, 24包/袋', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 16, name: '幸福醋', spec: '5.5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 17, name: '芝麻醬', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 18, name: '金味王醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 19, name: '金梅油膏', spec: '4.5公斤/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 20, name: '細砂糖S', spec: '25公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周' },
+    { id: 21, name: '八角', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
+    { id: 22, name: '花椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
+    { id: 23, name: '香油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1.5, tag: '每周' },
+    { id: 24, name: '乾辣椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 1.5, tag: '每周' },
+    { id: 25, name: '辣椒油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 26, name: '熟芝麻', spec: '3公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周' },
+    { id: 27, name: '果糖', spec: '25公斤/桶', unit: '桶', systemStock: 0, alertLevel: 0.3, tag: '每周' },
+    { id: 28, name: '特級阿薩姆紅茶葉', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 29, name: '奶精粉', spec: '1公斤/小包, 25公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
+    { id: 30, name: '特A紅茶(立)', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 31, name: '古早味酸梅湯', spec: '12.4公升/罐, 6罐/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 32, name: '冬瓜磚', spec: '30塊/箱', unit: '箱', systemStock: 0, alertLevel: 6, tag: '每周' },
+    { id: 33, name: '綠豆粒', spec: '5公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
+    { id: 34, name: '仙草液', spec: '3.2公升/罐. 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 4, tag: '每周' },
+    { id: 35, name: '奶精球', spec: '50顆/包', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 36, name: '樹薯粉', spec: '400公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
+    { id: 37, name: '紅豆粒', spec: '3公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
+    { id: 38, name: '味噌', spec: '9公斤/箱', unit: '箱', systemStock: 0, alertLevel: 0.8, tag: '每周' },
+    { id: 39, name: '洋蔥', spec: '250公克/顆', unit: '顆', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 40, name: '冰沙粉', spec: '1公斤/包', unit: '包', systemStock: 11.0, alertLevel: 2, tag: '每周' },
+    { id: 41, name: '烹大師', spec: '1000公克/包', unit: '包', systemStock: 0.0, alertLevel: 1, tag: '每周' },
+    { id: 42, name: '2杯加大袋(3碗)', spec: '32個/包', unit: '包', systemStock: 8.0, alertLevel: 2, tag: '每周' },
+    { id: 43, name: 'OPS 3H', spec: '20包/箱, 100個/包', unit: '包', systemStock: 21.0, alertLevel: 3, tag: '每周' },
+    { id: 44, name: '粗吸管', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
+    { id: 45, name: '大茶匙', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
+    { id: 46, name: '手扒雞手套', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
+    { id: 47, name: '吸管', spec: '100支/包.18包/箱', unit: '箱', systemStock: 0, alertLevel: 0.5, tag: '每周' },
+    { id: 48, name: '耐熱袋(4兩)', spec: '100個/包', unit: '包', systemStock: 0, alertLevel: 3, tag: '每周' },
+    { id: 49, name: '紙390湯杯', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 3, tag: '每周' },
+    { id: 50, name: '紙390蓋', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 51, name: '紙520湯杯', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 52, name: '紙520蓋', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 53, name: '湯匙', spec: '100支/包 , 20包/箱', unit: '箱', systemStock: 0, alertLevel: 1, tag: '每周' },
+    { id: 54, name: '筷子', spec: '80雙/包', unit: '包', systemStock: 6.0, alertLevel: 1, tag: '每周' },
+    { id: 55, name: '橡皮筋', spec: '', unit: '包', systemStock: 0, alertLevel: 5, tag: '每周' },
+    { id: 56, name: '洗衣粉', spec: '', unit: '包', systemStock: 0.7, alertLevel: 2, tag: '每周' },
+    { id: 57, name: '熱感應發票紙', spec: '75捲/箱', unit: '箱', systemStock: 7.0, alertLevel: 1, tag: '每周' },
+    { id: 58, name: '廚房紙巾', spec: '12捲/包', unit: '包', systemStock: 4.0, alertLevel: 0.3, tag: '每周' },
+    { id: 59, name: '5斤印刷袋', spec: '', unit: '袋', systemStock: 0, alertLevel: 20, tag: '每周' },
+    { id: 60, name: '沙拉脫S', spec: '3.4公升/桶.4桶/箱', unit: '箱', systemStock: 4.0, alertLevel: 3, tag: '每周' },
+    { id: 61, name: '九如印刷袋35', spec: '70/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 62, name: '常一嚐印刷袋(橘)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 0, tag: '每周' },
+    { id: 63, name: '悠遊感熱紙', spec: '4捲/條.30捲/小箱', unit: '捲', systemStock: 44.0, alertLevel: 3, tag: '每周' },
+    { id: 64, name: '芝麻醬包裝袋', spec: '18cm*400m', unit: '捲', systemStock: 0, alertLevel: 3, tag: '每周' },
+    { id: 65, name: '常一嚐印刷袋(黑)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周' },
+    { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周' }
   ];
 
   // ✨ 帳面庫存：初始值來自 initialInventory，可被進貨覆蓋
@@ -192,18 +233,7 @@
               <h3 className="font-bold text-gray-800 text-base">{item.name}</h3>
               <p className="text-xs text-gray-400 mt-0.5">{item.spec} · 安全線: {item.alertLevel}</p>
             </div>
-            {!confirmDelete ? (
-              <button onClick={() => setConfirmDelete(true)} className="text-gray-300 hover:text-red-400 transition-colors p-1 ml-2 flex-shrink-0">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-1 ml-2 flex-shrink-0 fade-in">
-                <span className="text-xs text-red-500 font-medium">確定？</span>
-                <button onClick={() => onRemove(item.id)} className="text-xs bg-red-500 text-white px-2 py-1 rounded-md font-bold hover:bg-red-600">是</button>
-                <button onClick={() => setConfirmDelete(false)} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-bold hover:bg-gray-200">否</button>
-              </div>
-            )}
-          </div>
+            </div>
 
           <div className="flex flex-col gap-2">
             <div className="flex-1 bg-gray-50 rounded-lg p-2 flex justify-between items-center">
@@ -351,8 +381,9 @@
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm font-medium"
                 />
                 {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}/>}
+                {/* ✨ 把絕對定位改為 relative，這樣選單展開時就能把內容區塊撐開，順利出現捲軸 */}
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
+                  <div className="relative mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
                     {filteredItems.length > 0 ? filteredItems.map(item => (
                       <div key={item.id} onClick={() => handleSelectItem(item)}
                         className="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-gray-50 last:border-0 flex justify-between items-center text-sm">
