@@ -12,19 +12,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* 隱藏原生數字輸入的上下箭頭 */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
+    
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     .fade-in { animation: fadeIn 0.25s ease forwards; }
+    
     @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
     .toast-enter { animation: toastIn 0.3s ease forwards; }
     .toast-exit { animation: toastOut 0.3s ease forwards; }
+    
+    /* ✨ 新增：自訂鍵盤向上滑入動畫 */
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .slide-up { animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
@@ -48,18 +56,16 @@
   const ChevronRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
   const ChevronDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
   const ListPlus = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>;
-  const Trash2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
   const MenuIcon = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>;
   const BarChart2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>;
   const Download = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
   const Copy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
-  // ✨ 新增 icon
   const PackagePlus = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>;
   const History = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
   const TrendingDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
   const TrendingUp = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
 
-  // --- 商品主表 (前端靜態) ---
+  // --- 商品主表 ---
   const initialInventory = [
     { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', systemStock: 1.2, alertLevel: 0.5, tag: '每日' },
     { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日' },
@@ -129,9 +135,6 @@
     { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周' }
   ];
 
-  // ✨ 帳面庫存：初始值來自 initialInventory，可被進貨覆蓋
-  // systemStockOverrides: { [item_id]: number } 存在 Supabase system_stock_overrides 表
-  // 我們在前端用 state 管理合併後的結果
   const buildSystemStockMap = (overrides) => {
     const map = {};
     initialInventory.forEach(i => { map[i.id] = i.systemStock; });
@@ -190,17 +193,51 @@
     );
   };
 
-  // ✨ ── StockCard (加入上次盤點 & 趨勢箭頭) ──
-  const StockCard = ({ item, onUpdate, onRemove, systemStock }) => {
-    const [confirmDelete, setConfirmDelete] = useState(false);
-    const count = parseFloat(item.actualCount);
+  // ✨ ── 自訂底部數字鍵盤 ──
+  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext }) => {
+    if (!activeId) return null;
+    const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
+    
+    // 防止點擊鍵盤時觸發外部的 focus 或 click
+    const handleKeyClick = (e, k) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onKeyPress(k);
+    };
+
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-200 z-[100] pb-2 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-gray-300">
+        <div className="flex justify-between items-center px-4 py-3 bg-gray-100 rounded-t-2xl border-b border-gray-300">
+          <span className="text-sm font-bold text-gray-500">數量輸入</span>
+          <div className="flex gap-3">
+            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-sm active:bg-blue-700 flex items-center">下一列 ⏭</button>
+            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-5 py-2 bg-gray-500 text-white text-sm font-bold rounded-xl shadow-sm active:bg-gray-600 flex items-center">完成 🔽</button>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 p-3 bg-gray-200 max-w-md mx-auto">
+          {keys.map(k => (
+            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-4 text-2xl font-bold rounded-xl shadow-sm active:bg-gray-100 active:scale-95 transition-transform flex items-center justify-center text-gray-800">
+              {k}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ✨ ── StockCard (加入 Stepper 與視覺防呆) ──
+  const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput }) => {
+    const countStr = item.actualCount ?? '';
+    // ✨ 視覺防呆：判斷是否已經盤點
+    const hasCounted = countStr !== '';
+    const count = parseFloat(countStr);
     const isLow = !isNaN(count) && count < item.alertLevel;
 
-    // 帳面庫存用傳入的 systemStock（可能已被進貨更新）
+    // 帳面庫存用傳入的 systemStock
     const sysStock = systemStock !== undefined ? systemStock : item.systemStock;
 
     let varianceText = '尚未輸入', varianceColor = 'text-gray-400', isAbnormal = false;
-    if (!isNaN(count)) {
+    if (hasCounted && !isNaN(count)) {
       const v = count - sysStock;
       const pct = Math.abs(v) / (sysStock || 1);
       isAbnormal = pct > 0.05 && sysStock > 0;
@@ -208,8 +245,7 @@
       varianceColor = isAbnormal ? 'text-orange-600 font-bold' : 'text-gray-600';
     }
 
-    // ✨ 上次盤點趨勢
-    const lastCount = item.lastCount; // 可能是 undefined
+    const lastCount = item.lastCount;
     const hasLast = lastCount !== undefined && lastCount !== null && lastCount !== '';
     const lastVal = parseFloat(lastCount);
     let trendEl = null;
@@ -223,38 +259,61 @@
     let border = 'border-gray-200';
     if (isLow) border = 'border-red-500';
     else if (isAbnormal) border = 'border-orange-500';
-    else if (!isNaN(count)) border = 'border-green-500';
+    else if (hasCounted) border = 'border-green-500';
+
+    // ✨ 視覺防呆：已盤點的卡片背景稍微變暗
+    const cardBg = hasCounted ? 'bg-slate-50 border-slate-200 opacity-75' : 'bg-white border-blue-100 shadow-sm';
+    const isActive = activeInputId === item.id;
+
+    // ✨ Stepper 快速增減邏輯
+    const handleStep = (delta) => {
+      let current = parseFloat(countStr);
+      if (isNaN(current)) current = 0;
+      let next = Math.max(0, current + delta);
+      // 處理 JavaScript 浮點數精度問題 (例如 1.1 + 0.1 = 1.2000000000000002)
+      next = Math.round(next * 10) / 10;
+      onUpdate(item.id, String(next));
+    };
 
     return (
-      <div className={`bg-white rounded-xl shadow-sm border-l-4 fade-in ${border}`}>
+      <div id={`stock-card-${item.id}`} className={`rounded-xl border-l-4 fade-in transition-all duration-300 ${cardBg} ${border}`}>
         <div className="p-4">
           <div className="flex justify-between items-start mb-2">
             <div>
               <h3 className="font-bold text-gray-800 text-base">{item.name}</h3>
               <p className="text-xs text-gray-400 mt-0.5">{item.spec} · 安全線: {item.alertLevel}</p>
             </div>
-            </div>
+            {/* 已移除垃圾桶圖示 */}
+          </div>
 
           <div className="flex flex-col gap-2">
-            <div className="flex-1 bg-gray-50 rounded-lg p-2 flex justify-between items-center">
-              <span className="text-xs text-gray-500 font-medium">盤點數量</span>
-              <div className="flex items-center">
-                <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="輸入.."
-                  value={item.actualCount}
-                  onChange={e => onUpdate(item.id, e.target.value)}
-                  className={`w-20 px-2 py-1 bg-white border rounded-md text-center font-bold text-base focus:outline-none focus:ring-2 ${isLow ? 'border-red-300 focus:ring-red-500 text-red-600' : 'border-blue-300 focus:ring-blue-500 text-blue-700'}`}
+            <div className={`flex-1 rounded-lg p-2 flex justify-between items-center transition-colors ${isActive ? 'bg-blue-50' : 'bg-white'}`}>
+              <span className="text-xs text-gray-500 font-medium whitespace-nowrap">盤點數量</span>
+              
+              {/* ✨ 單手操作 Stepper & 防鍵盤 Input */}
+              <div className="flex items-center gap-1.5 ml-2">
+                <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">-</button>
+                
+                {/* 使用 readOnly 與 inputMode="none" 阻擋手機原生鍵盤 */}
+                <input 
+                  type="text" 
+                  inputMode="none"
+                  readOnly
+                  placeholder="輸入.."
+                  value={countStr}
+                  onClick={() => onFocusInput(item.id)}
+                  className={`w-[72px] px-2 py-1.5 bg-white border rounded-md text-center font-bold text-base focus:outline-none transition-all cursor-pointer ${isActive ? 'border-blue-500 ring-2 ring-blue-500 text-blue-700' : isLow ? 'border-red-300 text-red-600' : 'border-gray-300 text-gray-800'}`}
                 />
-                <span className="text-sm text-gray-500 ml-2 w-4">{item.unit}</span>
+                
+                <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">+</button>
+                <span className="text-sm text-gray-500 ml-1 w-4 shrink-0">{item.unit}</span>
               </div>
             </div>
 
-            {/* ✨ 上次盤點資訊列 */}
             {hasLast && (
-              <div className="flex justify-between items-center text-xs px-1 py-1 bg-indigo-50 rounded-lg">
+              <div className="flex justify-between items-center text-xs px-1 py-1 bg-indigo-50/50 rounded-lg">
                 <span className="text-indigo-500 flex items-center gap-1">
-                  <History className="w-3 h-3"/>
-                  上次 {lastVal} {item.unit}
-                  {item.lastDate && <span className="text-indigo-300 ml-1">({item.lastDate})</span>}
+                  <History className="w-3 h-3"/> 上次 {lastVal} {item.unit} {item.lastDate && <span className="text-indigo-300 ml-1">({item.lastDate})</span>}
                 </span>
                 {trendEl && <span className="text-xs font-medium flex items-center gap-0.5">{trendEl}</span>}
               </div>
@@ -271,16 +330,16 @@
     );
   };
 
-  // ✨ ── 進貨登記 Modal ──
+  // 進貨登記 Modal
   const RestockModal = ({ onClose, systemStockMap, onRestock, showToast }) => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [restockQty, setRestockQty] = useState('');
     const [newTotal, setNewTotal] = useState('');
-    const [mode, setMode] = useState('add'); // 'add' = 加入進貨量, 'set' = 直接設定新帳面
+    const [mode, setMode] = useState('add');
     const [isLoading, setIsLoading] = useState(false);
-    const [log, setLog] = useState([]); // 本次進貨紀錄（同一次開modal期間）
+    const [log, setLog] = useState([]);
 
     const filteredItems = useMemo(() => {
       if (!searchQuery) return initialInventory;
@@ -288,12 +347,8 @@
     }, [searchQuery]);
 
     const handleSelectItem = (item) => {
-      setSelectedItem(item);
-      setSearchQuery(item.name);
-      setIsDropdownOpen(false);
-      setRestockQty('');
-      const cur = systemStockMap[item.id] ?? item.systemStock;
-      setNewTotal(String(cur));
+      setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setRestockQty('');
+      const cur = systemStockMap[item.id] ?? item.systemStock; setNewTotal(String(cur));
     };
 
     const handleConfirm = async () => {
@@ -313,32 +368,17 @@
       setIsLoading(true);
       try {
         const { error } = await supabase.from('system_stock_overrides').upsert({
-          item_id: selectedItem.id,
-          stock_value: finalVal,
-          updated_at: new Date().toISOString()
+          item_id: selectedItem.id, stock_value: finalVal, updated_at: new Date().toISOString()
         }, { onConflict: 'item_id' });
         if (error) throw error;
 
         onRestock(selectedItem.id, finalVal);
-        setLog(prev => [{
-          name: selectedItem.name,
-          unit: selectedItem.unit,
-          before: cur,
-          after: finalVal,
-          mode,
-          qty: mode === 'add' ? parseFloat(restockQty) : null
-        }, ...prev]);
+        setLog(prev => [{ name: selectedItem.name, unit: selectedItem.unit, before: cur, after: finalVal, mode, qty: mode === 'add' ? parseFloat(restockQty) : null }, ...prev]);
         showToast(`「${selectedItem.name}」帳面已更新為 ${finalVal} ${selectedItem.unit}`);
-        setSelectedItem(null);
-        setSearchQuery('');
-        setRestockQty('');
-        setNewTotal('');
+        setSelectedItem(null); setSearchQuery(''); setRestockQty(''); setNewTotal('');
       } catch (err) {
-        console.error(err);
-        showToast('更新失敗，請稍後再試', 'error');
-      } finally {
-        setIsLoading(false);
-      }
+        console.error(err); showToast('更新失敗，請稍後再試', 'error');
+      } finally { setIsLoading(false); }
     };
 
     const curStock = selectedItem ? (systemStockMap[selectedItem.id] ?? selectedItem.systemStock) : null;
@@ -349,29 +389,21 @@
         if (isNaN(qty)) return null;
         return parseFloat(((systemStockMap[selectedItem.id] ?? selectedItem.systemStock) + qty).toFixed(2));
       } else {
-        const v = parseFloat(newTotal);
-        return isNaN(v) ? null : v;
+        const v = parseFloat(newTotal); return isNaN(v) ? null : v;
       }
     }, [selectedItem, mode, restockQty, newTotal, systemStockMap]);
 
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm fade-in">
         <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[92vh]">
-          {/* Header */}
           <div className="bg-emerald-600 text-white p-4 flex justify-between items-center flex-shrink-0">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <PackagePlus className="w-5 h-5"/>進貨 / 更新帳面庫存
-            </h2>
+            <h2 className="text-lg font-bold flex items-center gap-2"><PackagePlus className="w-5 h-5"/>進貨 / 更新帳面庫存</h2>
             <button onClick={onClose} className="hover:bg-emerald-700 p-1 rounded-full"><X className="w-5 h-5"/></button>
           </div>
-
           <div className="p-4 overflow-y-auto flex-1 custom-scrollbar space-y-4">
-            {/* 說明 */}
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-700 leading-relaxed">
               進貨到貨後，在此更新帳面庫存。下次盤點時的「盤差」將以新帳面為基準計算。
             </div>
-
-            {/* 搜尋品項 */}
             <div>
               <label className="block text-xs font-bold text-gray-500 mb-1.5">選擇品項</label>
               <div className="relative z-20">
@@ -381,7 +413,7 @@
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm font-medium"
                 />
                 {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}/>}
-                {/* ✨ 把絕對定位改為 relative，這樣選單展開時就能把內容區塊撐開，順利出現捲軸 */}
+                {/* ✨ 已修正 absolute 為 relative 避免選單被裁切 */}
                 {isDropdownOpen && (
                   <div className="relative mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
                     {filteredItems.length > 0 ? filteredItems.map(item => (
@@ -398,58 +430,34 @@
 
             {selectedItem && (
               <div className="fade-in space-y-3">
-                {/* 目前帳面 */}
                 <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
-                  <span className="text-xs text-gray-500">目前帳面庫存</span>
-                  <span className="font-bold text-gray-800">{curStock} <span className="text-sm font-normal text-gray-500">{selectedItem.unit}</span></span>
+                  <span className="text-xs text-gray-500">目前帳面庫存</span><span className="font-bold text-gray-800">{curStock} <span className="text-sm font-normal text-gray-500">{selectedItem.unit}</span></span>
                 </div>
-
-                {/* 模式切換 */}
                 <div className="flex rounded-xl overflow-hidden border border-gray-200">
-                  <button onClick={() => setMode('add')}
-                    className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'add' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
-                    ＋ 加入進貨量
-                  </button>
-                  <button onClick={() => setMode('set')}
-                    className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'set' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
-                    ✎ 直接設定
-                  </button>
+                  <button onClick={() => setMode('add')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'add' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>＋ 加入進貨量</button>
+                  <button onClick={() => setMode('set')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'set' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>✎ 直接設定</button>
                 </div>
-
                 {mode === 'add' ? (
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">本次進貨數量（{selectedItem.unit}）</label>
-                    <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="例如：5"
-                      value={restockQty}
-                      onChange={e => setRestockQty(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center"
-                    />
+                    <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="例如：5" value={restockQty} onChange={e => setRestockQty(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
                   </div>
                 ) : (
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">設定新帳面庫存（{selectedItem.unit}）</label>
-                    <input type="number" inputMode="decimal" step="0.1" min="0"
-                      value={newTotal}
-                      onChange={e => setNewTotal(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center"
-                    />
+                    <input type="number" inputMode="decimal" step="0.1" min="0" value={newTotal} onChange={e => setNewTotal(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
                   </div>
                 )}
-
-                {/* 預覽結果 */}
                 {previewVal !== null && (
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center fade-in">
                     <span className="text-sm text-emerald-700">更新後帳面</span>
-                    <span className="text-lg font-bold text-emerald-700">
-                      {curStock} → <span className="text-emerald-600">{previewVal}</span>
-                      <span className="text-sm font-normal ml-1">{selectedItem.unit}</span>
-                    </span>
+                    <span className="text-lg font-bold text-emerald-700">{curStock} → <span className="text-emerald-600">{previewVal}</span><span className="text-sm font-normal ml-1">{selectedItem.unit}</span></span>
                   </div>
                 )}
               </div>
             )}
-
-            {/* 本次進貨紀錄 */}
             {log.length > 0 && (
               <div className="fade-in">
                 <p className="text-xs font-bold text-gray-400 mb-2">本次更新紀錄</p>
@@ -457,22 +465,16 @@
                   {log.map((l, i) => (
                     <div key={i} className="bg-gray-50 rounded-lg px-3 py-2 flex justify-between items-center text-xs">
                       <span className="font-bold text-gray-700">{l.name}</span>
-                      <span className="text-gray-500">{l.before} → <span className="text-emerald-600 font-bold">{l.after}</span> {l.unit}
-                        {l.mode === 'add' && <span className="text-emerald-400 ml-1">(+{l.qty})</span>}
-                      </span>
+                      <span className="text-gray-500">{l.before} → <span className="text-emerald-600 font-bold">{l.after}</span> {l.unit} {l.mode === 'add' && <span className="text-emerald-400 ml-1">(+{l.qty})</span>}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
-
-          {/* Footer */}
           <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0">
             <button onClick={onClose} className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors">關閉</button>
-            <button onClick={handleConfirm}
-              disabled={!selectedItem || isLoading || (mode === 'add' ? !restockQty : !newTotal)}
-              className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center gap-2">
+            <button onClick={handleConfirm} disabled={!selectedItem || isLoading || (mode === 'add' ? !restockQty : !newTotal)} className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center gap-2">
               {isLoading ? '更新中...' : <><PackagePlus className="w-4 h-4"/>確認更新帳面</>}
             </button>
           </div>
@@ -493,78 +495,68 @@
     const [selectedItem, setSelectedItem] = useState(null);
     const [inputValue, setInputValue] = useState('');
     const [showOrderModal, setShowOrderModal] = useState(false);
-    const [showRestockModal, setShowRestockModal] = useState(false); // ✨
+    const [showRestockModal, setShowRestockModal] = useState(false);
     const [toast, setToast] = useState(null);
-    const [systemStockMap, setSystemStockMap] = useState({}); // ✨ 可覆蓋的帳面庫存
-    const inputRef = useRef(null);
+    const [systemStockMap, setSystemStockMap] = useState({});
+    
+    // ✨ 新增：自訂鍵盤所需的 State
+    const [activeInputId, setActiveInputId] = useState(null);
 
     const todayStr = getTodayStr();
     const todayCounts = useMemo(() => historyData[todayStr] || [], [historyData, todayStr]);
 
     const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
 
-    // ✨ 找某 item 最近一次（非今天）的盤點記錄
     const getLastRecord = useCallback((itemId) => {
-      const dates = Object.keys(historyData)
-        .filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== ''))
-        .sort()
-        .reverse();
+      const dates = Object.keys(historyData).filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
       if (dates.length === 0) return null;
       const lastDate = dates[0];
       const entry = historyData[lastDate].find(i => i.id === itemId);
       return entry ? { count: entry.actualCount, date: lastDate } : null;
     }, [historyData, todayStr]);
 
-    // 初始化：從 Supabase 抓取所有歷史資料 + 帳面庫存覆蓋值
     useEffect(() => {
       const fetchAll = async () => {
         try {
-          // 1. 盤點紀錄
           const { data: records, error: e1 } = await supabase.from('inventory_records').select('*');
           if (e1) throw e1;
-
-          // 2. ✨ 帳面庫存覆蓋
           const { data: overrides, error: e2 } = await supabase.from('system_stock_overrides').select('*');
-          // e2 表示表格不存在時（第一次使用）靜默忽略
           setSystemStockMap(buildSystemStockMap(e2 ? null : overrides));
-
           const hData = {};
           if (records) {
             records.forEach(row => {
               const itemDef = initialInventory.find(i => i.id === row.item_id);
               if (itemDef) {
                 if (!hData[row.record_date]) hData[row.record_date] = [];
-                hData[row.record_date].push({
-                  ...itemDef,
-                  actualCount: row.actual_count !== null ? row.actual_count : ''
-                });
+                hData[row.record_date].push({ ...itemDef, actualCount: row.actual_count !== null ? row.actual_count : '' });
               }
             });
           }
           setHistoryData(hData);
-          if (!e2 && overrides) setSystemStockMap(buildSystemStockMap(overrides));
         } catch (err) {
-          console.error("資料庫連線失敗:", err);
-          showToast("無法連線到雲端資料庫", "error");
+          console.error("資料庫連線失敗:", err); showToast("無法連線到雲端資料庫", "error");
           setSystemStockMap(buildSystemStockMap(null));
-        } finally {
-          setIsDBLoading(false);
-        }
+        } finally { setIsDBLoading(false); }
       };
 
       if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-        alert("⚠️ 開發者提示：請先設定 SUPABASE_URL 與 SUPABASE_KEY");
-        setSystemStockMap(buildSystemStockMap(null));
-        setIsDBLoading(false);
-      } else {
-        fetchAll();
-      }
+        alert("⚠️ 開發者提示：請先設定 SUPABASE_URL");
+        setSystemStockMap(buildSystemStockMap(null)); setIsDBLoading(false);
+      } else { fetchAll(); }
     }, [showToast]);
 
-    // ✨ 進貨後更新本地 systemStockMap
-    const handleRestock = useCallback((itemId, newVal) => {
-      setSystemStockMap(prev => ({ ...prev, [itemId]: newVal }));
-    }, []);
+    // ✨ 換頁時自動關閉鍵盤
+    useEffect(() => { setActiveInputId(null); }, [activeTab]);
+
+    // ✨ 點擊下一個時，自動滑動視窗定位
+    useEffect(() => {
+      if (activeInputId) {
+        const el = document.getElementById(`stock-card-${activeInputId}`);
+        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      }
+    }, [activeInputId]);
+
+    const handleRestock = useCallback((itemId, newVal) => { setSystemStockMap(prev => ({ ...prev, [itemId]: newVal })); }, []);
 
     const filteredItems = useMemo(() => {
       if (!searchQuery) return initialInventory;
@@ -573,7 +565,6 @@
 
     const handleSelectItem = (item) => {
       setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setInputValue('');
-      setTimeout(() => inputRef.current && inputRef.current.focus(), 50);
     };
 
     const handleAddRecord = async () => {
@@ -589,47 +580,53 @@
       });
       showToast(`已記錄「${selectedItem.name}」`);
       setSelectedItem(null); setSearchQuery(''); setInputValue('');
-      await supabase.from('inventory_records').upsert({
-        record_date: todayStr, item_id: newItem.id, actual_count: count
-      }, { onConflict: 'record_date, item_id' });
+      await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
     };
 
     const handleQuickLoad = async (tag) => {
       const currentList = historyData[todayStr] || [];
       if (currentList.length > 0) {
-        const isConfirm = window.confirm(`確定要切換成「${tag}」盤點表嗎？\n這會清除畫面上原本載入的品項喔！`);
-        if (!isConfirm) return;
+        if (!window.confirm(`確定要切換成「${tag}」盤點表嗎？\n這會清除畫面上原本載入的品項喔！`)) return;
       }
       const items = initialInventory.filter(i => i.tag === tag);
-      setHistoryData(prev => ({
-        ...prev,
-        [todayStr]: items.map(item => ({ ...item, actualCount: '' }))
-      }));
+      setHistoryData(prev => ({ ...prev, [todayStr]: items.map(item => ({ ...item, actualCount: '' })) }));
       showToast(`已切換為「${tag}」盤點表`);
       await supabase.from('inventory_records').delete().match({ record_date: todayStr });
       const dbUpserts = items.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: null }));
-      if (dbUpserts.length > 0) {
-        await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
-      }
+      if (dbUpserts.length > 0) await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
     };
 
     const handleUpdateListItem = async (id, val) => {
-      setHistoryData(prev => ({
-        ...prev,
-        [todayStr]: (prev[todayStr] || []).map(i => i.id === id ? { ...i, actualCount: val } : i)
-      }));
+      setHistoryData(prev => ({ ...prev, [todayStr]: (prev[todayStr] || []).map(i => i.id === id ? { ...i, actualCount: val } : i) }));
       const count = parseFloat(val);
-      await supabase.from('inventory_records').upsert({
-        record_date: todayStr, item_id: id, actual_count: isNaN(count) ? null : count
-      }, { onConflict: 'record_date, item_id' });
+      await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
     };
 
-    const handleRemoveListItem = async (id) => {
-      setHistoryData(prev => ({
-        ...prev,
-        [todayStr]: (prev[todayStr] || []).filter(i => i.id !== id)
-      }));
-      await supabase.from('inventory_records').delete().match({ record_date: todayStr, item_id: id });
+    // ✨ 處理自訂鍵盤的按鍵邏輯
+    const handleKeypadPress = (key) => {
+      if (!activeInputId) return;
+      const item = todayCounts.find(i => i.id === activeInputId);
+      if (!item) return;
+      
+      let currentStr = String(item.actualCount ?? '');
+      
+      if (key === '⌫') {
+        currentStr = currentStr.slice(0, -1);
+      } else if (key === '.') {
+        if (!currentStr.includes('.')) currentStr += '.';
+      } else {
+        currentStr += key;
+      }
+      handleUpdateListItem(activeInputId, currentStr);
+    };
+
+    const handleKeypadNext = () => {
+      const idx = todayCounts.findIndex(i => i.id === activeInputId);
+      if (idx >= 0 && idx < todayCounts.length - 1) {
+        setActiveInputId(todayCounts[idx + 1].id);
+      } else {
+        setActiveInputId(null);
+      }
     };
 
     const handleExportCSV = () => {
@@ -643,20 +640,15 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-      link.download = `庫存總表_${getTodayStr()}.csv`;
-      link.style.visibility = 'hidden';
+      link.download = `庫存總表_${getTodayStr()}.csv`; link.style.visibility = 'hidden';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
     const handleCopyAndLine = async () => {
       let text = `【${getTodayStr()} 叫貨清單】\n\n`;
       orderList.forEach(i => { text += `▪ ${i.name}：剩 ${i.actualCount} ${i.unit}\n`; });
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast('已複製！可直接貼到 LINE');
-      } catch {
-        window.open(`line://msg/text/${encodeURIComponent(text)}`, '_blank');
-      }
+      try { await navigator.clipboard.writeText(text); showToast('已複製！可直接貼到 LINE'); } 
+      catch { window.open(`line://msg/text/${encodeURIComponent(text)}`, '_blank'); }
     };
 
     const orderList = useMemo(() => todayCounts.filter(i => { const c = parseFloat(i.actualCount); return !isNaN(c) && c < i.alertLevel; }), [todayCounts]);
@@ -675,8 +667,7 @@
         const has = !!(historyData[ds] && historyData[ds].some(x => x.actualCount !== ''));
         const isToday = ds === todayStr, isSel = selectedHistoryDate === ds;
         cells.push(
-          <div key={ds} onClick={() => has && setSelectedHistoryDate(ds)}
-            className={`h-12 flex flex-col items-center justify-center rounded-xl transition-all ${has ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'} ${isSel ? 'bg-blue-100 ring-2 ring-blue-400' : ''} ${isToday && !isSel ? 'bg-gray-100' : ''}`}>
+          <div key={ds} onClick={() => has && setSelectedHistoryDate(ds)} className={`h-12 flex flex-col items-center justify-center rounded-xl transition-all ${has ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'} ${isSel ? 'bg-blue-100 ring-2 ring-blue-400' : ''} ${isToday && !isSel ? 'bg-gray-100' : ''}`}>
             <span className={`text-sm font-medium ${isToday ? 'text-blue-700' : has ? 'text-gray-800' : 'text-gray-400'}`}>{i}</span>
             {has && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-0.5"/>}
           </div>
@@ -697,12 +688,11 @@
       );
     };
 
-    if (isDBLoading) {
-      return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold bg-gray-50">連線雲端資料庫中...</div>;
-    }
+    if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold bg-gray-50">連線雲端資料庫中...</div>;
 
     return (
-      <div className="min-h-screen pb-24 flex flex-col">
+      // ✨ 當鍵盤開啟時，底部增加 padding 以免最後一個品項被鍵盤擋住
+      <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-72' : 'pb-24'}`}>
         <GlobalNav />
         {toast && <Toast key={toast.key} message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
@@ -713,21 +703,16 @@
               <h1 className="text-xl font-bold tracking-tight">庫存盤點</h1>
             </div>
             <div className="flex items-center gap-2">
-              {/* ✨ 進貨按鈕 */}
-              <button onClick={() => setShowRestockModal(true)}
-                className="flex items-center space-x-1 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-full font-medium hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-200">
-                <PackagePlus className="w-5 h-5"/>
-                <span className="hidden sm:inline text-sm">進貨</span>
+              <button onClick={() => setShowRestockModal(true)} className="flex items-center space-x-1 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-full font-medium hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-200">
+                <PackagePlus className="w-5 h-5"/><span className="hidden sm:inline text-sm">進貨</span>
               </button>
-              <button onClick={() => setShowOrderModal(true)}
-                className="flex items-center space-x-1 bg-red-50 text-red-600 px-3 py-2 rounded-full font-medium hover:bg-red-100 transition-colors shadow-sm border border-red-200">
-                <ShoppingCart className="w-5 h-5"/>
-                <span className="hidden sm:inline text-sm">今日結算</span>
+              <button onClick={() => setShowOrderModal(true)} className="flex items-center space-x-1 bg-red-50 text-red-600 px-3 py-2 rounded-full font-medium hover:bg-red-100 transition-colors shadow-sm border border-red-200">
+                <ShoppingCart className="w-5 h-5"/><span className="hidden sm:inline text-sm">結算</span>
                 {orderList.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">{orderList.length}</span>}
               </button>
             </div>
           </div>
-          <div className="max-w-2xl mx-auto px-2 pb-0 flex border-b border-gray-200">
+          <div className="max-w-2xl mx-auto px-2 pb-0 flex border-b border-gray-200 bg-white relative z-10">
             {[{k:'record',l:'紀錄',I:ListPlus},{k:'history',l:'歷史',I:CalendarIcon},{k:'overview',l:'總表',I:BarChart2}].map(({k,l,I})=>(
               <button key={k} onClick={()=>{setActiveTab(k);if(k!=='history')setSelectedHistoryDate(null);}}
                 className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${activeTab===k?'border-blue-600 text-blue-700':'border-transparent text-gray-500 hover:text-gray-700'}`}>
@@ -735,13 +720,25 @@
               </button>
             ))}
           </div>
+          {/* ✨ 盤點進度吸頂 (Sticky Progress) */}
+          {activeTab === 'record' && todayCounts.length > 0 && (
+            <div className="max-w-2xl mx-auto px-4 py-2 bg-slate-50 border-b border-gray-200 shadow-inner">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-bold text-gray-500">今日盤點進度</span>
+                <span className="text-xs font-bold text-blue-600">{countedNum} / {todayCounts.length} <span className="font-normal text-gray-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
+              </div>
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
+              </div>
+            </div>
+          )}
         </header>
 
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
           {activeTab === 'record' && (
             <div className="space-y-6 fade-in">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-sm font-bold text-gray-500 mb-3 flex items-center"><Search className="w-4 h-4 mr-1"/>搜尋盤點品項</h2>
+                <h2 className="text-sm font-bold text-gray-500 mb-3 flex items-center"><Search className="w-4 h-4 mr-1"/>搜尋新增盤點品項</h2>
                 <div className="relative z-20">
                   <div className="relative">
                     <input type="text" placeholder="點擊展開選單，或輸入關鍵字..." value={searchQuery}
@@ -754,7 +751,7 @@
                   </div>
                   {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={()=>setIsDropdownOpen(false)}/>}
                   {isDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
+                    <div className="relative mt-2 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
                       {filteredItems.length > 0 ? filteredItems.map(item=>(
                         <div key={item.id} onClick={()=>handleSelectItem(item)}
                           className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 flex justify-between items-center transition-colors">
@@ -787,34 +784,22 @@
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-2 ml-1">
-                  <h2 className="text-sm font-bold text-gray-500">
-                    今日已列出品項 ({todayCounts.length})
-                    {todayCounts.length > 0 && <span className="ml-2 text-xs font-normal text-gray-400">已填 {countedNum}/{todayCounts.length}</span>}
-                  </h2>
-                  {todayCounts.length > 0 && <span className="text-xs text-gray-400">{Math.round(countedNum/todayCounts.length*100)}%</span>}
-                </div>
-                {todayCounts.length > 0 && (
-                  <div className="h-1.5 bg-gray-100 rounded-full mb-4 overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
-                  </div>
-                )}
                 {todayCounts.length === 0 ? (
                   <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 border-dashed">
                     <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-2"/>
                     <p className="text-gray-400">目前還沒有紀錄<br/>請從上方搜尋並加入品項</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-3 relative z-0">
                     {todayCounts.map(item => {
-                      // ✨ 注入上次盤點資料
                       const last = getLastRecord(item.id);
                       return (
                         <StockCard key={item.id}
                           item={{ ...item, lastCount: last?.count, lastDate: last?.date }}
                           onUpdate={handleUpdateListItem}
-                          onRemove={handleRemoveListItem}
                           systemStock={systemStockMap[item.id]}
+                          activeInputId={activeInputId}
+                          onFocusInput={setActiveInputId}
                         />
                       );
                     })}
@@ -836,7 +821,6 @@
                   <div className="divide-y divide-gray-50">
                     {(historyData[selectedHistoryDate]||[]).filter(i=>i.actualCount!=='').map(item=>{
                       const c=parseFloat(item.actualCount), isLow=!isNaN(c)&&c<item.alertLevel;
-                      const sysStock = systemStockMap[item.id] ?? item.systemStock;
                       return (
                         <div key={item.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
                           <div><div className="font-bold text-gray-800">{item.name}</div><div className="text-xs text-gray-400 mt-1">安全線: {item.alertLevel} {item.unit}</div></div>
@@ -873,7 +857,7 @@
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {initialInventory.map(item=>{
-                        const sysStock = systemStockMap[item.id] ?? item.systemStock; // ✨
+                        const sysStock = systemStockMap[item.id] ?? item.systemStock;
                         const counted = todayCounts.find(i=>i.id===item.id);
                         const has = counted && counted.actualCount!=='';
                         const c = has ? parseFloat(counted.actualCount) : NaN;
@@ -903,7 +887,6 @@
           )}
         </main>
 
-        {/* 叫貨 Modal */}
         {showOrderModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
@@ -936,8 +919,7 @@
               <div className="p-4 border-t border-gray-100 bg-white flex gap-3">
                 <button onClick={()=>setShowOrderModal(false)} className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors">返回</button>
                 {orderList.length > 0 && (
-                  <button onClick={async()=>{await handleCopyAndLine();setShowOrderModal(false);}}
-                    className="flex-[2] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 flex justify-center items-center shadow-sm transition-colors gap-2">
+                  <button onClick={async()=>{await handleCopyAndLine();setShowOrderModal(false);}} className="flex-[2] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 flex justify-center items-center shadow-sm transition-colors gap-2">
                     <Copy className="w-5 h-5"/>複製清單傳LINE
                   </button>
                 )}
@@ -946,15 +928,15 @@
           </div>
         )}
 
-        {/* ✨ 進貨 Modal */}
-        {showRestockModal && (
-          <RestockModal
-            onClose={() => setShowRestockModal(false)}
-            systemStockMap={systemStockMap}
-            onRestock={handleRestock}
-            showToast={showToast}
-          />
-        )}
+        {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} />}
+        
+        {/* ✨ 自訂鍵盤元件 (由 activeInputId 控制顯示) */}
+        <CustomKeypad 
+          activeId={activeInputId} 
+          onKeyPress={handleKeypadPress} 
+          onNext={handleKeypadNext} 
+          onClose={() => setActiveInputId(null)} 
+        />
       </div>
     );
   }
