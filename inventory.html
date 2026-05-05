@@ -193,7 +193,7 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 ──
+  // ── 自訂底部數字鍵盤 (✨ 縮小尺寸) ──
   const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext }) => {
     if (!activeId) return null;
     const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
@@ -205,17 +205,17 @@
     };
 
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-200 z-[100] pb-2 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-gray-300">
-        <div className="flex justify-between items-center px-4 py-3 bg-gray-100 rounded-t-2xl border-b border-gray-300">
-          <span className="text-sm font-bold text-gray-500">數量輸入</span>
-          <div className="flex gap-3">
-            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-sm active:bg-blue-700 flex items-center">下一列 ⏭</button>
-            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-5 py-2 bg-gray-500 text-white text-sm font-bold rounded-xl shadow-sm active:bg-gray-600 flex items-center">完成 🔽</button>
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-gray-300">
+        <div className="flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-2xl border-b border-gray-300">
+          <span className="text-xs font-bold text-gray-500">數量輸入</span>
+          <div className="flex gap-2">
+            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm active:bg-blue-700 flex items-center">下一列 ⏭</button>
+            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-gray-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-gray-600 flex items-center">完成 🔽</button>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 p-3 bg-gray-200 max-w-md mx-auto">
+        <div className="grid grid-cols-3 gap-1.5 p-2 bg-gray-200 max-w-md mx-auto">
           {keys.map(k => (
-            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-4 text-2xl font-bold rounded-xl shadow-sm active:bg-gray-100 active:scale-95 transition-transform flex items-center justify-center text-gray-800">
+            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-2.5 text-xl font-bold rounded-lg shadow-sm active:bg-gray-100 active:scale-95 transition-transform flex items-center justify-center text-gray-800">
               {k}
             </button>
           ))}
@@ -321,7 +321,7 @@
     );
   };
 
-  // ✨ ── 進貨登記 Modal (整合上次盤點作為計算基準) ──
+  // ✨ ── 進貨登記 Modal (修正為滿版高度 h-[100dvh]) ──
   const RestockModal = ({ onClose, systemStockMap, onRestock, showToast, getLastRecord }) => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -337,7 +337,6 @@
       return initialInventory.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }, [searchQuery]);
 
-    // 取得選定品項的：帳面庫存、上次實際盤點量、以及最終要用來加總的基準（優先用上次實盤）
     const curStock = selectedItem ? (systemStockMap[selectedItem.id] ?? selectedItem.systemStock) : null;
     const lastRecord = selectedItem && getLastRecord ? getLastRecord(selectedItem.id) : null;
     const baseStock = selectedItem ? (lastRecord && !isNaN(parseFloat(lastRecord.count)) ? parseFloat(lastRecord.count) : curStock) : null;
@@ -354,7 +353,6 @@
       if (mode === 'add') {
         const qty = parseFloat(restockQty);
         if (isNaN(qty) || qty <= 0) { showToast('請輸入有效的進貨數量', 'error'); return; }
-        // ✨ 以 baseStock 為基準加上進貨量
         finalVal = parseFloat((baseStock + qty).toFixed(2));
       } else {
         const v = parseFloat(newTotal);
@@ -371,12 +369,8 @@
 
         onRestock(selectedItem.id, finalVal);
         setLog(prev => [{ 
-          name: selectedItem.name, 
-          unit: selectedItem.unit, 
-          before: mode === 'add' ? baseStock : curStock, 
-          after: finalVal, 
-          mode, 
-          qty: mode === 'add' ? parseFloat(restockQty) : null 
+          name: selectedItem.name, unit: selectedItem.unit, before: mode === 'add' ? baseStock : curStock, 
+          after: finalVal, mode, qty: mode === 'add' ? parseFloat(restockQty) : null 
         }, ...prev]);
         
         showToast(`「${selectedItem.name}」帳面已更新為 ${finalVal} ${selectedItem.unit}`);
@@ -391,7 +385,6 @@
       if (mode === 'add') {
         const qty = parseFloat(restockQty);
         if (isNaN(qty)) return null;
-        // ✨ 預覽也以 baseStock 為基準計算
         return parseFloat((baseStock + qty).toFixed(2));
       } else {
         const v = parseFloat(newTotal); return isNaN(v) ? null : v;
@@ -400,7 +393,7 @@
 
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm fade-in">
-        <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[92vh]">
+        <div className="bg-white w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:rounded-2xl shadow-xl max-w-md overflow-hidden flex flex-col">
           <div className="bg-emerald-600 text-white p-4 flex justify-between items-center flex-shrink-0">
             <h2 className="text-lg font-bold flex items-center gap-2"><PackagePlus className="w-5 h-5"/>進貨 / 更新帳面庫存</h2>
             <button onClick={onClose} className="hover:bg-emerald-700 p-1 rounded-full"><X className="w-5 h-5"/></button>
@@ -434,8 +427,6 @@
 
             {selectedItem && (
               <div className="fade-in space-y-3">
-                
-                {/* ✨ 新增的整合庫存資訊卡片 */}
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-500">上次實際盤點</span>
@@ -485,7 +476,7 @@
               </div>
             )}
             {log.length > 0 && (
-              <div className="fade-in">
+              <div className="fade-in pb-4">
                 <p className="text-xs font-bold text-gray-400 mb-2">本次更新紀錄</p>
                 <div className="space-y-1.5">
                   {log.map((l, i) => (
@@ -606,17 +597,25 @@
       await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
     };
 
+    // ✨ 修正載入邏輯：直接附加到清單上，不刪除原有資料，也不跳通知
     const handleQuickLoad = async (tag) => {
-      const currentList = historyData[todayStr] || [];
-      if (currentList.length > 0) {
-        if (!window.confirm(`確定要切換成「${tag}」盤點表嗎？\n這會清除畫面上原本載入的品項喔！`)) return;
-      }
       const items = initialInventory.filter(i => i.tag === tag);
-      setHistoryData(prev => ({ ...prev, [todayStr]: items.map(item => ({ ...item, actualCount: '' })) }));
-      showToast(`已切換為「${tag}」盤點表`);
-      await supabase.from('inventory_records').delete().match({ record_date: todayStr });
-      const dbUpserts = items.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: null }));
-      if (dbUpserts.length > 0) await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
+      let newItemsForDB = [];
+      
+      setHistoryData(prev => {
+        const currentList = prev[todayStr] || [];
+        // 利用 ID 確認是否已經載入過了，避免重複載入
+        const existingIds = new Set(currentList.map(i => i.id));
+        const newItems = items.filter(i => !existingIds.has(i.id)).map(item => ({ ...item, actualCount: '' }));
+        newItemsForDB = newItems;
+        return { ...prev, [todayStr]: [...currentList, ...newItems] };
+      });
+
+      // 只有新載入的品項才寫入雲端資料庫做空值紀錄，不會清空已有的紀錄
+      if (newItemsForDB.length > 0) {
+        const dbUpserts = newItemsForDB.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: null }));
+        await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
+      }
     };
 
     const handleUpdateListItem = async (id, val) => {
@@ -713,7 +712,7 @@
     if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold bg-gray-50">連線雲端資料庫中...</div>;
 
     return (
-      <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-72' : 'pb-24'}`}>
+      <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-60' : 'pb-24'}`}>
         <GlobalNav />
         {toast && <Toast key={toast.key} message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
@@ -948,7 +947,7 @@
           </div>
         )}
 
-        {/* ✨ 將 getLastRecord 傳遞給進貨 Modal 進行計算 */}
+        {/* 將 getLastRecord 傳遞給進貨 Modal 進行計算 */}
         {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLastRecord={getLastRecord} />}
         
         <CustomKeypad 
