@@ -193,7 +193,7 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 (✨ 縮小尺寸) ──
+  // ── 自訂底部數字鍵盤 (縮小尺寸) ──
   const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext }) => {
     if (!activeId) return null;
     const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
@@ -321,8 +321,8 @@
     );
   };
 
-  // ✨ ── 進貨登記 Modal (修正為滿版高度 h-[100dvh]) ──
-  const RestockModal = ({ onClose, systemStockMap, onRestock, showToast, getLastRecord }) => {
+  // ✨ ── 進貨登記 Modal (支援顯示「今日」紀錄) ──
+  const RestockModal = ({ onClose, systemStockMap, onRestock, showToast, getLatestRecord }) => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -338,8 +338,9 @@
     }, [searchQuery]);
 
     const curStock = selectedItem ? (systemStockMap[selectedItem.id] ?? selectedItem.systemStock) : null;
-    const lastRecord = selectedItem && getLastRecord ? getLastRecord(selectedItem.id) : null;
+    const lastRecord = selectedItem && getLatestRecord ? getLatestRecord(selectedItem.id) : null;
     const baseStock = selectedItem ? (lastRecord && !isNaN(parseFloat(lastRecord.count)) ? parseFloat(lastRecord.count) : curStock) : null;
+    const todayStr = getTodayStr();
 
     const handleSelectItem = (item) => {
       setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setRestockQty('');
@@ -432,7 +433,7 @@
                     <span className="text-gray-500">上次實際盤點</span>
                     <span className="font-bold text-gray-800">
                       {lastRecord && !isNaN(parseFloat(lastRecord.count)) ? lastRecord.count : '無紀錄'}
-                      {lastRecord && <span className="text-xs font-normal text-gray-400 ml-1">({lastRecord.date})</span>}
+                      {lastRecord && <span className="text-xs font-normal text-gray-400 ml-1">({lastRecord.date === todayStr ? '今日' : lastRecord.date})</span>}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
@@ -523,13 +524,23 @@
 
     const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
 
-    const getLastRecord = useCallback((itemId) => {
+    // ✨ 新增：取得「不含今日」的歷史紀錄 (給盤點卡片的歷史對比用)
+    const getPreviousRecord = useCallback((itemId) => {
       const dates = Object.keys(historyData).filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
       if (dates.length === 0) return null;
       const lastDate = dates[0];
       const entry = historyData[lastDate].find(i => i.id === itemId);
       return entry ? { count: entry.actualCount, date: lastDate } : null;
     }, [historyData, todayStr]);
+
+    // ✨ 新增：取得「包含今日」的最新紀錄 (給進貨系統做計算基準用)
+    const getLatestRecord = useCallback((itemId) => {
+      const dates = Object.keys(historyData).filter(d => historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
+      if (dates.length === 0) return null;
+      const lastDate = dates[0];
+      const entry = historyData[lastDate].find(i => i.id === itemId);
+      return entry ? { count: entry.actualCount, date: lastDate } : null;
+    }, [historyData]);
 
     useEffect(() => {
       const fetchAll = async () => {
@@ -597,23 +608,49 @@
       await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
     };
 
-    // ✨ 修正載入邏輯：直接附加到清單上，不刪除原有資料，也不跳通知
+    // ✨ 修正邏輯：直接替換整個清單，但「自動保留」畫面或資料庫中已輸入過的心血
     const handleQuickLoad = async (tag) => {
       const items = initialInventory.filter(i => i.tag === tag);
-      let newItemsForDB = [];
       
+      // 步驟 1：向資料庫要最新的今日紀錄，確保不覆蓋剛存在雲端的數據
+      const { data: todayRecords } = await supabase
+        .from('inventory_records')
+        .select('item_id, actual_count')
+        .eq('record_date', todayStr);
+        
+      const dbCountMap = {};
+      if (todayRecords) {
+        todayRecords.forEach(r => {
+          if (r.actual_count !== null) dbCountMap[r.item_id] = r.actual_count;
+        });
+      }
+
+      // 步驟 2：替換畫面清單
+      let newListForDB = [];
       setHistoryData(prev => {
         const currentList = prev[todayStr] || [];
-        // 利用 ID 確認是否已經載入過了，避免重複載入
-        const existingIds = new Set(currentList.map(i => i.id));
-        const newItems = items.filter(i => !existingIds.has(i.id)).map(item => ({ ...item, actualCount: '' }));
-        newItemsForDB = newItems;
-        return { ...prev, [todayStr]: [...currentList, ...newItems] };
+        const localCountMap = {};
+        // 抓取畫面上還沒按 F5 但已經輸入的數字
+        currentList.forEach(i => { if (i.actualCount !== '') localCountMap[i.id] = i.actualCount; });
+        
+        const newList = items.map(item => {
+          let count = '';
+          if (localCountMap[item.id] !== undefined) count = localCountMap[item.id]; // 優先以剛輸入為主
+          else if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id];  // 其次看資料庫
+          return { ...item, actualCount: count };
+        });
+        
+        newListForDB = newList;
+        return { ...prev, [todayStr]: newList };
       });
 
-      // 只有新載入的品項才寫入雲端資料庫做空值紀錄，不會清空已有的紀錄
-      if (newItemsForDB.length > 0) {
-        const dbUpserts = newItemsForDB.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: null }));
+      // 步驟 3：只把清單裡的「未填寫項」寫為 null 佔位，維持資料庫同步，完全不清除既有數字
+      if (newListForDB.length > 0) {
+        const dbUpserts = newListForDB.map(item => ({
+          record_date: todayStr,
+          item_id: item.id,
+          actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null
+        }));
         await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
       }
     };
@@ -811,10 +848,11 @@
                 ) : (
                   <div className="space-y-3 relative z-0">
                     {todayCounts.map(item => {
-                      const last = getLastRecord(item.id);
+                      // ✨ 盤點卡片只對比「昨天(不含今日)」的紀錄，避免顯示永遠「持平」
+                      const prev = getPreviousRecord(item.id);
                       return (
                         <StockCard key={item.id}
-                          item={{ ...item, lastCount: last?.count, lastDate: last?.date }}
+                          item={{ ...item, lastCount: prev?.count, lastDate: prev?.date }}
                           onUpdate={handleUpdateListItem}
                           systemStock={systemStockMap[item.id]}
                           activeInputId={activeInputId}
@@ -947,8 +985,8 @@
           </div>
         )}
 
-        {/* 將 getLastRecord 傳遞給進貨 Modal 進行計算 */}
-        {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLastRecord={getLastRecord} />}
+        {/* ✨ 進貨 Modal 使用 getLatestRecord 取代原本的 getLastRecord，才能吃到今天的數字 */}
+        {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLatestRecord={getLatestRecord} />}
         
         <CustomKeypad 
           activeId={activeInputId} 
