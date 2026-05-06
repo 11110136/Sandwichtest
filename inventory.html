@@ -203,7 +203,7 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 (✨ 新增清空按鈕) ──
+  // ── 自訂底部數字鍵盤 (新增清空按鈕) ──
   const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear }) => {
     if (!activeId) return null;
     const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
@@ -266,7 +266,7 @@
       else trendEl = <span className="text-gray-400">持平</span>;
     }
 
-    // ✨ 修改：盤點完成後背景依舊純白，利用綠色左邊條區分
+    // 修改：盤點完成後背景依舊純白，利用綠色左邊條區分
     let border = 'border-gray-200';
     if (isLow) border = 'border-red-500';
     else if (isAbnormal) border = 'border-orange-500';
@@ -310,7 +310,7 @@
               <div className="flex items-center gap-1.5 ml-2">
                 <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">-</button>
                 
-                {/* ✨ 修改：用 div 替換 input，100% 阻絕系統鍵盤彈出 */}
+                {/* 修改：用 div 替換 input，100% 阻絕系統鍵盤彈出 */}
                 <div 
                   onClick={(e) => { e.preventDefault(); onFocusInput(item.id); }}
                   className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-blue-500 ring-2 ring-blue-500 text-blue-700' : isLow ? 'border-red-300 text-red-600' : 'border-gray-300 text-gray-800'}`}
@@ -598,7 +598,9 @@
       if (activeInputId) {
         const el = document.getElementById(`stock-card-${activeInputId}`);
         if (el) setTimeout(() => {
-          const y = el.getBoundingClientRect().top + window.pageYOffset - 120;
+          // 調整捲動偏移量：上方 Header + 進度條 + 分類標籤大約佔了 150px
+          // 將偏移量改為 240，讓卡片標題有充足的顯示空間，不會被切掉
+          const y = el.getBoundingClientRect().top + window.pageYOffset - 240;
           window.scrollTo({top: y, behavior: 'smooth'});
         }, 50);
       }
@@ -1082,7 +1084,6 @@
 
         {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLatestRecord={getLatestRecord} />}
         
-        {/* ✨ 鍵盤新增 onClear 事件綁定 */}
         <CustomKeypad 
           activeId={activeInputId} 
           onKeyPress={handleKeypadPress} 
