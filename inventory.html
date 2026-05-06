@@ -17,7 +17,7 @@
     input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
     
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
@@ -33,6 +33,10 @@
     /* 自訂鍵盤向上滑入動畫 */
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .slide-up { animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* 儲存圖示旋轉 */
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .animate-spin-slow { animation: spin 1.5s linear infinite; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
@@ -64,76 +68,82 @@
   const History = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
   const TrendingDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
   const TrendingUp = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+  const RefreshCw = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+  const Check = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
+  const Filter = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 
-  // --- 商品主表 ---
+  // --- 商品主表 (新增 category 屬性) ---
   const initialInventory = [
-    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', systemStock: 1.2, alertLevel: 0.5, tag: '每日' },
-    { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日' },
-    { id: 3, name: '水煮蛋', spec: '50顆/包', unit: '顆', systemStock: 1200.0, alertLevel: 400, tag: '每日' },
-    { id: 4, name: '涼麵條', spec: '3公斤/包', unit: '包', systemStock: 22.0, alertLevel: 12, tag: '每日' },
-    { id: 5, name: '涼麵', spec: '206公克/盒', unit: '盒', systemStock: 66.0, alertLevel: 35, tag: '每日' },
-    { id: 6, name: '小黃瓜(箱)', spec: '15~18公斤/箱', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日' },
-    { id: 7, name: '番茄(箱)', spec: '8公斤/箱；200克/顆', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日' },
-    { id: 8, name: '鮮乳', spec: '936毫升/罐', unit: '罐', systemStock: 17.0, alertLevel: 20, tag: '每日' },
-    { id: 9, name: '豆腐', spec: '看有幾盒', unit: '盒', systemStock: 7.0, alertLevel: 3, tag: '每日' },
-    { id: 10, name: '木瓜(顆)', spec: '13顆/箱', unit: '顆', systemStock: 31.0, alertLevel: 1, tag: '每日' },
-    { id: 11, name: '涼麵醬(原味)', spec: '80g/包', unit: '包', systemStock: 185.0, alertLevel: 103, tag: '每日' },
-    { id: 12, name: '涼麵醬(辣味)', spec: '80g/包', unit: '包', systemStock: 197.0, alertLevel: 94, tag: '每日' },
-    { id: 13, name: '二砂', spec: '50公斤/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
-    { id: 14, name: '金蘭甲級醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 15, name: '鹽S', spec: '1000公克/包, 24包/袋', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 16, name: '幸福醋', spec: '5.5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 17, name: '芝麻醬', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 18, name: '金味王醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 19, name: '金梅油膏', spec: '4.5公斤/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 20, name: '細砂糖S', spec: '25公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周' },
-    { id: 21, name: '八角', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
-    { id: 22, name: '花椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
-    { id: 23, name: '香油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1.5, tag: '每周' },
-    { id: 24, name: '乾辣椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 1.5, tag: '每周' },
-    { id: 25, name: '辣椒油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 26, name: '熟芝麻', spec: '3公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周' },
-    { id: 27, name: '果糖', spec: '25公斤/桶', unit: '桶', systemStock: 0, alertLevel: 0.3, tag: '每周' },
-    { id: 28, name: '特級阿薩姆紅茶葉', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 29, name: '奶精粉', spec: '1公斤/小包, 25公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
-    { id: 30, name: '特A紅茶(立)', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 31, name: '古早味酸梅湯', spec: '12.4公升/罐, 6罐/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 32, name: '冬瓜磚', spec: '30塊/箱', unit: '箱', systemStock: 0, alertLevel: 6, tag: '每周' },
-    { id: 33, name: '綠豆粒', spec: '5公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
-    { id: 34, name: '仙草液', spec: '3.2公升/罐. 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 4, tag: '每周' },
-    { id: 35, name: '奶精球', spec: '50顆/包', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 36, name: '樹薯粉', spec: '400公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周' },
-    { id: 37, name: '紅豆粒', spec: '3公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周' },
-    { id: 38, name: '味噌', spec: '9公斤/箱', unit: '箱', systemStock: 0, alertLevel: 0.8, tag: '每周' },
-    { id: 39, name: '洋蔥', spec: '250公克/顆', unit: '顆', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 40, name: '冰沙粉', spec: '1公斤/包', unit: '包', systemStock: 11.0, alertLevel: 2, tag: '每周' },
-    { id: 41, name: '烹大師', spec: '1000公克/包', unit: '包', systemStock: 0.0, alertLevel: 1, tag: '每周' },
-    { id: 42, name: '2杯加大袋(3碗)', spec: '32個/包', unit: '包', systemStock: 8.0, alertLevel: 2, tag: '每周' },
-    { id: 43, name: 'OPS 3H', spec: '20包/箱, 100個/包', unit: '包', systemStock: 21.0, alertLevel: 3, tag: '每周' },
-    { id: 44, name: '粗吸管', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
-    { id: 45, name: '大茶匙', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
-    { id: 46, name: '手扒雞手套', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周' },
-    { id: 47, name: '吸管', spec: '100支/包.18包/箱', unit: '箱', systemStock: 0, alertLevel: 0.5, tag: '每周' },
-    { id: 48, name: '耐熱袋(4兩)', spec: '100個/包', unit: '包', systemStock: 0, alertLevel: 3, tag: '每周' },
-    { id: 49, name: '紙390湯杯', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 3, tag: '每周' },
-    { id: 50, name: '紙390蓋', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 51, name: '紙520湯杯', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 52, name: '紙520蓋', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 53, name: '湯匙', spec: '100支/包 , 20包/箱', unit: '箱', systemStock: 0, alertLevel: 1, tag: '每周' },
-    { id: 54, name: '筷子', spec: '80雙/包', unit: '包', systemStock: 6.0, alertLevel: 1, tag: '每周' },
-    { id: 55, name: '橡皮筋', spec: '', unit: '包', systemStock: 0, alertLevel: 5, tag: '每周' },
-    { id: 56, name: '洗衣粉', spec: '', unit: '包', systemStock: 0.7, alertLevel: 2, tag: '每周' },
-    { id: 57, name: '熱感應發票紙', spec: '75捲/箱', unit: '箱', systemStock: 7.0, alertLevel: 1, tag: '每周' },
-    { id: 58, name: '廚房紙巾', spec: '12捲/包', unit: '包', systemStock: 4.0, alertLevel: 0.3, tag: '每周' },
-    { id: 59, name: '5斤印刷袋', spec: '', unit: '袋', systemStock: 0, alertLevel: 20, tag: '每周' },
-    { id: 60, name: '沙拉脫S', spec: '3.4公升/桶.4桶/箱', unit: '箱', systemStock: 4.0, alertLevel: 3, tag: '每周' },
-    { id: 61, name: '九如印刷袋35', spec: '70/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 62, name: '常一嚐印刷袋(橘)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 0, tag: '每周' },
-    { id: 63, name: '悠遊感熱紙', spec: '4捲/條.30捲/小箱', unit: '捲', systemStock: 44.0, alertLevel: 3, tag: '每周' },
-    { id: 64, name: '芝麻醬包裝袋', spec: '18cm*400m', unit: '捲', systemStock: 0, alertLevel: 3, tag: '每周' },
-    { id: 65, name: '常一嚐印刷袋(黑)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周' },
-    { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周' }
+    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', systemStock: 1.2, alertLevel: 0.5, tag: '每日', category: '食材' },
+    { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日', category: '食材' },
+    { id: 3, name: '水煮蛋', spec: '50顆/包', unit: '顆', systemStock: 1200.0, alertLevel: 400, tag: '每日', category: '食材' },
+    { id: 4, name: '涼麵條', spec: '3公斤/包', unit: '包', systemStock: 22.0, alertLevel: 12, tag: '每日', category: '食材' },
+    { id: 5, name: '涼麵', spec: '206公克/盒', unit: '盒', systemStock: 66.0, alertLevel: 35, tag: '每日', category: '食材' },
+    { id: 6, name: '小黃瓜(箱)', spec: '15~18公斤/箱', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日', category: '食材' },
+    { id: 7, name: '番茄(箱)', spec: '8公斤/箱；200克/顆', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日', category: '食材' },
+    { id: 8, name: '鮮乳', spec: '936毫升/罐', unit: '罐', systemStock: 17.0, alertLevel: 20, tag: '每日', category: '茶飲' },
+    { id: 9, name: '豆腐', spec: '看有幾盒', unit: '盒', systemStock: 7.0, alertLevel: 3, tag: '每日', category: '食材' },
+    { id: 10, name: '木瓜(顆)', spec: '13顆/箱', unit: '顆', systemStock: 31.0, alertLevel: 1, tag: '每日', category: '茶飲' },
+    { id: 11, name: '涼麵醬(原味)', spec: '80g/包', unit: '包', systemStock: 185.0, alertLevel: 103, tag: '每日', category: '調味' },
+    { id: 12, name: '涼麵醬(辣味)', spec: '80g/包', unit: '包', systemStock: 197.0, alertLevel: 94, tag: '每日', category: '調味' },
+    { id: 13, name: '二砂', spec: '50公斤/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
+    { id: 14, name: '金蘭甲級醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周', category: '調味' },
+    { id: 15, name: '鹽S', spec: '1000公克/包, 24包/袋', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 16, name: '幸福醋', spec: '5.5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 17, name: '芝麻醬', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周', category: '調味' },
+    { id: 18, name: '金味王醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 19, name: '金梅油膏', spec: '4.5公斤/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 20, name: '細砂糖S', spec: '25公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周', category: '調味' },
+    { id: 21, name: '八角', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
+    { id: 22, name: '花椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
+    { id: 23, name: '香油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1.5, tag: '每周', category: '調味' },
+    { id: 24, name: '乾辣椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 1.5, tag: '每周', category: '調味' },
+    { id: 25, name: '辣椒油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 26, name: '熟芝麻', spec: '3公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周', category: '調味' },
+    { id: 27, name: '果糖', spec: '25公斤/桶', unit: '桶', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '茶飲' },
+    { id: 28, name: '特級阿薩姆紅茶葉', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
+    { id: 29, name: '奶精粉', spec: '1公斤/小包, 25公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '茶飲' },
+    { id: 30, name: '特A紅茶(立)', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
+    { id: 31, name: '古早味酸梅湯', spec: '12.4公升/罐, 6罐/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
+    { id: 32, name: '冬瓜磚', spec: '30塊/箱', unit: '箱', systemStock: 0, alertLevel: 6, tag: '每周', category: '茶飲' },
+    { id: 33, name: '綠豆粒', spec: '5公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '食材' },
+    { id: 34, name: '仙草液', spec: '3.2公升/罐. 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 4, tag: '每周', category: '茶飲' },
+    { id: 35, name: '奶精球', spec: '50顆/包', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周', category: '茶飲' },
+    { id: 36, name: '樹薯粉', spec: '400公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '食材' },
+    { id: 37, name: '紅豆粒', spec: '3公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '食材' },
+    { id: 38, name: '味噌', spec: '9公斤/箱', unit: '箱', systemStock: 0, alertLevel: 0.8, tag: '每周', category: '調味' },
+    { id: 39, name: '洋蔥', spec: '250公克/顆', unit: '顆', systemStock: 0, alertLevel: 2, tag: '每周', category: '食材' },
+    { id: 40, name: '冰沙粉', spec: '1公斤/包', unit: '包', systemStock: 11.0, alertLevel: 2, tag: '每周', category: '茶飲' },
+    { id: 41, name: '烹大師', spec: '1000公克/包', unit: '包', systemStock: 0.0, alertLevel: 1, tag: '每周', category: '調味' },
+    { id: 42, name: '2杯加大袋(3碗)', spec: '32個/包', unit: '包', systemStock: 8.0, alertLevel: 2, tag: '每周', category: '包材' },
+    { id: 43, name: 'OPS 3H', spec: '20包/箱, 100個/包', unit: '包', systemStock: 21.0, alertLevel: 3, tag: '每周', category: '包材' },
+    { id: 44, name: '粗吸管', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
+    { id: 45, name: '大茶匙', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
+    { id: 46, name: '手扒雞手套', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
+    { id: 47, name: '吸管', spec: '100支/包.18包/箱', unit: '箱', systemStock: 0, alertLevel: 0.5, tag: '每周', category: '包材' },
+    { id: 48, name: '耐熱袋(4兩)', spec: '100個/包', unit: '包', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
+    { id: 49, name: '紙390湯杯', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
+    { id: 50, name: '紙390蓋', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 1, tag: '每周', category: '包材' },
+    { id: 51, name: '紙520湯杯', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
+    { id: 52, name: '紙520蓋', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
+    { id: 53, name: '湯匙', spec: '100支/包 , 20包/箱', unit: '箱', systemStock: 0, alertLevel: 1, tag: '每周', category: '包材' },
+    { id: 54, name: '筷子', spec: '80雙/包', unit: '包', systemStock: 6.0, alertLevel: 1, tag: '每周', category: '包材' },
+    { id: 55, name: '橡皮筋', spec: '', unit: '包', systemStock: 0, alertLevel: 5, tag: '每周', category: '包材' },
+    { id: 56, name: '洗衣粉', spec: '', unit: '包', systemStock: 0.7, alertLevel: 2, tag: '每周', category: '備品' },
+    { id: 57, name: '熱感應發票紙', spec: '75捲/箱', unit: '箱', systemStock: 7.0, alertLevel: 1, tag: '每周', category: '備品' },
+    { id: 58, name: '廚房紙巾', spec: '12捲/包', unit: '包', systemStock: 4.0, alertLevel: 0.3, tag: '每周', category: '備品' },
+    { id: 59, name: '5斤印刷袋', spec: '', unit: '袋', systemStock: 0, alertLevel: 20, tag: '每周', category: '包材' },
+    { id: 60, name: '沙拉脫S', spec: '3.4公升/桶.4桶/箱', unit: '箱', systemStock: 4.0, alertLevel: 3, tag: '每周', category: '備品' },
+    { id: 61, name: '九如印刷袋35', spec: '70/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
+    { id: 62, name: '常一嚐印刷袋(橘)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
+    { id: 63, name: '悠遊感熱紙', spec: '4捲/條.30捲/小箱', unit: '捲', systemStock: 44.0, alertLevel: 3, tag: '每周', category: '備品' },
+    { id: 64, name: '芝麻醬包裝袋', spec: '18cm*400m', unit: '捲', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
+    { id: 65, name: '常一嚐印刷袋(黑)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
+    { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周', category: '備品' }
   ];
+
+  // 取得所有的分類清單
+  const CATEGORIES = ['全部', ...new Set(initialInventory.map(i => i.category))];
 
   const buildSystemStockMap = (overrides) => {
     const map = {};
@@ -193,8 +203,8 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 (縮小尺寸) ──
-  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext }) => {
+  // ── 自訂底部數字鍵盤 (✨ 新增清空按鈕) ──
+  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear }) => {
     if (!activeId) return null;
     const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
     
@@ -207,7 +217,10 @@
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-gray-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-gray-300">
         <div className="flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-2xl border-b border-gray-300">
-          <span className="text-xs font-bold text-gray-500">數量輸入</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-gray-500">數量輸入</span>
+            <button onMouseDown={(e) => { e.preventDefault(); onClear(); }} className="px-3 py-1 bg-red-50 text-red-600 active:bg-red-100 text-xs font-bold rounded-lg flex items-center shadow-sm border border-red-100 transition-colors">清空 (C)</button>
+          </div>
           <div className="flex gap-2">
             <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm active:bg-blue-700 flex items-center">下一列 ⏭</button>
             <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-gray-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-gray-600 flex items-center">完成 🔽</button>
@@ -225,7 +238,7 @@
   };
 
   // ── StockCard (加入 Stepper 與視覺防呆) ──
-  const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput }) => {
+  const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput, status }) => {
     const countStr = item.actualCount ?? '';
     const hasCounted = countStr !== '';
     const count = parseFloat(countStr);
@@ -253,12 +266,14 @@
       else trendEl = <span className="text-gray-400">持平</span>;
     }
 
+    // ✨ 修改：盤點完成後背景依舊純白，利用綠色左邊條區分
     let border = 'border-gray-200';
     if (isLow) border = 'border-red-500';
     else if (isAbnormal) border = 'border-orange-500';
-    else if (hasCounted) border = 'border-green-500';
+    else if (hasCounted) border = 'border-green-400';
+    else border = 'border-blue-200';
 
-    const cardBg = hasCounted ? 'bg-slate-50 border-slate-200 opacity-75' : 'bg-white border-blue-100 shadow-sm';
+    const cardBg = hasCounted ? 'bg-white shadow-sm' : 'bg-white shadow-md ring-1 ring-blue-50';
     const isActive = activeInputId === item.id;
 
     const handleStep = (delta) => {
@@ -270,11 +285,20 @@
     };
 
     return (
-      <div id={`stock-card-${item.id}`} className={`rounded-xl border-l-4 fade-in transition-all duration-300 ${cardBg} ${border}`}>
+      <div id={`stock-card-${item.id}`} className={`relative rounded-xl border-l-4 fade-in transition-all duration-300 ${cardBg} ${border}`}>
+        {/* 同步狀態提示 */}
+        {status && (
+          <div className="absolute top-3 right-3 flex items-center justify-center bg-white/80 rounded-full backdrop-blur-sm p-0.5 shadow-sm">
+            {status === 'saving' && <RefreshCw className="w-4 h-4 text-blue-500 animate-spin-slow" />}
+            {status === 'saved' && <Check className="w-4 h-4 text-green-500 fade-in" />}
+            {status === 'error' && <X className="w-4 h-4 text-red-500 fade-in" />}
+          </div>
+        )}
+
         <div className="p-4">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-2 pr-6">
             <div>
-              <h3 className="font-bold text-gray-800 text-base">{item.name}</h3>
+              <h3 className={`font-bold text-base ${hasCounted ? 'text-gray-600' : 'text-gray-800'}`}>{item.name}</h3>
               <p className="text-xs text-gray-400 mt-0.5">{item.spec} · 安全線: {item.alertLevel}</p>
             </div>
           </div>
@@ -286,15 +310,13 @@
               <div className="flex items-center gap-1.5 ml-2">
                 <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">-</button>
                 
-                <input 
-                  type="text" 
-                  inputMode="none"
-                  readOnly
-                  placeholder="輸入.."
-                  value={countStr}
-                  onClick={() => onFocusInput(item.id)}
-                  className={`w-[72px] px-2 py-1.5 bg-white border rounded-md text-center font-bold text-base focus:outline-none transition-all cursor-pointer ${isActive ? 'border-blue-500 ring-2 ring-blue-500 text-blue-700' : isLow ? 'border-red-300 text-red-600' : 'border-gray-300 text-gray-800'}`}
-                />
+                {/* ✨ 修改：用 div 替換 input，100% 阻絕系統鍵盤彈出 */}
+                <div 
+                  onClick={(e) => { e.preventDefault(); onFocusInput(item.id); }}
+                  className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-blue-500 ring-2 ring-blue-500 text-blue-700' : isLow ? 'border-red-300 text-red-600' : 'border-gray-300 text-gray-800'}`}
+                >
+                  {countStr === '' ? <span className="text-gray-300 font-normal text-sm">輸入..</span> : countStr}
+                </div>
                 
                 <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">+</button>
                 <span className="text-sm text-gray-500 ml-1 w-4 shrink-0">{item.unit}</span>
@@ -321,7 +343,7 @@
     );
   };
 
-  // ✨ ── 進貨登記 Modal (支援顯示「今日」紀錄) ──
+  // ── 進貨登記 Modal ──
   const RestockModal = ({ onClose, systemStockMap, onRestock, showToast, getLatestRecord }) => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -349,7 +371,6 @@
 
     const handleConfirm = async () => {
       if (!selectedItem) return;
-      
       let finalVal;
       if (mode === 'add') {
         const qty = parseFloat(restockQty);
@@ -369,11 +390,7 @@
         if (error) throw error;
 
         onRestock(selectedItem.id, finalVal);
-        setLog(prev => [{ 
-          name: selectedItem.name, unit: selectedItem.unit, before: mode === 'add' ? baseStock : curStock, 
-          after: finalVal, mode, qty: mode === 'add' ? parseFloat(restockQty) : null 
-        }, ...prev]);
-        
+        setLog(prev => [{ name: selectedItem.name, unit: selectedItem.unit, before: mode === 'add' ? baseStock : curStock, after: finalVal, mode, qty: mode === 'add' ? parseFloat(restockQty) : null }, ...prev]);
         showToast(`「${selectedItem.name}」帳面已更新為 ${finalVal} ${selectedItem.unit}`);
         setSelectedItem(null); setSearchQuery(''); setRestockQty(''); setNewTotal('');
       } catch (err) {
@@ -409,7 +426,7 @@
                 <input type="text" placeholder="輸入品名搜尋..." value={searchQuery}
                   onChange={e => { setSearchQuery(e.target.value); setSelectedItem(null); setIsDropdownOpen(true); }}
                   onFocus={() => setIsDropdownOpen(true)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm font-medium"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 focus:bg-white text-sm font-medium"
                 />
                 {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}/>}
                 {isDropdownOpen && (
@@ -517,14 +534,18 @@
     const [toast, setToast] = useState(null);
     const [systemStockMap, setSystemStockMap] = useState({});
     
+    // 狀態
     const [activeInputId, setActiveInputId] = useState(null);
+    const [hideCounted, setHideCounted] = useState(false); 
+    const [activeCategory, setActiveCategory] = useState('全部'); 
+    const [overviewFilter, setOverviewFilter] = useState('all'); 
+    const [itemSaveStatus, setItemSaveStatus] = useState({}); 
 
     const todayStr = getTodayStr();
     const todayCounts = useMemo(() => historyData[todayStr] || [], [historyData, todayStr]);
 
     const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
 
-    // ✨ 新增：取得「不含今日」的歷史紀錄 (給盤點卡片的歷史對比用)
     const getPreviousRecord = useCallback((itemId) => {
       const dates = Object.keys(historyData).filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
       if (dates.length === 0) return null;
@@ -533,7 +554,6 @@
       return entry ? { count: entry.actualCount, date: lastDate } : null;
     }, [historyData, todayStr]);
 
-    // ✨ 新增：取得「包含今日」的最新紀錄 (給進貨系統做計算基準用)
     const getLatestRecord = useCallback((itemId) => {
       const dates = Object.keys(historyData).filter(d => historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
       if (dates.length === 0) return null;
@@ -577,7 +597,10 @@
     useEffect(() => {
       if (activeInputId) {
         const el = document.getElementById(`stock-card-${activeInputId}`);
-        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+        if (el) setTimeout(() => {
+          const y = el.getBoundingClientRect().top + window.pageYOffset - 120;
+          window.scrollTo({top: y, behavior: 'smooth'});
+        }, 50);
       }
     }, [activeInputId]);
 
@@ -608,57 +631,50 @@
       await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
     };
 
-    // ✨ 修正邏輯：直接替換整個清單，但「自動保留」畫面或資料庫中已輸入過的心血
     const handleQuickLoad = async (tag) => {
       const items = initialInventory.filter(i => i.tag === tag);
-      
-      // 步驟 1：向資料庫要最新的今日紀錄，確保不覆蓋剛存在雲端的數據
-      const { data: todayRecords } = await supabase
-        .from('inventory_records')
-        .select('item_id, actual_count')
-        .eq('record_date', todayStr);
-        
+      const { data: todayRecords } = await supabase.from('inventory_records').select('item_id, actual_count').eq('record_date', todayStr);
       const dbCountMap = {};
-      if (todayRecords) {
-        todayRecords.forEach(r => {
-          if (r.actual_count !== null) dbCountMap[r.item_id] = r.actual_count;
-        });
-      }
+      if (todayRecords) todayRecords.forEach(r => { if (r.actual_count !== null) dbCountMap[r.item_id] = r.actual_count; });
 
-      // 步驟 2：替換畫面清單
       let newListForDB = [];
       setHistoryData(prev => {
         const currentList = prev[todayStr] || [];
         const localCountMap = {};
-        // 抓取畫面上還沒按 F5 但已經輸入的數字
         currentList.forEach(i => { if (i.actualCount !== '') localCountMap[i.id] = i.actualCount; });
         
         const newList = items.map(item => {
           let count = '';
-          if (localCountMap[item.id] !== undefined) count = localCountMap[item.id]; // 優先以剛輸入為主
-          else if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id];  // 其次看資料庫
+          if (localCountMap[item.id] !== undefined) count = localCountMap[item.id];
+          else if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id]; 
           return { ...item, actualCount: count };
         });
-        
         newListForDB = newList;
         return { ...prev, [todayStr]: newList };
       });
 
-      // 步驟 3：只把清單裡的「未填寫項」寫為 null 佔位，維持資料庫同步，完全不清除既有數字
       if (newListForDB.length > 0) {
-        const dbUpserts = newListForDB.map(item => ({
-          record_date: todayStr,
-          item_id: item.id,
-          actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null
-        }));
+        const dbUpserts = newListForDB.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null }));
         await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
       }
     };
 
     const handleUpdateListItem = async (id, val) => {
       setHistoryData(prev => ({ ...prev, [todayStr]: (prev[todayStr] || []).map(i => i.id === id ? { ...i, actualCount: val } : i) }));
-      const count = parseFloat(val);
-      await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
+      setItemSaveStatus(prev => ({ ...prev, [id]: 'saving' }));
+      
+      try {
+        const count = parseFloat(val);
+        const { error } = await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
+        if (error) throw error;
+        
+        setItemSaveStatus(prev => ({ ...prev, [id]: 'saved' }));
+        setTimeout(() => { setItemSaveStatus(prev => ({ ...prev, [id]: null })); }, 2000);
+      } catch (err) {
+        console.error(err);
+        setItemSaveStatus(prev => ({ ...prev, [id]: 'error' }));
+        setTimeout(() => { setItemSaveStatus(prev => ({ ...prev, [id]: null })); }, 3000);
+      }
     };
 
     const handleKeypadPress = (key) => {
@@ -667,7 +683,6 @@
       if (!item) return;
       
       let currentStr = String(item.actualCount ?? '');
-      
       if (key === '⌫') {
         currentStr = currentStr.slice(0, -1);
       } else if (key === '.') {
@@ -679,9 +694,10 @@
     };
 
     const handleKeypadNext = () => {
-      const idx = todayCounts.findIndex(i => i.id === activeInputId);
-      if (idx >= 0 && idx < todayCounts.length - 1) {
-        setActiveInputId(todayCounts[idx + 1].id);
+      const currentDisplayedIds = displayedRecordItems.map(i => i.id);
+      const idx = currentDisplayedIds.indexOf(activeInputId);
+      if (idx >= 0 && idx < currentDisplayedIds.length - 1) {
+        setActiveInputId(currentDisplayedIds[idx + 1]);
       } else {
         setActiveInputId(null);
       }
@@ -711,6 +727,34 @@
 
     const orderList = useMemo(() => todayCounts.filter(i => { const c = parseFloat(i.actualCount); return !isNaN(c) && c < i.alertLevel; }), [todayCounts]);
     const countedNum = useMemo(() => todayCounts.filter(i => i.actualCount !== '').length, [todayCounts]);
+
+    const displayedRecordItems = useMemo(() => {
+      let list = todayCounts;
+      if (activeCategory !== '全部') list = list.filter(i => i.category === activeCategory);
+      if (hideCounted) list = list.filter(i => i.actualCount === '');
+      return list;
+    }, [todayCounts, activeCategory, hideCounted]);
+
+    const displayedOverviewItems = useMemo(() => {
+      let list = initialInventory;
+      if (overviewFilter === 'daily') list = list.filter(i => i.tag === '每日');
+      if (overviewFilter === 'weekly') list = list.filter(i => i.tag === '每周');
+      if (overviewFilter === 'abnormal') {
+        list = list.filter(item => {
+          const sysStock = systemStockMap[item.id] ?? item.systemStock;
+          const counted = todayCounts.find(i=>i.id===item.id);
+          const has = counted && counted.actualCount!=='';
+          if (!has) return false;
+          const c = parseFloat(counted.actualCount);
+          if (isNaN(c)) return false;
+          if (c < item.alertLevel) return true; 
+          const pct = Math.abs(c - sysStock) / (sysStock || 1);
+          if (pct > 0.05 && sysStock > 0) return true; 
+          return false;
+        });
+      }
+      return list;
+    }, [initialInventory, overviewFilter, todayCounts, systemStockMap]);
 
     const prevMonth = () => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1));
     const nextMonth = () => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1));
@@ -781,7 +825,13 @@
             <div className="max-w-2xl mx-auto px-4 py-2 bg-slate-50 border-b border-gray-200 shadow-inner">
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-xs font-bold text-gray-500">今日盤點進度</span>
-                <span className="text-xs font-bold text-blue-600">{countedNum} / {todayCounts.length} <span className="font-normal text-gray-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs text-gray-600 font-medium cursor-pointer bg-white px-2 py-0.5 rounded border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                    <input type="checkbox" checked={hideCounted} onChange={e => setHideCounted(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 w-3 h-3" />
+                    隱藏已盤
+                  </label>
+                  <span className="text-xs font-bold text-blue-600">{countedNum} / {todayCounts.length} <span className="font-normal text-gray-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
+                </div>
               </div>
               <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
@@ -793,7 +843,7 @@
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
           {activeTab === 'record' && (
             <div className="space-y-6 fade-in">
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+              <div className="bg-white px-4 py-5 rounded-2xl shadow-sm border border-gray-100">
                 <h2 className="text-sm font-bold text-gray-500 mb-3 flex items-center"><Search className="w-4 h-4 mr-1"/>搜尋新增盤點品項</h2>
                 <div className="relative z-20">
                   <div className="relative">
@@ -805,6 +855,16 @@
                       <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isDropdownOpen?'rotate-180':''}`}/>
                     </div>
                   </div>
+                  
+                  <div className="flex gap-2 overflow-x-auto custom-scrollbar mt-3 pb-2 pt-1">
+                    {CATEGORIES.map(cat => (
+                      <button key={cat} onClick={() => setActiveCategory(cat)}
+                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${activeCategory === cat ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
                   {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={()=>setIsDropdownOpen(false)}/>}
                   {isDropdownOpen && (
                     <div className="relative mt-2 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
@@ -845,19 +905,39 @@
                     <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-2"/>
                     <p className="text-gray-400">目前還沒有紀錄<br/>請從上方搜尋並加入品項</p>
                   </div>
+                ) : displayedRecordItems.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <p>🎉 這個分類的項目都盤點完囉！</p>
+                  </div>
                 ) : (
-                  <div className="space-y-3 relative z-0">
-                    {todayCounts.map(item => {
-                      // ✨ 盤點卡片只對比「昨天(不含今日)」的紀錄，避免顯示永遠「持平」
-                      const prev = getPreviousRecord(item.id);
+                  <div className="space-y-5 relative z-0">
+                    {['每日', '每周'].map(tagGroup => {
+                      const groupItems = displayedRecordItems.filter(i => i.tag === tagGroup);
+                      if (groupItems.length === 0) return null;
+                      
+                      const badgeColor = tagGroup === '每日' ? 'bg-blue-200 text-blue-800' : 'bg-emerald-200 text-emerald-800';
+                      
                       return (
-                        <StockCard key={item.id}
-                          item={{ ...item, lastCount: prev?.count, lastDate: prev?.date }}
-                          onUpdate={handleUpdateListItem}
-                          systemStock={systemStockMap[item.id]}
-                          activeInputId={activeInputId}
-                          onFocusInput={setActiveInputId}
-                        />
+                        <div key={tagGroup} className="space-y-3">
+                          <div className="sticky top-[108px] z-20 pt-1 pb-1">
+                            <span className={`inline-block px-4 py-1.5 ${badgeColor} text-sm font-bold transform -rotate-1 shadow-sm rounded-sm`}>
+                              📌 {tagGroup} 盤點區
+                            </span>
+                          </div>
+                          {groupItems.map(item => {
+                            const prev = getPreviousRecord(item.id);
+                            return (
+                              <StockCard key={item.id}
+                                item={{ ...item, lastCount: prev?.count, lastDate: prev?.date }}
+                                onUpdate={handleUpdateListItem}
+                                systemStock={systemStockMap[item.id]}
+                                activeInputId={activeInputId}
+                                onFocusInput={setActiveInputId}
+                                status={itemSaveStatus[item.id]}
+                              />
+                            );
+                          })}
+                        </div>
                       );
                     })}
                   </div>
@@ -897,15 +977,27 @@
 
           {activeTab === 'overview' && (
             <div className="fade-in">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex justify-between items-center">
-                <div>
-                  <h2 className="font-bold text-gray-800">今日庫存總覽</h2>
-                  <p className="text-xs text-gray-500 mt-1">已盤 {countedNum} / {initialInventory.length} 項（{Math.round(countedNum/initialInventory.length*100)}%）</p>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className="font-bold text-gray-800">今日庫存總覽</h2>
+                    <p className="text-xs text-gray-500 mt-1">已盤 {countedNum} / {initialInventory.length} 項（{Math.round(countedNum/initialInventory.length*100)}%）</p>
+                  </div>
+                  <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-colors border border-emerald-200">
+                    <Download className="w-4 h-4"/>匯出報表
+                  </button>
                 </div>
-                <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-colors border border-emerald-200">
-                  <Download className="w-4 h-4"/>匯出報表
-                </button>
+                
+                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+                  <button onClick={() => setOverviewFilter('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>全部</button>
+                  <button onClick={() => setOverviewFilter('daily')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'daily' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>僅每日</button>
+                  <button onClick={() => setOverviewFilter('weekly')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'weekly' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>僅每周</button>
+                  <button onClick={() => setOverviewFilter('abnormal')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border flex items-center ${overviewFilter === 'abnormal' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50'}`}>
+                    <Filter className="w-3 h-3 mr-1"/> ⚠️ 異常與缺貨
+                  </button>
+                </div>
               </div>
+
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left text-sm whitespace-nowrap">
@@ -913,7 +1005,7 @@
                       <tr><th className="px-4 py-3">品名</th><th className="px-4 py-3 text-right">帳面</th><th className="px-4 py-3 text-right">實盤</th><th className="px-4 py-3 text-right">盤差</th><th className="px-4 py-3 text-center">狀態</th></tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {initialInventory.map(item=>{
+                      {displayedOverviewItems.map(item=>{
                         const sysStock = systemStockMap[item.id] ?? item.systemStock;
                         const counted = todayCounts.find(i=>i.id===item.id);
                         const has = counted && counted.actualCount!=='';
@@ -936,6 +1028,9 @@
                           </tr>
                         );
                       })}
+                      {displayedOverviewItems.length === 0 && (
+                        <tr><td colSpan="5" className="px-4 py-8 text-center text-gray-400">目前沒有符合條件的項目</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -985,14 +1080,15 @@
           </div>
         )}
 
-        {/* ✨ 進貨 Modal 使用 getLatestRecord 取代原本的 getLastRecord，才能吃到今天的數字 */}
         {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLatestRecord={getLatestRecord} />}
         
+        {/* ✨ 鍵盤新增 onClear 事件綁定 */}
         <CustomKeypad 
           activeId={activeInputId} 
           onKeyPress={handleKeypadPress} 
           onNext={handleKeypadNext} 
           onClose={() => setActiveInputId(null)} 
+          onClear={() => handleUpdateListItem(activeInputId, '')}
         />
       </div>
     );
