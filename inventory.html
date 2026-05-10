@@ -18,9 +18,13 @@
     input[type=number] { -moz-appearance: textfield; }
     
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f5f5f4; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+    /* 隱藏特定區塊的卷軸 (給滑動選單用) */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     .fade-in { animation: fadeIn 0.25s ease forwards; }
@@ -39,7 +43,7 @@
     .animate-spin-slow { animation: spin 1.5s linear infinite; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-[#FFFDF9] text-stone-800 font-sans antialiased">
   <div id="root"></div>
   <script type="text/babel">
   const { useState, useMemo, useEffect, useRef, useCallback } = React;
@@ -165,7 +169,7 @@
       const t2 = setTimeout(() => onDone(), 2500);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }, []);
-    const bg = type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-amber-500' : 'bg-gray-800';
+    const bg = type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-amber-500' : 'bg-stone-800';
     return (
       <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] ${bg} text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg pointer-events-none ${exiting ? 'toast-exit' : 'toast-enter'}`}>
         {message}
@@ -184,18 +188,18 @@
     }, []);
     return (
       <div className="fixed top-4 left-4 z-[990]" ref={ref}>
-        <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 hover:shadow-md transition-all">
-          <MenuIcon className="w-[22px] h-[22px] text-slate-600" />
+        <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-stone-200 rounded-xl shadow-sm hover:bg-stone-50 hover:shadow-md transition-all">
+          <MenuIcon className="w-[22px] h-[22px] text-stone-600" />
         </button>
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-stone-100 overflow-hidden">
             {[
               { label: '值班系統', color: 'indigo', href: 'index.html' },
               { label: '每週收銀結算', color: 'emerald', href: 'cash.html' },
-              { label: '庫存盤點系統', color: 'blue', href: 'inventory.html' },
+              { label: '庫存盤點系統', color: 'orange', href: 'inventory.html' },
               { label: '清潔與值班管理系統', color: 'orange', href: 'clean.html' },
             ].map(({ label, color, href }) => (
-              <a key={label} href={href} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-gray-50 last:border-0 transition-colors`}>{label}</a>
+              <a key={label} href={href} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-stone-50 last:border-0 transition-colors`}>{label}</a>
             ))}
           </div>
         )}
@@ -203,9 +207,33 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 (新增清空按鈕) ──
+  // ── 自訂底部數字鍵盤 (暖色版 + 點擊空白關閉) ──
   const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear }) => {
+    const keypadRef = useRef(null);
+
+    useEffect(() => {
+      if (!activeId) return;
+      
+      const handleOutsideClick = (e) => {
+        // 如果點擊的是鍵盤本身，則不處理
+        if (keypadRef.current && keypadRef.current.contains(e.target)) return;
+        // 如果點擊的是數量輸入區（包含 + - 按鈕），也不處理（交給它們自己的 onClick 去切換或輸入）
+        if (e.target.closest('.prevent-keypad-close')) return;
+        
+        onClose();
+      };
+
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('touchstart', handleOutsideClick, { passive: true });
+      
+      return () => {
+        document.removeEventListener('mousedown', handleOutsideClick);
+        document.removeEventListener('touchstart', handleOutsideClick);
+      };
+    }, [activeId, onClose]);
+
     if (!activeId) return null;
+    
     const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
     
     const handleKeyClick = (e, k) => {
@@ -215,20 +243,20 @@
     };
 
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-gray-300">
-        <div className="flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-2xl border-b border-gray-300">
+      <div ref={keypadRef} className="fixed bottom-0 left-0 right-0 bg-stone-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-stone-300">
+        <div className="flex justify-between items-center px-4 py-2 bg-stone-100 rounded-t-2xl border-b border-stone-300">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-gray-500">數量輸入</span>
+            <span className="text-xs font-bold text-stone-500">數量輸入</span>
             <button onMouseDown={(e) => { e.preventDefault(); onClear(); }} className="px-3 py-1 bg-red-50 text-red-600 active:bg-red-100 text-xs font-bold rounded-lg flex items-center shadow-sm border border-red-100 transition-colors">清空 (C)</button>
           </div>
           <div className="flex gap-2">
-            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm active:bg-blue-700 flex items-center">下一列 ⏭</button>
-            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-gray-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-gray-600 flex items-center">完成 🔽</button>
+            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-orange-600 flex items-center">下一列 ⏭</button>
+            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-stone-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-stone-600 flex items-center">完成 🔽</button>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-1.5 p-2 bg-gray-200 max-w-md mx-auto">
+        <div className="grid grid-cols-3 gap-1.5 p-2 bg-stone-200 max-w-md mx-auto">
           {keys.map(k => (
-            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-2.5 text-xl font-bold rounded-lg shadow-sm active:bg-gray-100 active:scale-95 transition-transform flex items-center justify-center text-gray-800">
+            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-2.5 text-xl font-bold rounded-lg shadow-sm active:bg-stone-100 active:scale-95 transition-transform flex items-center justify-center text-stone-800">
               {k}
             </button>
           ))}
@@ -237,7 +265,7 @@
     );
   };
 
-  // ── StockCard (加入 Stepper 與視覺防呆) ──
+  // ── StockCard (暖色版) ──
   const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput, status }) => {
     const countStr = item.actualCount ?? '';
     const hasCounted = countStr !== '';
@@ -246,13 +274,13 @@
 
     const sysStock = systemStock !== undefined ? systemStock : item.systemStock;
 
-    let varianceText = '尚未輸入', varianceColor = 'text-gray-400', isAbnormal = false;
+    let varianceText = '尚未輸入', varianceColor = 'text-stone-400', isAbnormal = false;
     if (hasCounted && !isNaN(count)) {
       const v = count - sysStock;
       const pct = Math.abs(v) / (sysStock || 1);
       isAbnormal = pct > 0.05 && sysStock > 0;
       varianceText = v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
-      varianceColor = isAbnormal ? 'text-orange-600 font-bold' : 'text-gray-600';
+      varianceColor = isAbnormal ? 'text-orange-600 font-bold' : 'text-stone-600';
     }
 
     const lastCount = item.lastCount;
@@ -263,17 +291,16 @@
       const diff = count - lastVal;
       if (diff > 0) trendEl = <span className="text-emerald-600 flex items-center gap-0.5"><TrendingUp className="w-3 h-3"/>+{diff.toFixed(1)}</span>;
       else if (diff < 0) trendEl = <span className="text-red-500 flex items-center gap-0.5"><TrendingDown className="w-3 h-3"/>{diff.toFixed(1)}</span>;
-      else trendEl = <span className="text-gray-400">持平</span>;
+      else trendEl = <span className="text-stone-400">持平</span>;
     }
 
-    // 修改：盤點完成後背景依舊純白，利用綠色左邊條區分
-    let border = 'border-gray-200';
+    let border = 'border-stone-200';
     if (isLow) border = 'border-red-500';
     else if (isAbnormal) border = 'border-orange-500';
     else if (hasCounted) border = 'border-green-400';
-    else border = 'border-blue-200';
+    else border = 'border-orange-200';
 
-    const cardBg = hasCounted ? 'bg-white shadow-sm' : 'bg-white shadow-md ring-1 ring-blue-50';
+    const cardBg = hasCounted ? 'bg-white shadow-sm' : 'bg-white shadow-md ring-1 ring-orange-50';
     const isActive = activeInputId === item.id;
 
     const handleStep = (delta) => {
@@ -289,7 +316,7 @@
         {/* 同步狀態提示 */}
         {status && (
           <div className="absolute top-3 right-3 flex items-center justify-center bg-white/80 rounded-full backdrop-blur-sm p-0.5 shadow-sm">
-            {status === 'saving' && <RefreshCw className="w-4 h-4 text-blue-500 animate-spin-slow" />}
+            {status === 'saving' && <RefreshCw className="w-4 h-4 text-orange-500 animate-spin-slow" />}
             {status === 'saved' && <Check className="w-4 h-4 text-green-500 fade-in" />}
             {status === 'error' && <X className="w-4 h-4 text-red-500 fade-in" />}
           </div>
@@ -298,43 +325,43 @@
         <div className="p-4">
           <div className="flex justify-between items-start mb-2 pr-6">
             <div>
-              <h3 className={`font-bold text-base ${hasCounted ? 'text-gray-600' : 'text-gray-800'}`}>{item.name}</h3>
-              <p className="text-xs text-gray-400 mt-0.5">{item.spec} · 安全線: {item.alertLevel}</p>
+              <h3 className={`font-bold text-base ${hasCounted ? 'text-stone-600' : 'text-stone-800'}`}>{item.name}</h3>
+              <p className="text-xs text-stone-400 mt-0.5">{item.spec} · 安全線: <span className="text-orange-500 font-medium">{item.alertLevel}</span></p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className={`flex-1 rounded-lg p-2 flex justify-between items-center transition-colors ${isActive ? 'bg-blue-50' : 'bg-white'}`}>
-              <span className="text-xs text-gray-500 font-medium whitespace-nowrap">盤點數量</span>
+            <div className={`flex-1 rounded-lg p-2 flex justify-between items-center transition-colors ${isActive ? 'bg-orange-50' : 'bg-white'}`}>
+              <span className="text-xs text-stone-500 font-medium whitespace-nowrap">盤點數量</span>
               
-              <div className="flex items-center gap-1.5 ml-2">
-                <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">-</button>
+              {/* 加入 prevent-keypad-close 以防點擊輸入區域時鍵盤關閉 */}
+              <div className="flex items-center gap-1.5 ml-2 prevent-keypad-close">
+                <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">-</button>
                 
-                {/* 修改：用 div 替換 input，100% 阻絕系統鍵盤彈出 */}
                 <div 
                   onClick={(e) => { e.preventDefault(); onFocusInput(item.id); }}
-                  className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-blue-500 ring-2 ring-blue-500 text-blue-700' : isLow ? 'border-red-300 text-red-600' : 'border-gray-300 text-gray-800'}`}
+                  className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-orange-500 ring-2 ring-orange-500 text-orange-700' : isLow ? 'border-red-300 text-red-600' : 'border-stone-300 text-stone-800'}`}
                 >
-                  {countStr === '' ? <span className="text-gray-300 font-normal text-sm">輸入..</span> : countStr}
+                  {countStr === '' ? <span className="text-stone-300 font-normal text-sm">輸入..</span> : countStr}
                 </div>
                 
-                <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 font-bold text-lg flex items-center justify-center active:bg-gray-200">+</button>
-                <span className="text-sm text-gray-500 ml-1 w-4 shrink-0">{item.unit}</span>
+                <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">+</button>
+                <span className="text-sm text-stone-500 ml-1 w-4 shrink-0">{item.unit}</span>
               </div>
             </div>
 
             {hasLast && (
-              <div className="flex justify-between items-center text-xs px-1 py-1 bg-indigo-50/50 rounded-lg">
-                <span className="text-indigo-500 flex items-center gap-1">
-                  <History className="w-3 h-3"/> 上次 {lastVal} {item.unit} {item.lastDate && <span className="text-indigo-300 ml-1">({item.lastDate})</span>}
+              <div className="flex justify-between items-center text-xs px-1 py-1.5 bg-orange-50/60 rounded-lg border border-orange-100">
+                <span className="text-orange-700 flex items-center gap-1">
+                  <History className="w-3 h-3 text-orange-500"/> 上次 {lastVal} {item.unit} {item.lastDate && <span className="text-orange-400 ml-1">({item.lastDate})</span>}
                 </span>
                 {trendEl && <span className="text-xs font-medium flex items-center gap-0.5">{trendEl}</span>}
               </div>
             )}
 
-            <div className={`flex justify-between items-center text-xs px-1 ${isAbnormal ? 'bg-orange-50 p-1.5 rounded' : ''}`}>
-              <span className="text-gray-500">帳面庫存：{sysStock}</span>
-              <span className="flex items-center">盤差：<span className={varianceColor}>{varianceText}</span>{isAbnormal && <AlertCircle className="w-3 h-3 text-orange-500 ml-1"/>}</span>
+            <div className={`flex justify-between items-center text-xs px-1 pt-1 mt-1 border-t border-stone-100 ${isAbnormal ? 'bg-orange-50 p-1.5 rounded' : ''}`}>
+              <span className="text-stone-500">帳面庫存：{sysStock}</span>
+              <span className="flex items-center text-stone-500">盤差：<span className={`ml-1 ${varianceColor}`}>{varianceText}</span>{isAbnormal && <AlertCircle className="w-3 h-3 text-orange-500 ml-1"/>}</span>
             </div>
           </div>
           {isLow && <div className="mt-2 flex items-center text-xs font-medium text-red-600"><AlertCircle className="w-3.5 h-3.5 mr-1"/>低於安全警戒，需叫貨</div>}
@@ -421,23 +448,23 @@
               進貨數量將優先以「上次實際盤點量」作為加總基準，確保帳面精準。
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1.5">選擇品項</label>
+              <label className="block text-xs font-bold text-stone-500 mb-1.5">選擇品項</label>
               <div className="relative z-20">
                 <input type="text" placeholder="輸入品名搜尋..." value={searchQuery}
                   onChange={e => { setSearchQuery(e.target.value); setSelectedItem(null); setIsDropdownOpen(true); }}
                   onFocus={() => setIsDropdownOpen(true)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 focus:bg-white text-sm font-medium"
+                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm font-medium"
                 />
                 {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}/>}
                 {isDropdownOpen && (
-                  <div className="relative mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
+                  <div className="relative mt-1.5 bg-white border border-stone-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
                     {filteredItems.length > 0 ? filteredItems.map(item => (
                       <div key={item.id} onClick={() => handleSelectItem(item)}
-                        className="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-gray-50 last:border-0 flex justify-between items-center text-sm">
-                        <span className="font-bold text-gray-800">{item.name}</span>
-                        <span className="text-xs text-gray-400">{systemStockMap[item.id] ?? item.systemStock} {item.unit}</span>
+                        className="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-stone-50 last:border-0 flex justify-between items-center text-sm">
+                        <span className="font-bold text-stone-800">{item.name}</span>
+                        <span className="text-xs text-stone-400">{systemStockMap[item.id] ?? item.systemStock} {item.unit}</span>
                       </div>
-                    )) : <div className="px-4 py-4 text-center text-gray-400 text-sm">找不到品項</div>}
+                    )) : <div className="px-4 py-4 text-center text-stone-400 text-sm">找不到品項</div>}
                   </div>
                 )}
               </div>
@@ -445,19 +472,19 @@
 
             {selectedItem && (
               <div className="fade-in space-y-3">
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-2">
+                <div className="bg-stone-50 border border-stone-200 rounded-xl p-3 space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">上次實際盤點</span>
-                    <span className="font-bold text-gray-800">
+                    <span className="text-stone-500">上次實際盤點</span>
+                    <span className="font-bold text-stone-800">
                       {lastRecord && !isNaN(parseFloat(lastRecord.count)) ? lastRecord.count : '無紀錄'}
-                      {lastRecord && <span className="text-xs font-normal text-gray-400 ml-1">({lastRecord.date === todayStr ? '今日' : lastRecord.date})</span>}
+                      {lastRecord && <span className="text-xs font-normal text-stone-400 ml-1">({lastRecord.date === todayStr ? '今日' : lastRecord.date})</span>}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">目前帳面庫存</span>
-                    <span className="font-bold text-gray-800">{curStock}</span>
+                    <span className="text-stone-500">目前帳面庫存</span>
+                    <span className="font-bold text-stone-800">{curStock}</span>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between items-center">
+                  <div className="mt-2 pt-2 border-t border-stone-200 flex justify-between items-center">
                     <span className="text-xs font-bold text-emerald-600 flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1"/> 加總計算基準
                     </span>
@@ -467,22 +494,22 @@
                   </div>
                 </div>
 
-                <div className="flex rounded-xl overflow-hidden border border-gray-200">
-                  <button onClick={() => setMode('add')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'add' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>＋ 加入進貨量</button>
-                  <button onClick={() => setMode('set')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'set' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>✎ 直接設定</button>
+                <div className="flex rounded-xl overflow-hidden border border-stone-200">
+                  <button onClick={() => setMode('add')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'add' ? 'bg-emerald-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>＋ 加入進貨量</button>
+                  <button onClick={() => setMode('set')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'set' ? 'bg-emerald-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>✎ 直接設定</button>
                 </div>
 
                 {mode === 'add' ? (
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1.5">本次進貨數量（{selectedItem.unit}）</label>
+                    <label className="block text-xs font-bold text-stone-500 mb-1.5">本次進貨數量（{selectedItem.unit}）</label>
                     <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="例如：5" value={restockQty} onChange={e => setRestockQty(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
+                      className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1.5">設定新帳面庫存（{selectedItem.unit}）</label>
+                    <label className="block text-xs font-bold text-stone-500 mb-1.5">設定新帳面庫存（{selectedItem.unit}）</label>
                     <input type="number" inputMode="decimal" step="0.1" min="0" value={newTotal} onChange={e => setNewTotal(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
+                      className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
                   </div>
                 )}
                 {previewVal !== null && (
@@ -495,20 +522,20 @@
             )}
             {log.length > 0 && (
               <div className="fade-in pb-4">
-                <p className="text-xs font-bold text-gray-400 mb-2">本次更新紀錄</p>
+                <p className="text-xs font-bold text-stone-400 mb-2">本次更新紀錄</p>
                 <div className="space-y-1.5">
                   {log.map((l, i) => (
-                    <div key={i} className="bg-gray-50 rounded-lg px-3 py-2 flex justify-between items-center text-xs">
-                      <span className="font-bold text-gray-700">{l.name}</span>
-                      <span className="text-gray-500">{l.before} → <span className="text-emerald-600 font-bold">{l.after}</span> {l.unit} {l.mode === 'add' && <span className="text-emerald-400 ml-1">(+{l.qty})</span>}</span>
+                    <div key={i} className="bg-stone-50 rounded-lg px-3 py-2 flex justify-between items-center text-xs border border-stone-100">
+                      <span className="font-bold text-stone-700">{l.name}</span>
+                      <span className="text-stone-500">{l.before} → <span className="text-emerald-600 font-bold">{l.after}</span> {l.unit} {l.mode === 'add' && <span className="text-emerald-400 ml-1">(+{l.qty})</span>}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
-          <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0">
-            <button onClick={onClose} className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors">關閉</button>
+          <div className="p-4 border-t border-stone-100 bg-white flex gap-3 flex-shrink-0">
+            <button onClick={onClose} className="flex-1 py-3 bg-white border-2 border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors">關閉</button>
             <button onClick={handleConfirm} disabled={!selectedItem || isLoading || (mode === 'add' ? !restockQty : !newTotal)} className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center gap-2">
               {isLoading ? '更新中...' : <><PackagePlus className="w-4 h-4"/>確認更新帳面</>}
             </button>
@@ -598,8 +625,7 @@
       if (activeInputId) {
         const el = document.getElementById(`stock-card-${activeInputId}`);
         if (el) setTimeout(() => {
-          // 調整捲動偏移量：上方 Header + 進度條 + 分類標籤大約佔了 150px
-          // 將偏移量改為 240，讓卡片標題有充足的顯示空間，不會被切掉
+          // 調整捲動偏移量
           const y = el.getBoundingClientRect().top + window.pageYOffset - 240;
           window.scrollTo({top: y, behavior: 'smooth'});
         }, 50);
@@ -771,28 +797,34 @@
         const has = !!(historyData[ds] && historyData[ds].some(x => x.actualCount !== ''));
         const isToday = ds === todayStr, isSel = selectedHistoryDate === ds;
         cells.push(
-          <div key={ds} onClick={() => has && setSelectedHistoryDate(ds)} className={`h-12 flex flex-col items-center justify-center rounded-xl transition-all ${has ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'} ${isSel ? 'bg-blue-100 ring-2 ring-blue-400' : ''} ${isToday && !isSel ? 'bg-gray-100' : ''}`}>
-            <span className={`text-sm font-medium ${isToday ? 'text-blue-700' : has ? 'text-gray-800' : 'text-gray-400'}`}>{i}</span>
-            {has && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-0.5"/>}
+          <div key={ds} onClick={() => has && setSelectedHistoryDate(ds)} className={`h-12 flex flex-col items-center justify-center rounded-xl transition-all ${has ? 'cursor-pointer hover:bg-orange-50' : 'cursor-default'} ${isSel ? 'bg-orange-100 ring-2 ring-orange-400' : ''} ${isToday && !isSel ? 'bg-stone-100' : ''}`}>
+            <span className={`text-sm font-medium ${isToday ? 'text-orange-600' : has ? 'text-stone-800' : 'text-stone-400'}`}>{i}</span>
+            {has && <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-0.5"/>}
           </div>
         );
       }
       return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 mb-6">
           <div className="flex justify-between items-center mb-4 px-2">
-            <button onClick={prevMonth} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
-            <h3 className="font-bold text-lg text-gray-800">{y}年 {calendarMonth.toLocaleString('zh-TW',{month:'long'})}</h3>
-            <button onClick={nextMonth} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"><ChevronRight className="w-5 h-5"/></button>
+            <button onClick={prevMonth} className="p-2 text-stone-500 hover:bg-stone-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
+            <h3 className="font-bold text-lg text-stone-800">{y}年 {calendarMonth.toLocaleString('zh-TW',{month:'long'})}</h3>
+            <button onClick={nextMonth} className="p-2 text-stone-500 hover:bg-stone-100 rounded-full"><ChevronRight className="w-5 h-5"/></button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center mb-2">
-            {['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-xs font-medium text-gray-400 py-1">{d}</div>)}
+            {['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-xs font-medium text-stone-400 py-1">{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">{cells}</div>
         </div>
       );
     };
 
-    if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-blue-600 font-bold bg-gray-50">連線雲端資料庫中...</div>;
+    // 用 useCallback 包裝關閉鍵盤函式以確保參照穩定 (必須放在條件 return 之前)
+    const handleCloseKeypad = useCallback(() => setActiveInputId(null), []);
+
+    if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-orange-600 font-bold bg-[#FFFDF9]">連線雲端資料庫中...</div>;
+
+    // 計算分類 Segmented Control 的位置
+    const activeCategoryIndex = CATEGORIES.indexOf(activeCategory);
 
     return (
       <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-60' : 'pb-24'}`}>
@@ -800,8 +832,8 @@
         {toast && <Toast key={toast.key} message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
 
         <header className="bg-white shadow-sm sticky top-0 z-30">
-          <div className="max-w-2xl mx-auto px-4 py-3 pl-16 flex justify-between items-center gap-2">
-            <div className="flex items-center space-x-2 text-blue-700">
+          <div className="max-w-2xl mx-auto px-4 py-3 pl-16 flex justify-between items-center gap-2 border-b border-orange-50">
+            <div className="flex items-center space-x-2 text-orange-600">
               <ClipboardList className="w-6 h-6"/>
               <h1 className="text-xl font-bold tracking-tight">庫存盤點</h1>
             </div>
@@ -809,34 +841,34 @@
               <button onClick={() => setShowRestockModal(true)} className="flex items-center space-x-1 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-full font-medium hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-200">
                 <PackagePlus className="w-5 h-5"/><span className="hidden sm:inline text-sm">進貨</span>
               </button>
-              <button onClick={() => setShowOrderModal(true)} className="flex items-center space-x-1 bg-red-50 text-red-600 px-3 py-2 rounded-full font-medium hover:bg-red-100 transition-colors shadow-sm border border-red-200">
+              <button onClick={() => setShowOrderModal(true)} className="flex items-center space-x-1 bg-rose-50 text-rose-600 px-3 py-2 rounded-full font-medium hover:bg-rose-100 transition-colors shadow-sm border border-rose-200">
                 <ShoppingCart className="w-5 h-5"/><span className="hidden sm:inline text-sm">結算</span>
-                {orderList.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">{orderList.length}</span>}
+                {orderList.length > 0 && <span className="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">{orderList.length}</span>}
               </button>
             </div>
           </div>
-          <div className="max-w-2xl mx-auto px-2 pb-0 flex border-b border-gray-200 bg-white relative z-10">
+          <div className="max-w-2xl mx-auto px-2 pb-0 flex border-b border-stone-200 bg-white relative z-10">
             {[{k:'record',l:'紀錄',I:ListPlus},{k:'history',l:'歷史',I:CalendarIcon},{k:'overview',l:'總表',I:BarChart2}].map(({k,l,I})=>(
               <button key={k} onClick={()=>{setActiveTab(k);if(k!=='history')setSelectedHistoryDate(null);}}
-                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${activeTab===k?'border-blue-600 text-blue-700':'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${activeTab===k?'border-orange-500 text-orange-600':'border-transparent text-stone-500 hover:text-stone-700'}`}>
                 <I className="w-4 h-4"/> {l}
               </button>
             ))}
           </div>
           {activeTab === 'record' && todayCounts.length > 0 && (
-            <div className="max-w-2xl mx-auto px-4 py-2 bg-slate-50 border-b border-gray-200 shadow-inner">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-bold text-gray-500">今日盤點進度</span>
+            <div className="max-w-2xl mx-auto px-4 py-3 bg-stone-50/50 border-b border-stone-200 shadow-inner">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-stone-500">今日盤點進度</span>
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-gray-600 font-medium cursor-pointer bg-white px-2 py-0.5 rounded border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
-                    <input type="checkbox" checked={hideCounted} onChange={e => setHideCounted(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 w-3 h-3" />
+                  <label className="flex items-center gap-1.5 text-xs text-stone-600 font-medium cursor-pointer bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm hover:bg-stone-50 transition-colors">
+                    <input type="checkbox" checked={hideCounted} onChange={e => setHideCounted(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 w-3 h-3 accent-orange-500 border-stone-300" />
                     隱藏已盤
                   </label>
-                  <span className="text-xs font-bold text-blue-600">{countedNum} / {todayCounts.length} <span className="font-normal text-gray-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
+                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{countedNum} / {todayCounts.length} <span className="font-normal text-orange-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
                 </div>
               </div>
-              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
+              <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
               </div>
             </div>
           )}
@@ -845,70 +877,84 @@
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
           {activeTab === 'record' && (
             <div className="space-y-6 fade-in">
-              <div className="bg-white px-4 py-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-sm font-bold text-gray-500 mb-3 flex items-center"><Search className="w-4 h-4 mr-1"/>搜尋新增盤點品項</h2>
+              <div className="bg-white px-4 py-5 rounded-2xl shadow-sm border border-orange-100">
+                <h2 className="text-sm font-bold text-stone-600 mb-3 flex items-center"><Search className="w-4 h-4 mr-1 text-orange-500"/>搜尋新增盤點品項</h2>
                 <div className="relative z-20">
-                  <div className="relative">
+                  <div className="relative mb-3">
                     <input type="text" placeholder="點擊展開選單，或輸入關鍵字..." value={searchQuery}
                       onChange={e=>{setSearchQuery(e.target.value);setSelectedItem(null);setIsDropdownOpen(true);}}
                       onFocus={()=>setIsDropdownOpen(true)}
-                      className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-base font-medium"/>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                      className="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 focus:bg-white transition-colors text-base font-medium"/>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
                       <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isDropdownOpen?'rotate-180':''}`}/>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 overflow-x-auto custom-scrollbar mt-3 pb-2 pt-1">
-                    {CATEGORIES.map(cat => (
-                      <button key={cat} onClick={() => setActiveCategory(cat)}
-                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${activeCategory === cat ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}>
-                        {cat}
-                      </button>
-                    ))}
+                  {/* 滑動式分類選單 (Segmented Control) */}
+                  <div className="w-full overflow-x-auto hide-scrollbar mb-2 pb-1">
+                    <div className="relative inline-flex bg-stone-100 p-1.5 rounded-2xl shadow-inner border border-stone-200/60">
+                      <div 
+                        className="absolute top-1.5 bottom-1.5 w-20 bg-stone-800 rounded-xl shadow-md transition-transform duration-300 ease-out"
+                        style={{ transform: `translateX(${activeCategoryIndex * 100}%)` }}
+                      />
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setActiveCategory(cat)}
+                          className={`relative z-10 w-20 py-2 text-sm font-bold rounded-xl transition-colors duration-300 whitespace-nowrap ${
+                            activeCategory === cat
+                              ? 'text-white' 
+                              : 'text-stone-500 hover:text-stone-800'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={()=>setIsDropdownOpen(false)}/>}
                   {isDropdownOpen && (
-                    <div className="relative mt-2 bg-white border border-gray-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
+                    <div className="relative mt-2 bg-white border border-stone-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
                       {filteredItems.length > 0 ? filteredItems.map(item=>(
                         <div key={item.id} onClick={()=>handleSelectItem(item)}
-                          className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 flex justify-between items-center transition-colors">
-                          <div><span className="font-bold text-gray-800 block">{item.name}</span><span className="text-xs text-gray-400 block mt-0.5">{item.spec||'無規格'}</span></div>
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md">{item.tag}</span>
+                          className="px-4 py-3 hover:bg-orange-50 cursor-pointer border-b border-stone-50 last:border-0 flex justify-between items-center transition-colors">
+                          <div><span className="font-bold text-stone-800 block">{item.name}</span><span className="text-xs text-stone-400 block mt-0.5">{item.spec||'無規格'}</span></div>
+                          <span className="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded-md">{item.tag}</span>
                         </div>
-                      )) : <div className="px-4 py-6 text-center text-gray-400 text-sm">找不到相關品項</div>}
+                      )) : <div className="px-4 py-6 text-center text-stone-400 text-sm">找不到相關品項</div>}
                     </div>
                   )}
                 </div>
                 {!selectedItem && (
-                  <div className="mt-4 flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-                    <button onClick={()=>handleQuickLoad('每日')} className="whitespace-nowrap text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-lg font-bold hover:bg-blue-100 border border-blue-100 transition-colors">+ 載入「每日」盤點表</button>
-                    <button onClick={()=>handleQuickLoad('每周')} className="whitespace-nowrap text-xs bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg font-bold hover:bg-emerald-100 border border-emerald-100 transition-colors">+ 載入「每周」盤點表</button>
+                  <div className="mt-4 pt-4 border-t border-stone-100 flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+                    <button onClick={()=>handleQuickLoad('每日')} className="whitespace-nowrap text-sm bg-amber-50 text-amber-700 px-4 py-2.5 rounded-xl font-bold hover:bg-amber-100 border border-amber-200 transition-colors">+ 載入「每日」盤點表</button>
+                    <button onClick={()=>handleQuickLoad('每周')} className="whitespace-nowrap text-sm bg-amber-50 text-amber-700 px-4 py-2.5 rounded-xl font-bold hover:bg-amber-100 border border-amber-200 transition-colors">+ 載入「每周」盤點表</button>
                   </div>
                 )}
                 {selectedItem && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-end gap-3 fade-in">
+                  <div className="mt-4 pt-4 border-t border-stone-100 flex items-end gap-3 fade-in">
                     <div className="flex-1">
-                      <label className="block text-xs font-bold text-gray-500 mb-1.5">輸入數量 ({selectedItem.unit})</label>
+                      <label className="block text-xs font-bold text-stone-500 mb-1.5">輸入數量 ({selectedItem.unit})</label>
                       <input type="number" inputMode="decimal" step="0.1" min="0" value={inputValue}
                         onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAddRecord()}
                         placeholder={`帳面庫存: ${systemStockMap[selectedItem.id] ?? selectedItem.systemStock}`}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg font-bold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50/30"/>
+                        className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-orange-50/30"/>
                     </div>
                     <button onClick={handleAddRecord} disabled={inputValue===''}
-                      className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">加入</button>
+                      className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">加入</button>
                   </div>
                 )}
               </div>
 
               <div>
                 {todayCounts.length === 0 ? (
-                  <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 border-dashed">
-                    <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-2"/>
-                    <p className="text-gray-400">目前還沒有紀錄<br/>請從上方搜尋並加入品項</p>
+                  <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
+                    <ClipboardList className="w-12 h-12 text-stone-300 mx-auto mb-2"/>
+                    <p className="text-stone-400">目前還沒有紀錄<br/>請從上方搜尋並加入品項</p>
                   </div>
                 ) : displayedRecordItems.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-stone-400">
                     <p>🎉 這個分類的項目都盤點完囉！</p>
                   </div>
                 ) : (
@@ -917,12 +963,10 @@
                       const groupItems = displayedRecordItems.filter(i => i.tag === tagGroup);
                       if (groupItems.length === 0) return null;
                       
-                      const badgeColor = tagGroup === '每日' ? 'bg-blue-200 text-blue-800' : 'bg-emerald-200 text-emerald-800';
-                      
                       return (
                         <div key={tagGroup} className="space-y-3">
                           <div className="sticky top-[108px] z-20 pt-1 pb-1">
-                            <span className={`inline-block px-4 py-1.5 ${badgeColor} text-sm font-bold transform -rotate-1 shadow-sm rounded-sm`}>
+                            <span className="inline-block px-4 py-1.5 bg-amber-100 text-amber-800 border border-amber-200 text-sm font-bold shadow-sm rounded-lg">
                               📌 {tagGroup} 盤點區
                             </span>
                           </div>
@@ -952,19 +996,19 @@
             <div className="fade-in">
               {renderCalendar()}
               {selectedHistoryDate && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fade-in">
-                  <div className="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-bold text-gray-800 flex items-center"><CalendarIcon className="w-4 h-4 mr-2 text-blue-600"/>{selectedHistoryDate} 盤點明細</h3>
-                    <button onClick={()=>setSelectedHistoryDate(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+                <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden fade-in">
+                  <div className="bg-stone-50 p-4 border-b border-stone-100 flex justify-between items-center">
+                    <h3 className="font-bold text-stone-800 flex items-center"><CalendarIcon className="w-4 h-4 mr-2 text-orange-600"/>{selectedHistoryDate} 盤點明細</h3>
+                    <button onClick={()=>setSelectedHistoryDate(null)} className="text-stone-400 hover:text-stone-600"><X className="w-5 h-5"/></button>
                   </div>
-                  <div className="divide-y divide-gray-50">
+                  <div className="divide-y divide-stone-50">
                     {(historyData[selectedHistoryDate]||[]).filter(i=>i.actualCount!=='').map(item=>{
                       const c=parseFloat(item.actualCount), isLow=!isNaN(c)&&c<item.alertLevel;
                       return (
-                        <div key={item.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
-                          <div><div className="font-bold text-gray-800">{item.name}</div><div className="text-xs text-gray-400 mt-1">安全線: {item.alertLevel} {item.unit}</div></div>
+                        <div key={item.id} className="p-4 flex justify-between items-center hover:bg-stone-50">
+                          <div><div className="font-bold text-stone-800">{item.name}</div><div className="text-xs text-stone-400 mt-1">安全線: {item.alertLevel} {item.unit}</div></div>
                           <div className="text-right">
-                            <div className={`font-bold text-lg ${isLow?'text-red-600':'text-green-600'}`}>{item.actualCount} <span className="text-sm font-normal text-gray-500">{item.unit}</span></div>
+                            <div className={`font-bold text-lg ${isLow?'text-red-600':'text-emerald-600'}`}>{item.actualCount} <span className="text-sm font-normal text-stone-500">{item.unit}</span></div>
                             {isLow&&<div className="text-[10px] text-red-500 font-medium flex items-center justify-end mt-1"><AlertCircle className="w-3 h-3 mr-0.5"/>需叫貨</div>}
                           </div>
                         </div>
@@ -973,65 +1017,65 @@
                   </div>
                 </div>
               )}
-              {!selectedHistoryDate && <div className="text-center py-8 text-gray-400 text-sm">點擊日曆上有藍點的日期查看盤點明細</div>}
+              {!selectedHistoryDate && <div className="text-center py-8 text-stone-400 text-sm">點擊日曆上有橘點的日期查看盤點明細</div>}
             </div>
           )}
 
           {activeTab === 'overview' && (
             <div className="fade-in">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+              <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 mb-4">
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <h2 className="font-bold text-gray-800">今日庫存總覽</h2>
-                    <p className="text-xs text-gray-500 mt-1">已盤 {countedNum} / {initialInventory.length} 項（{Math.round(countedNum/initialInventory.length*100)}%）</p>
+                    <h2 className="font-bold text-stone-800">今日庫存總覽</h2>
+                    <p className="text-xs text-stone-500 mt-1">已盤 {countedNum} / {initialInventory.length} 項（{Math.round(countedNum/initialInventory.length*100)}%）</p>
                   </div>
-                  <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-100 transition-colors border border-emerald-200">
+                  <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-stone-100 text-stone-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-stone-200 transition-colors border border-stone-200">
                     <Download className="w-4 h-4"/>匯出報表
                   </button>
                 </div>
                 
                 <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-                  <button onClick={() => setOverviewFilter('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>全部</button>
-                  <button onClick={() => setOverviewFilter('daily')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'daily' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>僅每日</button>
-                  <button onClick={() => setOverviewFilter('weekly')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'weekly' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>僅每周</button>
+                  <button onClick={() => setOverviewFilter('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'all' ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>全部</button>
+                  <button onClick={() => setOverviewFilter('daily')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'daily' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>僅每日</button>
+                  <button onClick={() => setOverviewFilter('weekly')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'weekly' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>僅每周</button>
                   <button onClick={() => setOverviewFilter('abnormal')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border flex items-center ${overviewFilter === 'abnormal' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50'}`}>
                     <Filter className="w-3 h-3 mr-1"/> ⚠️ 異常與缺貨
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left text-sm whitespace-nowrap">
-                    <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
+                    <thead className="bg-stone-50 text-stone-600 font-medium border-b border-stone-100">
                       <tr><th className="px-4 py-3">品名</th><th className="px-4 py-3 text-right">帳面</th><th className="px-4 py-3 text-right">實盤</th><th className="px-4 py-3 text-right">盤差</th><th className="px-4 py-3 text-center">狀態</th></tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-stone-50">
                       {displayedOverviewItems.map(item=>{
                         const sysStock = systemStockMap[item.id] ?? item.systemStock;
                         const counted = todayCounts.find(i=>i.id===item.id);
                         const has = counted && counted.actualCount!=='';
                         const c = has ? parseFloat(counted.actualCount) : NaN;
-                        let vt='-', vc='text-gray-400', badge=<span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">未盤點</span>;
+                        let vt='-', vc='text-stone-400', badge=<span className="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded">未盤點</span>;
                         if (has && !isNaN(c)) {
                           const v=c-sysStock, pct=Math.abs(v)/(sysStock||1);
                           vt=v>0?`+${v.toFixed(1)}`:v.toFixed(1);
                           if (c<item.alertLevel) { vc='text-red-600 font-bold'; badge=<span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-medium">缺貨</span>; }
                           else if (pct>0.05&&sysStock>0) { vc='text-orange-600 font-bold'; badge=<span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded font-medium">異常</span>; }
-                          else { vc='text-gray-600'; badge=<span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded font-medium">正常</span>; }
+                          else { vc='text-stone-600'; badge=<span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-1 rounded font-medium">正常</span>; }
                         }
                         return (
-                          <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-3"><div className="font-bold text-gray-800">{item.name}</div><div className="text-[10px] text-gray-400">{item.unit}</div></td>
-                            <td className="px-4 py-3 text-right text-gray-600">{sysStock}</td>
-                            <td className="px-4 py-3 text-right font-bold text-gray-800">{has?c:'-'}</td>
+                          <tr key={item.id} className="hover:bg-stone-50 transition-colors">
+                            <td className="px-4 py-3"><div className="font-bold text-stone-800">{item.name}</div><div className="text-[10px] text-stone-400">{item.unit}</div></td>
+                            <td className="px-4 py-3 text-right text-stone-600">{sysStock}</td>
+                            <td className="px-4 py-3 text-right font-bold text-stone-800">{has?c:'-'}</td>
                             <td className={`px-4 py-3 text-right ${vc}`}>{vt}</td>
                             <td className="px-4 py-3 text-center">{badge}</td>
                           </tr>
                         );
                       })}
                       {displayedOverviewItems.length === 0 && (
-                        <tr><td colSpan="5" className="px-4 py-8 text-center text-gray-400">目前沒有符合條件的項目</td></tr>
+                        <tr><td colSpan="5" className="px-4 py-8 text-center text-stone-400">目前沒有符合條件的項目</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -1048,13 +1092,13 @@
                 <h2 className="text-lg font-bold flex items-center"><ShoppingCart className="w-5 h-5 mr-2"/>今日需叫貨清單</h2>
                 <button onClick={()=>setShowOrderModal(false)} className="text-white hover:bg-red-700 p-1 rounded-full"><X className="w-5 h-5"/></button>
               </div>
-              <div className="p-4 overflow-y-auto flex-1 bg-gray-50">
+              <div className="p-4 overflow-y-auto flex-1 bg-stone-50">
                 {orderList.length > 0 ? (
                   <div className="space-y-3">
-                    <p className="text-sm text-gray-500 mb-2">以下盤點數量低於安全警戒值：</p>
+                    <p className="text-sm text-stone-500 mb-2">以下盤點數量低於安全警戒值：</p>
                     {orderList.map(item=>(
-                      <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
-                        <div><div className="font-bold text-gray-800">{item.name}</div><div className="text-xs text-gray-400 mt-1">規格: {item.spec||'無'}</div></div>
+                      <div key={item.id} className="bg-white p-3 rounded-xl border border-stone-100 flex justify-between items-center shadow-sm">
+                        <div><div className="font-bold text-stone-800">{item.name}</div><div className="text-xs text-stone-400 mt-1">規格: {item.spec||'無'}</div></div>
                         <div className="text-right bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
                           <div className="text-red-600 font-bold">剩 {item.actualCount} <span className="text-sm font-normal">{item.unit}</span></div>
                           <div className="text-[10px] text-red-400 mt-0.5">低於 {item.alertLevel}</div>
@@ -1064,14 +1108,14 @@
                   </div>
                 ) : (
                   <div className="text-center py-12 flex flex-col items-center">
-                    <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8"/></div>
-                    <p className="text-lg font-bold text-gray-800">庫存都很充足！</p>
-                    <p className="text-gray-500 text-sm mt-1">今日已盤點的品項皆在安全量之上</p>
+                    <div className="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8"/></div>
+                    <p className="text-lg font-bold text-stone-800">庫存都很充足！</p>
+                    <p className="text-stone-500 text-sm mt-1">今日已盤點的品項皆在安全量之上</p>
                   </div>
                 )}
               </div>
-              <div className="p-4 border-t border-gray-100 bg-white flex gap-3">
-                <button onClick={()=>setShowOrderModal(false)} className="flex-1 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors">返回</button>
+              <div className="p-4 border-t border-stone-100 bg-white flex gap-3">
+                <button onClick={()=>setShowOrderModal(false)} className="flex-1 py-3 bg-white border-2 border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors">返回</button>
                 {orderList.length > 0 && (
                   <button onClick={async()=>{await handleCopyAndLine();setShowOrderModal(false);}} className="flex-[2] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 flex justify-center items-center shadow-sm transition-colors gap-2">
                     <Copy className="w-5 h-5"/>複製清單傳LINE
@@ -1088,7 +1132,7 @@
           activeId={activeInputId} 
           onKeyPress={handleKeypadPress} 
           onNext={handleKeypadNext} 
-          onClose={() => setActiveInputId(null)} 
+          onClose={handleCloseKeypad} 
           onClear={() => handleUpdateListItem(activeInputId, '')}
         />
       </div>
