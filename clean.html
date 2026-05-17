@@ -137,7 +137,6 @@
   .shift-table td.closed-cell { color: var(--accent-red); font-weight: 700; font-size: 15px; }
   .shift-table td.open-cell { min-width: 120px; }
   
-  /* 支援多行的欄位設定 */
   .shift-table td input, 
   .shift-input-div { 
     font-family: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; width: 100%; min-height: 30px; outline: none; background: var(--cream); transition: border .15s; text-align: center; word-break: break-word; line-height: 1.4;
@@ -148,7 +147,6 @@
   
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
-  /* 調整 badge 的聚焦樣式 */
   .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s;}
   .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sage-light); }
 
@@ -180,42 +178,31 @@
   body.large-font .opener-badge { font-size: 16px; padding: 6px 14px; }
   body.large-font .cal-cell .date-num { font-size: 20px; }
 
-  /* ── MOBILE STYLES (手機版優化) ── */
+  /* ── MOBILE STYLES ── */
   @media (max-width: 900px) {
     .calendars-wrap { grid-template-columns: 1fr; }
     .main { padding: 12px; }
-    
-    /* 頂部導覽列支援換行與橫向捲動 */
     .topbar { height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
     .topbar h1 { font-size: 16px; margin-left: 45px; width: 100%; letter-spacing: 1px; margin-bottom: 4px; }
     .topbar-actions { width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-    .topbar-actions::-webkit-scrollbar { display: none; } /* 隱藏醜醜的捲軸 */
+    .topbar-actions::-webkit-scrollbar { display: none; } 
     .topbar-actions .btn { padding: 6px 12px; font-size: 13px; flex-shrink: 0; }
-    
-    /* 分頁標籤縮小與隱藏捲軸 */
     .tabs { padding: 0 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab { padding: 10px 16px; font-size: 13px; }
-    
-    /* 月份標題與按鈕 */
     .section-header h2 { font-size: 18px; }
     .month-nav button { width: 28px; height: 28px; font-size: 14px; }
     .month-nav span { font-size: 14px; min-width: 80px; }
     .cal-section h3 { font-size: 18px; }
-    
-    /* 日曆格子縮小，避免手機螢幕過長 */
     .cal-cell { min-height: 80px; padding: 4px; }
     .cal-cell .date-num { font-size: 14px; margin-bottom: 2px; }
     .inline-edit { font-size: 13px; line-height: 1.3; }
     .dish-edit.closed-label { font-size: 14px; }
-    
-    /* 排班表內容微調，增加可視範圍 */
     .shift-table th, .shift-table td { padding: 6px 4px; font-size: 13px; }
     .opener-badge { font-size: 12px; padding: 3px 8px; }
     .shift-input-div { font-size: 13px; min-height: 26px; padding: 4px; }
   }
 
-  /* 針對更小的手機螢幕 (如 iPhone SE) 進一步微調 */
   @media (max-width: 400px) {
     .cal-full .cal-header div { font-size: 13px; padding: 4px 0; }
     .cal-full .cal-cell { padding: 2px; min-height: 70px; }
@@ -230,31 +217,14 @@
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: #fff !important; margin: 0; padding: 0; }
     
-    /* 隱藏非列印元素 */
     .topbar, .tabs, .section-header .month-nav, .btn, .add-staff-row, .tip,
-    #staffPanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats { display: none !important; } 
+    #staffPanel, #leavePanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats { display: none !important; } 
     
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
 
-    #cleanPanel { 
-      display: flex !important; 
-      flex-direction: column !important; 
-      width: 100% !important; 
-      height: 98vh !important;
-      max-height: 98vh !important; 
-      page-break-after: always !important; 
-      break-after: page !important; 
-    }
-    #shiftPanel { 
-      display: flex !important; 
-      flex-direction: column !important; 
-      width: 100% !important; 
-      height: 98vh !important; 
-      max-height: 98vh !important; 
-      page-break-before: always !important; 
-      break-before: page !important; 
-    }
+    #cleanPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-after: always !important; break-after: page !important; }
+    #shiftPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-before: always !important; break-before: page !important; }
 
     #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 5mm !important; margin-bottom: 10px !important; }
     #shiftPanel .section-header h2 { text-align: center !important; width: 100% !important; }
@@ -275,65 +245,16 @@
     .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 18px !important; }
     .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
 
-    .shift-wrap { 
-      flex: 1 !important; 
-      display: block !important;
-      height: 100% !important;
-      width: 100% !important;
-    }
-    
-    .shift-table { 
-      min-width: auto !important; 
-      width: 100% !important; 
-      height: auto !important;
-    }
-    
-    .shift-table th, .shift-table td { 
-      padding: 3px 2px !important; 
-      font-size: 13px !important; 
-      word-break: break-word !important; 
-      white-space: normal !important;
-    }
+    .shift-wrap { flex: 1 !important; display: block !important; height: 100% !important; width: 100% !important; }
+    .shift-table { min-width: auto !important; width: 100% !important; height: auto !important; }
+    .shift-table th, .shift-table td { padding: 3px 2px !important; font-size: 13px !important; word-break: break-word !important; white-space: normal !important; }
 
-    .shift-table td input,
-    .shift-input-div {
-      padding: 1px !important;
-      font-size: 13px !important;
-      width: 100% !important;
-      min-width: 0 !important; 
-      box-sizing: border-box !important;
-      border: none !important;
-      background: transparent !important;
-      text-align: center !important;
-    }
-
-    .opener-badge {
-      padding: 2px 4px !important; 
-      font-size: 12px !important;
-      white-space: nowrap !important;
-    }
-    
+    .shift-table td input, .shift-input-div { padding: 1px !important; font-size: 13px !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; border: none !important; background: transparent !important; text-align: center !important; }
+    .opener-badge { padding: 2px 4px !important; font-size: 12px !important; white-space: nowrap !important; }
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
 
-    .shift-table th:nth-child(5),
-    .shift-table td:nth-child(5),
-    .shift-table th:nth-child(12),
-    .shift-table td:nth-child(12) {
-      width: 85px !important;       
-      max-width: 85px !important; 
-      white-space: normal !important;
-      word-break: break-all !important; 
-    }
-
-    .shift-table th:nth-child(4),
-    .shift-table td:nth-child(4),
-    .shift-table th:nth-child(11),
-    .shift-table td:nth-child(11) {
-      width: 250px !important;        
-      max-width: 250px !important;    
-      white-space: normal !important; 
-      word-break: break-word !important; 
-    }
+    .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 85px !important; max-width: 85px !important; white-space: normal !important; word-break: break-all !important; }
+    .shift-table th:nth-child(4), .shift-table td:nth-child(4), .shift-table th:nth-child(11), .shift-table td:nth-child(11) { width: 250px !important; max-width: 250px !important; white-space: normal !important; word-break: break-word !important; }
   }
 </style>
 </head>
@@ -355,6 +276,7 @@
 <div class="topbar">
   <h1>📋 清潔與值班管理系統</h1>
   <div class="topbar-actions">
+    <button class="btn btn-outline" onclick="switchTab('leavePanel')">🏖️ 排定休假</button>
     <button class="btn btn-outline" onclick="toggleFontSize()">🔠 字體大小</button>
     <button class="btn btn-outline" onclick="switchTab('staffPanel')">👥 管理人員</button>
     <button class="btn btn-white" onclick="printSchedule()">🖨️ 列印排班表</button>
@@ -364,6 +286,7 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab('cleanPanel')">🧹 清潔與洗餐具</div>
   <div class="tab" onclick="switchTab('shiftPanel')">🏪 開店關帳值班</div>
+  <div class="tab" onclick="switchTab('leavePanel')">🏖️ 休假排定</div>
   <div class="tab" id="staffTabBtn" onclick="switchTab('staffPanel')" style="display:none;">👥 人員管理</div>
 </div>
 
@@ -414,10 +337,9 @@
       <button class="btn btn-sage" onclick="copyLastMonthShift()">📋 複製上月排班框架</button>
     </div>
 
-    <div id="shiftStats" class="stats-container">
-      </div>
+    <div id="shiftStats" class="stats-container"></div>
     
-    <p class="tip">提示：紅底表示尚未填寫開店人員。直接點擊欄位即可叫出快速面板選人。</p>
+    <p class="tip">提示：紅底表示尚未填寫開店人員。排班時若選到已排定休假的人員，系統會自動發出警告。</p>
     
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
@@ -431,6 +353,26 @@
         </thead>
         <tbody id="shiftBody"></tbody>
       </table>
+    </div>
+  </div>
+
+  <div class="panel" id="leavePanel">
+    <div class="section-header">
+      <h2>整月休假排定</h2>
+      <div class="month-nav">
+        <button onclick="changeLeaveMonth(-1)">‹</button>
+        <span id="leaveMonthLabel"></span>
+        <button onclick="changeLeaveMonth(1)">›</button>
+      </div>
+    </div>
+    <p class="tip">直接在日曆上點擊日期，並使用快速面板選取當日休假人員。這些資料將自動與值班表、洗餐具表連動！</p>
+    <div class="calendars-wrap" style="grid-template-columns: 1fr;">
+      <div class="cal-section">
+        <div class="calendar cal-full" id="leaveCal">
+          <div class="cal-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+          <div class="cal-body" id="leaveCalBody"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -465,7 +407,6 @@
     <div id="quick-tasks-container" class="quick-btns"></div>
   </div>
 </div>
-
 <script>
 // ══════════════════════════════════════════
 //  SUPABASE 設定
@@ -496,9 +437,11 @@ let cleanData = {};
 let dishData = {};
 let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth(); 
 let shiftData = {};
+let leaveYear = new Date().getFullYear(), leaveMonth = new Date().getMonth(); 
+let leaveData = {}; // 🏖️ 存放休假資料
 let isLargeFont = false;
+let isAlerting = false; // 避免警告視窗無限循環
 
-// 👇👇👇 自動調色盤與抓色函數 👇👇👇
 const STAFF_COLORS = [
   { bg: '#ffe0b2', text: '#b26a00' }, // 橘
   { bg: '#d1c4e9', text: '#4a148c' }, // 紫
@@ -514,26 +457,37 @@ const STAFF_COLORS = [
   { bg: '#f48fb1', text: '#880e4f' }  // 玫瑰
 ];
 
-// 加入 isUnified 參數：如果是 true 就用統一綠色，false 就用專屬顏色
 function getStaffStyle(name, isUnified = false) {
   if (!name || name === '未填') return 'background-color: #e2e8f0; color: #475569; border: none;';
-  
-  // 快速面板強制使用統一風格
   if (isUnified) {
     if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
     return 'background-color: var(--sage-pale); color: var(--olive); border: 1px solid var(--sage-light);';
   }
-
-  // 表格與人員管理維持彩色風格
   if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
-  
-  // 處理帶新人(多人開店)的情況：擷取頓號前「第一個人」的名字來上色
   const firstName = name.split('、')[0];
   const index = staff.indexOf(firstName);
-  
   if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
   const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
   return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
+}
+
+// ══════════════════════════════════════════
+//  休假防呆警告機制
+// ══════════════════════════════════════════
+function checkLeaveWarning(key, text) {
+  if (isAlerting || !leaveData[key] || !text) return;
+  // 找出有被排班，但在當天請假的人
+  const onLeave = leaveData[key].filter(name => text.includes(name));
+  
+  if (onLeave.length > 0) {
+    isAlerting = true;
+    const [y, m, d] = key.split('-');
+    // 使用 setTimeout 讓 UI 先處理完 focus/blur，避免視窗無限循環
+    setTimeout(() => {
+      alert(`⚠️ 警告：【 ${onLeave.join('、')} 】在 ${y}/${parseInt(m)+1}/${d} 已經排定休假！`);
+      isAlerting = false;
+    }, 10);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -551,9 +505,11 @@ function switchTab(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const idx = ['cleanPanel','shiftPanel','staffPanel'].indexOf(id);
+  const idx = ['cleanPanel','shiftPanel','leavePanel','staffPanel'].indexOf(id);
   document.querySelectorAll('.tab')[idx]?.classList.add('active');
+  
   if(id==='staffPanel') renderStaff();
+  if(id==='leavePanel') renderLeaveCal();
 }
 
 function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
@@ -572,7 +528,6 @@ function renderStaff() {
     const style = getStaffStyle(s); 
     return `<div class="staff-tag" style="${style}">${s}<button class="del" style="color: inherit; opacity: 0.7;" onclick="removeStaff(${i})">×</button></div>`;
   }).join('');
-  
   updateQuickNamesPanel();
 }
 function addStaff() {
@@ -585,6 +540,63 @@ function addStaff() {
 }
 function removeStaff(i) { 
   staff.splice(i,1); renderStaff(); saveToSupabase('staff', 'all', staff); 
+}
+
+// ══════════════════════════════════════════
+//  休假日曆面板 (LEAVE CALENDAR)
+// ══════════════════════════════════════════
+function changeLeaveMonth(d) {
+  leaveMonth += d;
+  if(leaveMonth > 11) { leaveMonth=0; leaveYear++; }
+  if(leaveMonth < 0) { leaveMonth=11; leaveYear--; }
+  updateLeaveLabels(); renderLeaveCal();
+}
+
+function updateLeaveLabels() {
+  document.getElementById('leaveMonthLabel').textContent = `${leaveYear} 年 ${leaveMonth+1} 月`;
+}
+
+function renderLeaveCal() {
+  const body = document.getElementById('leaveCalBody');
+  if(!body) return;
+  const firstDay = new Date(leaveYear, leaveMonth, 1).getDay();
+  const daysInMonth = new Date(leaveYear, leaveMonth+1, 0).getDate();
+  const prevDays = new Date(leaveYear, leaveMonth, 0).getDate();
+  const today = new Date();
+  let html = '';
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  for(let i=0; i<totalCells; i++) {
+    const weekRow = Math.floor(i/7);
+    const hl = (weekRow%2===1);
+    if(i < firstDay || i >= firstDay + daysInMonth) {
+      const d = i < firstDay ? prevDays - firstDay + i + 1 : i - firstDay - daysInMonth + 1;
+      html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
+    } else {
+      const day = i - firstDay + 1;
+      const dow = i % 7;
+      const isToday = (leaveYear===today.getFullYear() && leaveMonth===today.getMonth() && day===today.getDate());
+      const isWeekend = dow===0||dow===6;
+      const key = `${leaveYear}-${leaveMonth}-${day}`;
+      let cls = '';
+      if(isToday) cls='today'; else if(hl) cls='highlighted'; else if(isWeekend) cls='weekend';
+
+      let names = leaveData[key] ? leaveData[key].join('、') : '';
+      html += `<div class="cal-cell ${cls}">
+        <span class="date-num">${day}</span>
+        <div class="inline-edit editable-cell" style="color:var(--accent-red);" contenteditable="true" data-key="${key}" data-field="leave" onblur="saveLeaveData('${key}', this)" data-placeholder="輸入休假人員">${names}</div>
+      </div>`;
+    }
+  }
+  body.innerHTML = html;
+}
+
+function saveLeaveData(key, el) {
+  const text = el.innerText.trim();
+  // 將輸入的字串用 '、' 或 ',' 或空白切開，過濾掉空字串
+  const namesArray = text.split(/、|,|\s+/).filter(n => n);
+  leaveData[key] = namesArray;
+  saveToSupabase('leave', key, leaveData[key]);
 }
 
 // ══════════════════════════════════════════
@@ -708,6 +720,7 @@ function saveDishData(key, el) {
   if (text === '店休') el.classList.add('closed-label');
   else el.classList.remove('closed-label');
   updateCleanStats();
+  checkLeaveWarning(key, text); // 觸發休假警告
 }
 
 // ══════════════════════════════════════════
@@ -756,47 +769,29 @@ function updateShiftLabels() {
 
 function updateShiftStats() {
   const stats = {};
-  
-  // 1. 初始化每個人的統計結構，將關帳與20:00分開
-  staff.forEach(name => {
-      stats[name] = { close: 0, at20: 0 };
-  });
+  staff.forEach(name => { stats[name] = { close: 0, at20: 0 }; });
   
   Object.keys(shiftData).forEach(key => {
       if (key.startsWith(`${shiftYear}-${shiftMonth}-`)) {
           const dayData = shiftData[key];
-          
-          // 2. 統計「關帳」人員 (close 欄位)
-          if (dayData.close && staff.includes(dayData.close)) {
-              stats[dayData.close].close++;
-          }
-          
-          // 3. 統計「20:00」人員 (at20 欄位)
+          if (dayData.close && staff.includes(dayData.close)) stats[dayData.close].close++;
           if (dayData.at20) {
-              staff.forEach(name => { 
-                  if(dayData.at20.includes(name)) stats[name].at20++; 
-              });
+              staff.forEach(name => { if(dayData.at20.includes(name)) stats[name].at20++; });
           }
       }
   });
 
-  // 4. 將結果轉換為 HTML 顯示
   const statsHtml = Object.entries(stats)
-      // 過濾掉兩個欄位都是 0 的人
       .filter(([name, counts]) => counts.close > 0 || counts.at20 > 0)
       .map(([name, counts]) => {
           let details = [];
-          // 判斷哪個欄位有數字，就加上對應的標籤
           if (counts.close > 0) details.push(`關帳: ${counts.close}`);
           if (counts.at20 > 0) details.push(`20:00: ${counts.at20}`);
-          
-          // 顯示格式例如： 姓名 (關帳: 2 | 20:00: 1)
           return `<div class="stat-card">${name} (${details.join(' | ')})</div>`;
-      })
-      .join('');
-  
+      }).join('');
   document.getElementById('shiftStats').innerHTML = statsHtml || '<span style="color:#999">本月尚無排班統計資料</span>';
 }
+
 async function copyLastMonthShift() {
   if (!confirm('確定要複製上個月的「開店」與「關帳」人員配置嗎？(這將覆蓋本月對應欄位)')) return;
 
@@ -854,7 +849,6 @@ function buildShiftCells(row) {
   const openerStyle = getStaffStyle(row.opener);
   const closerStyle = getStaffStyle(row.close);
 
-  // 當天值班與 20:00 改為 onblur 儲存 this.innerHTML 來保留顏色格式
   return `
     <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
@@ -867,6 +861,7 @@ function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
   saveToSupabase('shift', key, shiftData[key]);
+  checkLeaveWarning(key, value); // 觸發休假警告
 }
 
 // ══════════════════════════════════════════
@@ -874,16 +869,10 @@ function saveShiftField(key, field, value) {
 // ══════════════════════════════════════════
 function updateCleanStats() {
   const stats = {};
+  staff.forEach(name => { stats[name] = { clean: 0, dish: 0 }; });
   
-  // 1. 初始化每個人的統計結構，將清潔與洗餐具分開
-  staff.forEach(name => {
-      stats[name] = { clean: 0, dish: 0 };
-  });
-  
-  // 2. 統計「清潔」人員 (限定週一到週五)
   Object.keys(cleanData).forEach(key => {
       if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
-          // 取得該日期的 Date 物件，確認是否為週一至週五
           const parts = key.split('-');
           const dateObj = new Date(parts[0], parts[1], parts[2]);
           const dow = dateObj.getDay();
@@ -891,43 +880,32 @@ function updateCleanStats() {
           if (dow >= 1 && dow <= 5) {
               const text = cleanData[key];
               if (typeof text === 'string') {
-                  staff.forEach(name => {
-                      if (text.includes(name)) stats[name].clean++;
-                  });
+                  staff.forEach(name => { if (text.includes(name)) stats[name].clean++; });
               }
           }
       }
   });
 
-  // 3. 統計「洗餐具」人員 (不限平假日，原本洗餐具就是整週都有)
   Object.keys(dishData).forEach(key => {
       if (key.startsWith(`${cleanYear}-${cleanMonth}-`)) {
           const text = dishData[key];
           if (typeof text === 'string') {
-              staff.forEach(name => {
-                  if (text.includes(name)) stats[name].dish++;
-              });
+              staff.forEach(name => { if (text.includes(name)) stats[name].dish++; });
           }
       }
   });
 
-  // 4. 將結果轉換為 HTML 顯示
   const statsHtml = Object.entries(stats)
-      // 過濾掉兩個欄位都是 0 的人
       .filter(([name, counts]) => counts.clean > 0 || counts.dish > 0)
       .map(([name, counts]) => {
           let details = [];
           if (counts.clean > 0) details.push(`清潔: ${counts.clean}`);
           if (counts.dish > 0) details.push(`洗餐具: ${counts.dish}`);
-          
           return `<div class="stat-card">${name} (${details.join(' | ')})</div>`;
-      })
-      .join('');
+      }).join('');
   
   const container = document.getElementById('cleanStats');
-  if (container) {
-      container.innerHTML = statsHtml || '<span style="color:#999">本月尚無清潔與洗餐具統計資料</span>';
-  }
+  if (container) container.innerHTML = statsHtml || '<span style="color:#999">本月尚無清潔與洗餐具統計資料</span>';
 }
 
 // ══════════════════════════════════════════
@@ -944,7 +922,7 @@ function bindQuickButton(btn, text, type) {
   btn.addEventListener('mousedown', action);
   btn.addEventListener('touchstart', action, { passive: false });
 }
-// 補上這個隱藏面板的函數
+
 function closeQuickInput() {
   const panel = document.getElementById('quick-input-panel');
   if (panel) panel.classList.add('hidden');
@@ -961,22 +939,20 @@ function initQuickInput() {
     tasksContainer.appendChild(btn);
   });
 
-  // 顏色按鈕邏輯綁定
   document.querySelectorAll('#quick-colors-container .color-btn').forEach(btn => {
     const action = (e) => {
-      e.preventDefault(); // 阻止失焦，讓文字保持被選取反白狀態
+      e.preventDefault(); 
       const color = btn.getAttribute('data-color');
       if (!activeCell) return;
 
       if (color === '#3d3d3d') {
-        document.execCommand('removeFormat', false, null); // 復原格式
+        document.execCommand('removeFormat', false, null); 
         document.execCommand('foreColor', false, '#3d3d3d');
       } else {
-        document.execCommand('styleWithCSS', false, true); // 用 span style 取代舊版 font 標籤
+        document.execCommand('styleWithCSS', false, true); 
         document.execCommand('foreColor', false, color);
       }
 
-      // 觸發儲存更新 (限定只有 duty 欄位才儲存顏色)
       const field = activeCell.getAttribute('data-field');
       const key = activeCell.getAttribute('data-key');
       if (field === 'duty' && key) {
@@ -1006,7 +982,6 @@ function initQuickInput() {
   
   document.addEventListener('mousedown', hidePanel);
   document.addEventListener('touchstart', hidePanel, { passive: true });
-  // 👉 新增這一行：監聽滾動事件，一滾動就關閉面板
   window.addEventListener('scroll', closeQuickInput, true);
 }
 
@@ -1024,7 +999,6 @@ function updateQuickNamesPanel() {
     namesContainer.appendChild(btn);
   });
 
-  // 店休按鈕
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-btn name-btn';
   closeBtn.style.cssText = getStaffStyle('店休', true);
@@ -1032,7 +1006,6 @@ function updateQuickNamesPanel() {
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
   
-  // 新增：清除按鈕
   const clearBtn = document.createElement('button');
   clearBtn.className = 'quick-btn name-btn';
   clearBtn.style.cssText = 'background-color: #f1f5f9; color: #64748b; border: none;';
@@ -1040,7 +1013,6 @@ function updateQuickNamesPanel() {
   bindQuickButton(clearBtn, '', 'clear'); 
   namesContainer.appendChild(clearBtn);
 
-  // 全套範本按鈕
   const templateBtn = document.createElement('button');
   templateBtn.className = 'quick-btn task-btn';
   templateBtn.style.background = '#e0f2fe';
@@ -1055,7 +1027,6 @@ function showQuickInput(cell) {
   const panel = document.getElementById('quick-input-panel');
   const rect = cell.getBoundingClientRect();
   
-  // 依照欄位屬性，決定是否顯示「顏色標記」區塊 (限定只有當天值班 duty 才顯示)
   const field = cell.getAttribute('data-field');
   const colorSection = document.getElementById('quick-color-section');
   if (colorSection) {
@@ -1081,7 +1052,6 @@ function showQuickInput(cell) {
   panel.classList.remove('hidden');
 }
 
-// 將游標放置在輸入框最後面的輔助函數
 function placeCaretAtEnd(el) {
   el.focus();
   const range = document.createRange();
@@ -1097,7 +1067,6 @@ function insertTextToCell(text, type) {
 
   const field = activeCell.getAttribute('data-field');
   
-  // ── 處理富文本 (Rich Text) 欄位：當天值班、20:00 ──
   if (field === 'duty' || field === 'at20') {
     let currentText = activeCell.innerText.trim();
     let currentHtml = activeCell.innerHTML;
@@ -1112,7 +1081,6 @@ function insertTextToCell(text, type) {
       } else if (type === 'template') {
         appendHtml = (currentText ? '<br>' : '') + text.replace(/\n/g, '<br>');
       } else {
-        // 插入人名時，判斷前面是否需要加頓號
         if (currentText.endsWith('：') || currentText.endsWith('\n') || currentText === '') {
           appendHtml = text;
         } else {
@@ -1126,10 +1094,9 @@ function insertTextToCell(text, type) {
     if (key) { saveShiftField(key, field, activeCell.innerHTML); updateShiftStats(); }
     
     placeCaretAtEnd(activeCell);
-    return; // 提早結束，不執行下方舊有的單純文字邏輯
+    return; 
   }
 
-  // ── 處理純文字 (Plain Text) 欄位：開店、關帳、清潔等 ──
   let currentVal = activeCell.innerText;
   if (currentVal === '未填' || currentVal === '　') currentVal = ''; 
 
@@ -1163,6 +1130,7 @@ function insertTextToCell(text, type) {
     activeCell.innerText = newVal;
     if (key) {
       if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
+      else if (field === 'leave') saveLeaveData(key, activeCell); // 休假資料獨立儲存
       else saveCleanData(key, activeCell);
     }
   }
@@ -1176,7 +1144,9 @@ function insertTextToCell(text, type) {
 function printSchedule() { window.print(); }
 
 async function initApp() {
-  updateCleanLabels(); updateShiftLabels();
+  updateCleanLabels(); 
+  updateShiftLabels();
+  updateLeaveLabels(); // 🏖️ 載入休假標籤
   initQuickInput(); 
   
   const { data, error } = await supabaseClient.from('schedule_data').select('*');
@@ -1186,6 +1156,7 @@ async function initApp() {
       if (row.type === 'clean') cleanData[row.date_key] = row.data;
       if (row.type === 'dish') dishData[row.date_key] = row.data;
       if (row.type === 'shift') shiftData[row.date_key] = row.data;
+      if (row.type === 'leave') leaveData[row.date_key] = row.data; // 🏖️ 載入休假資料
     });
   }
   
@@ -1193,6 +1164,7 @@ async function initApp() {
   renderCleanCal(); 
   renderDishCal(); 
   renderShiftTable();
+  renderLeaveCal(); // 🏖️ 載入休假日曆
   updateCleanStats();
 }
 
