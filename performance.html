@@ -2,16 +2,13 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>員工績效評分系統 | 現代簡約版</title>
   
-  <!-- 引入 Tailwind CSS (負責排版與美觀) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 引入 Lucide Icons (負責精美的圖示) -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
-    /* 自訂北歐大理石風格背景與細節 */
     body {
       background-image: linear-gradient(to bottom right, rgba(250, 250, 249, 0.95), rgba(245, 245, 244, 0.85)), url('https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2000&auto=format&fit=crop');
       background-size: cover;
@@ -20,175 +17,164 @@
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
-    /* 滑桿美化 */
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-    }
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 24px;
-      width: 24px;
-      border-radius: 50%;
-      background: #292524; /* stone-800 */
-      cursor: pointer;
-      margin-top: -8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      transition: transform 0.1s;
+      -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
+      background: #292524; cursor: pointer; margin-top: -8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.1s;
     }
-    input[type=range]::-webkit-slider-thumb:active {
-      transform: scale(1.1);
-    }
+    input[type=range]::-webkit-slider-thumb:active { transform: scale(1.1); }
     input[type=range]::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 8px;
-      cursor: pointer;
-      background: #e7e5e4; /* stone-200 */
-      border-radius: 4px;
+      width: 100%; height: 8px; cursor: pointer; background: #e7e5e4; border-radius: 4px;
+    }
+
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 selection:bg-stone-200">
 
+  <!-- 懸浮全域選單 -->
+  <div class="fixed top-4 left-4 z-[999] no-print">
+    <button onclick="toggleGlobalMenu()" class="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 bg-white/90 backdrop-blur border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:shadow-md transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+        <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+      </svg>
+    </button>
+    
+    <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-100 overflow-hidden transition-all">
+        <a href="index.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 border-b border-slate-50">值班系統</a>
+        <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 border-b border-slate-50">每週金庫結算</a>
+        <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 border-b border-slate-50">庫存盤點</a>
+        <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50">清潔與值班管理</a>
+    </div>
+  </div>
+
   <!-- 頂部導覽列 -->
   <nav class="bg-white/60 backdrop-blur-xl border-b border-white/40 sticky top-0 z-50">
-    <div class="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-stone-200 to-stone-400 flex items-center justify-center shadow-inner">
-          <i data-lucide="clipboard-list" class="w-5 h-5 text-stone-800"></i>
+    <div class="max-w-6xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+      <div class="flex items-center space-x-2 md:space-x-3 pl-12 md:pl-14">
+        <div class="hidden sm:flex w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-stone-200 to-stone-400 items-center justify-center shadow-inner">
+          <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5 text-stone-800"></i>
         </div>
-        <h1 class="text-xl font-light tracking-widest text-stone-800 uppercase">
-          Staff Evaluation
+        <h1 class="text-sm md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">
+          Evaluation
         </h1>
       </div>
       
-      <div class="flex bg-stone-100/80 p-1 rounded-full shadow-inner backdrop-blur-sm border border-white/50">
-        <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-white text-stone-800 shadow-sm">
-          <i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> 店長評分
+      <div class="flex bg-stone-100/80 p-1 rounded-full shadow-inner backdrop-blur-sm border border-white/50 overflow-x-auto hide-scrollbar">
+        <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm">
+          <i data-lucide="clipboard-edit" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 店長評分
         </button>
-        <button id="tab-dashboard" onclick="switchTab('dashboard')" class="flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 text-stone-500 hover:text-stone-700">
-          <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i> 老闆總覽
+        <button id="tab-dashboard" onclick="switchTab('dashboard')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700">
+          <i data-lucide="bar-chart-3" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 今日總覽
+        </button>
+        <button id="tab-history" onclick="switchTab('history')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700">
+          <i data-lucide="calendar-clock" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 歷史紀錄
         </button>
       </div>
     </div>
   </nav>
-<div class="fixed top-4 left-4 z-[999] no-print">
-        <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:shadow-md transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
-                <line x1="4" x2="20" y1="12" y2="12"/>
-                <line x1="4" x2="20" y1="6" y2="6"/>
-                <line x1="4" x2="20" y1="18" y2="18"/>
-            </svg>
-        </button>
-        
-        <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-100 overflow-hidden transition-all origin-top-left">
-            <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border-b border-slate-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>
-                </svg>
-                值班系統
-            </a>
-            <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>
-                </svg>
-                每週金庫結算系統
-            </a>
-            <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-                庫存盤點系統
-            </a>
-            <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                清潔與值班管理系統
-            </a>
-        </div>
-    </div>
-  <main class="max-w-5xl mx-auto px-6 py-12">
-    <!-- 店長評分區塊 -->
-    <div id="section-evaluate" class="grid md:grid-cols-12 gap-8 block">
-      <!-- 左側：員工選擇 -->
-      <div class="md:col-span-3 space-y-4">
-        <h2 class="text-sm font-semibold text-stone-400 tracking-widest uppercase mb-4 pl-2">Select Staff</h2>
-        <div id="employee-list" class="flex flex-col space-y-2">
-          <!-- 員工列表由 JS 動態產生 -->
+
+  <main class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
+    
+    <!-- 1. 店長評分區塊 -->
+    <div id="section-evaluate" class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 block">
+      <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
+        <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">Select Staff</h2>
+        <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x">
+          <!-- 員工列表由 JS 產生 -->
         </div>
       </div>
-
-      <!-- 右側：評分表單 -->
-      <div class="md:col-span-9">
-        <div class="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-sm border border-white/60 p-8 md:p-10">
-          <div class="flex justify-between items-end mb-8 border-b border-stone-100 pb-6">
+      <div class="md:col-span-8 lg:col-span-9">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-5 md:p-10">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-6 md:mb-8 border-b border-stone-100 pb-5 md:pb-6">
             <div>
-              <h2 class="text-3xl font-light text-stone-800 tracking-wide mb-2">
-                <span id="current-emp-name"></span> <span class="text-stone-400 text-2xl">的績效評估</span>
+              <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-1 md:mb-2 flex items-center gap-2">
+                <span id="current-emp-name" class="font-medium"></span> 
+                <span class="text-stone-400 text-lg md:text-2xl">的績效評估</span>
               </h2>
-              <p class="text-stone-500 text-sm flex items-center">請針對各項目給予 1 至 10 分的評價</p>
+              <p class="text-stone-500 text-xs md:text-sm">請針對各項目給予 1 至 10 分的評價 (每日自動重置)</p>
             </div>
-            <div class="text-right">
-              <p class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">目前總分</p>
-              <p id="current-total-score" class="text-4xl font-light text-stone-800">0.0</p>
+            <div class="text-left sm:text-right bg-stone-50 sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none">
+              <p class="text-[10px] md:text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">今日總分</p>
+              <p id="current-total-score" class="text-3xl md:text-4xl font-light text-stone-800">0.0</p>
             </div>
           </div>
-
-          <div id="criteria-form" class="space-y-8">
-            <!-- 評分項目由 JS 動態產生 -->
-          </div>
-
-          <div class="mt-10 flex justify-end">
-            <button onclick="saveData()" class="flex items-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
-              <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存評分
+          <div id="criteria-form" class="space-y-4 md:space-y-8"></div>
+          <div class="mt-8 md:mt-10 flex justify-end">
+            <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
+              <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評分
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 老闆總覽區塊 -->
-    <div id="section-dashboard" class="hidden space-y-8 animate-[fadeIn_0.5s_ease-out]">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-light text-stone-800 tracking-wide mb-3">績效總覽面板</h2>
-        <p class="text-stone-500">檢視所有員工的加權總分與各項表現指標</p>
+    <!-- 2. 老闆今日總覽區塊 -->
+    <div id="section-dashboard" class="hidden space-y-6 md:space-y-8 animate-[fadeIn_0.5s_ease-out]">
+      <div class="text-center mb-6 md:mb-12">
+        <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-2 md:mb-3">今日總覽面板</h2>
+        <p class="text-xs md:text-sm text-stone-500">檢視所有員工 <span id="dashboard-date" class="font-medium"></span> 的加權總分</p>
       </div>
-
-      <!-- 總分排名卡片 (JS動態產生) -->
-      <div id="dashboard-cards" class="grid md:grid-cols-3 gap-6"></div>
-
-      <!-- 詳細數據表格 -->
-      <div class="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-sm border border-white/60 overflow-hidden mt-8">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr id="dashboard-table-head" class="bg-stone-50/50">
-                <!-- 標頭由 JS 動態產生 -->
-              </tr>
-            </thead>
-            <tbody id="dashboard-table-body" class="divide-y divide-stone-100/50">
-              <!-- 內容由 JS 動態產生 -->
-            </tbody>
+      <div id="dashboard-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"></div>
+      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 overflow-hidden mt-6 relative">
+        <p class="text-xs text-stone-400 text-center py-2 md:hidden">👈 左右滑動查看完整表格 👉</p>
+        <div class="overflow-x-auto hide-scrollbar">
+          <table class="w-full text-left border-collapse min-w-[800px]">
+            <thead><tr id="dashboard-table-head" class="bg-stone-50/50"></tr></thead>
+            <tbody id="dashboard-table-body" class="divide-y divide-stone-100/50"></tbody>
           </table>
         </div>
       </div>
     </div>
+
+    <!-- 3. 歷史紀錄區塊 -->
+    <div id="section-history" class="hidden space-y-6 md:space-y-8 animate-[fadeIn_0.5s_ease-out]">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/80 p-6 rounded-3xl shadow-sm border border-white/60">
+        <div>
+          <h2 class="text-xl font-medium text-stone-800">查詢歷史評分</h2>
+          <p class="text-sm text-stone-500 mt-1">選擇過去的日期來查看詳細績效</p>
+        </div>
+        <input type="date" id="history-date-picker" onchange="renderHistoryTable(this.value)" class="w-full sm:w-auto bg-stone-50 border border-stone-200 text-stone-800 text-sm rounded-xl focus:ring-stone-400 focus:border-stone-400 block p-2.5 outline-none font-medium cursor-pointer" />
+          <!-- 選項由 JS 產生 -->
+        </select>
+      </div>
+      
+      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 overflow-hidden relative">
+        <p class="text-xs text-stone-400 text-center py-2 md:hidden">👈 左右滑動查看完整表格 👉</p>
+        <div class="overflow-x-auto hide-scrollbar">
+          <table class="w-full text-left border-collapse min-w-[800px]">
+            <thead><tr id="history-table-head" class="bg-stone-50/50"></tr></thead>
+            <tbody id="history-table-body" class="divide-y divide-stone-100/50"></tbody>
+          </table>
+        </div>
+        <!-- 若未選擇日期的空狀態 -->
+        <div id="history-empty-state" class="py-20 text-center flex flex-col items-center justify-center">
+            <i data-lucide="calendar-search" class="w-12 h-12 text-stone-300 mb-4"></i>
+            <p class="text-stone-500 font-medium">請從上方選擇日期</p>
+        </div>
+      </div>
+    </div>
+
   </main>
 
-  <!-- 儲存成功提示 Toast -->
-  <div id="toast" class="fixed bottom-8 right-8 bg-stone-800 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
-    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
-    <span class="font-medium tracking-wide text-sm">評分資料已成功儲存</span>
+  <div id="toast" class="fixed bottom-6 right-6 left-6 md:left-auto bg-stone-800 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
+    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+    <span class="font-medium tracking-wide text-sm">今日評分已成功儲存</span>
   </div>
 
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-
-  <!-- 系統核心邏輯 -->
   <script>
-    // --- 1. 資料設定 ---
+    function toggleGlobalMenu() {
+        document.getElementById('global-nav-menu').classList.toggle('hidden');
+    }
+
+    // --- 1. 基本資料與權重設定 ---
     const EMPLOYEES = ['俐嬅', '小郭', '菟菟', '林宣', '若菱', '祥瑋', '翠翠', 'Sam', '偲璇'];
     const CRITERIA = [
       { id: 'service', name: '服務態度', desc: '禮貌、應對態度、團隊合作、顧客服務品質', weight: 0.30 },
@@ -198,235 +184,236 @@
       { id: 'overall', name: '綜合表現', desc: '工作效率、責任感、配合度、整體表現', weight: 0.20 },
     ];
 
-    // 初始化評分狀態資料庫
-    let evalData = {};
-    EMPLOYEES.forEach(emp => {
-      evalData[emp] = {};
-      CRITERIA.forEach(c => {
-        evalData[emp][c.id] = { score: 5, note: '' }; // 預設 5 分
-      });
-    });
-
+    let currentEvalData = {};
+    let historyData = {};
     let currentSelectedEmp = EMPLOYEES[0];
+    let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
 
-    // --- 2. 介面渲染與操作邏輯 ---
-
-    // 初始化網頁
+    // --- 2. 核心邏輯：資料載入與換日判定 ---
     function initApp() {
+      loadDataFromStorage(); // [資料庫整合點：這裡未來改為從 Supabase 抓取]
       renderEmployeeList();
       selectEmployee(EMPLOYEES[0]);
-      lucide.createIcons(); // 渲染圖示
+      document.getElementById('dashboard-date').innerText = `(${todayString})`;
+      lucide.createIcons();
     }
 
-    // 計算特定員工加權總分
-    function calculateTotalScore(empName) {
-      let total = 0;
-      CRITERIA.forEach(c => {
-        const score = evalData[empName][c.id].score;
-        total += (score * 10) * c.weight; // 分數(1-10)*10 變 100分制
+    // 產生預設的全新評分表 (皆為 5 分)
+    function generateDefaultEval(defaultScore = 5) {
+      let data = {};
+      EMPLOYEES.forEach(emp => {
+        data[emp] = {};
+        CRITERIA.forEach(c => { data[emp][c.id] = { score: defaultScore, note: '' }; });
       });
+      return data;
+    }
+
+    function loadDataFromStorage() {
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB'));
+      
+      // 假設第一次使用，建立基礎資料，並隨機塞一天昨天的歷史資料作為展示
+      if (!storage) {
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        let yesterdayStr = yesterday.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+        
+        storage = {
+          lastDate: todayString,
+          current: generateDefaultEval(5),
+          history: {}
+        };
+        // 塞入昨天假資料 (全體 8 分) 方便測試
+        storage.history[yesterdayStr] = generateDefaultEval(8); 
+      } 
+      // 判斷是否換日：若記錄的日期不是今天，就把 current 移到 history，並重置 current
+      else if (storage.lastDate !== todayString) {
+        storage.history[storage.lastDate] = storage.current;
+        storage.current = generateDefaultEval(5);
+        storage.lastDate = todayString;
+      }
+      
+      currentEvalData = storage.current;
+      historyData = storage.history;
+      localStorage.setItem('EvalSystemDB', JSON.stringify(storage)); // 確保狀態更新
+    }
+
+    // --- 3. UI 渲染邏輯 ---
+    function calculateScore(dataObj, empName) {
+      let total = 0;
+      CRITERIA.forEach(c => { total += (dataObj[empName][c.id].score * 10) * c.weight; });
       return total.toFixed(1);
     }
 
-    // 更新目前顯示的總分
-    function updateTotalScoreDisplay() {
-      document.getElementById('current-total-score').innerText = calculateTotalScore(currentSelectedEmp);
+    function selectEmployee(empName) {
+      currentSelectedEmp = empName;
+      document.getElementById('current-emp-name').innerText = empName;
+      document.getElementById('current-total-score').innerText = calculateScore(currentEvalData, empName);
+      
+      EMPLOYEES.forEach(emp => {
+        const btn = document.getElementById(`btn-emp-${emp}`);
+        if (emp === empName) {
+          btn.className = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
+          btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-700";
+        } else {
+          btn.className = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm";
+          btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-100";
+        }
+      });
+      renderEvaluationForm();
     }
 
-    // 渲染左側員工選單
     function renderEmployeeList() {
-      const container = document.getElementById('employee-list');
-      container.innerHTML = EMPLOYEES.map(emp => `
-        <button id="btn-emp-${emp}" onclick="selectEmployee('${emp}')" 
-          class="flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-100">
-              <i data-lucide="user" class="w-4 h-4"></i>
-            </div>
-            <span class="font-medium tracking-wide">${emp}</span>
+      document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => `
+        <button id="btn-emp-${emp}" onclick="selectEmployee('${emp}')" class="...">
+          <div class="flex items-center space-x-2 md:space-x-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg transition-colors"><i data-lucide="user" class="w-4 h-4"></i></div>
+            <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp}</span>
           </div>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-stone-400 emp-chevron hidden"></i>
         </button>
       `).join('');
     }
 
-    // 選擇員工
-    function selectEmployee(empName) {
-      currentSelectedEmp = empName;
-      document.getElementById('current-emp-name').innerText = empName;
-      
-      // 更新按鈕樣式
-      EMPLOYEES.forEach(emp => {
-        const btn = document.getElementById(`btn-emp-${emp}`);
-        const iconBg = btn.querySelector('.emp-icon-bg');
-        const chevron = btn.querySelector('.emp-chevron');
-        
-        if (emp === empName) {
-          btn.className = "flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
-          iconBg.className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-700";
-          chevron.classList.remove('hidden');
-        } else {
-          btn.className = "flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm";
-          iconBg.className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-100";
-          chevron.classList.add('hidden');
-        }
-      });
-
-      renderEvaluationForm();
-      updateTotalScoreDisplay();
-      lucide.createIcons();
-    }
-
-    // 渲染右側評分表單
     function renderEvaluationForm() {
-      const container = document.getElementById('criteria-form');
-      container.innerHTML = CRITERIA.map(c => {
-        const currentData = evalData[currentSelectedEmp][c.id];
+      document.getElementById('criteria-form').innerHTML = CRITERIA.map(c => {
+        const data = currentEvalData[currentSelectedEmp][c.id];
         return `
-          <div class="group">
-            <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 p-6 rounded-2xl bg-stone-50/50 border border-stone-100/50 transition-colors hover:bg-white">
-              <div class="md:w-1/3">
-                <div class="flex items-center space-x-2 mb-2">
-                  <h3 class="text-lg font-medium text-stone-800">${c.name}</h3>
-                  <span class="px-2.5 py-0.5 rounded-full bg-stone-200/50 text-stone-600 text-xs font-medium">
-                    ${Math.round(c.weight * 100)}%
-                  </span>
-                </div>
-                <p class="text-sm text-stone-500 leading-relaxed">${c.desc}</p>
+          <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-stone-50/50 border border-stone-100/50 hover:bg-white transition-colors">
+            <div class="lg:w-1/3">
+              <div class="flex items-center space-x-2 mb-1">
+                <h3 class="text-base md:text-lg font-medium text-stone-800">${c.name}</h3>
+                <span class="px-2 py-0.5 rounded-full bg-stone-200/50 text-stone-600 text-[10px] font-medium">${Math.round(c.weight * 100)}%</span>
               </div>
-
-              <div class="md:w-2/3 space-y-4">
-                <div class="flex items-center space-x-6">
-                  <input type="range" min="1" max="10" value="${currentData.score}" 
-                    oninput="handleScoreInput('${c.id}', this.value)"
-                    class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer" />
-                  <div id="score-display-${c.id}" class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm font-light text-xl">
-                    ${currentData.score}
-                  </div>
-                </div>
-                
-                <div class="relative">
-                  <i data-lucide="message-square" class="absolute top-3 left-3 w-4 h-4 text-stone-400"></i>
-                  <input type="text" placeholder="新增備註 (選填)..." value="${currentData.note}"
-                    onchange="handleNoteChange('${c.id}', this.value)"
-                    class="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stone-400/20 focus:border-stone-400 transition-all placeholder-stone-400" />
-                </div>
+              <p class="text-xs md:text-sm text-stone-500">${c.desc}</p>
+            </div>
+            <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
+              <div class="flex items-center space-x-4 md:space-x-6">
+                <input type="range" min="1" max="10" value="${data.score}" oninput="updateScore('${c.id}', this.value)" class="w-full h-2 bg-stone-200 rounded-lg cursor-pointer" />
+                <div id="score-display-${c.id}" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${data.score}</div>
+              </div>
+              <div class="relative">
+                <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-stone-400"></i>
+                <input type="text" placeholder="新增備註 (選填)..." value="${data.note}" onchange="updateNote('${c.id}', this.value)" class="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-stone-400/20 focus:outline-none" />
               </div>
             </div>
           </div>
         `;
       }).join('');
+      lucide.createIcons();
     }
 
-    // 處理分數變動
-    function handleScoreInput(criteriaId, value) {
-      evalData[currentSelectedEmp][criteriaId].score = parseInt(value, 10);
-      document.getElementById(`score-display-${criteriaId}`).innerText = value;
-      updateTotalScoreDisplay();
+    function updateScore(cId, val) {
+      currentEvalData[currentSelectedEmp][cId].score = parseInt(val, 10);
+      document.getElementById(`score-display-${cId}`).innerText = val;
+      document.getElementById('current-total-score').innerText = calculateScore(currentEvalData, currentSelectedEmp);
+    }
+    function updateNote(cId, val) { currentEvalData[currentSelectedEmp][cId].note = val; }
+
+    function saveData() {
+      // [資料庫整合點：這裡改為發送 UPSERT API 到 Supabase]
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB'));
+      storage.current = currentEvalData;
+      localStorage.setItem('EvalSystemDB', JSON.stringify(storage));
+      
+      const toast = document.getElementById('toast');
+      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 3000);
     }
 
-    // 處理備註變動
-    function handleNoteChange(criteriaId, value) {
-      evalData[currentSelectedEmp][criteriaId].note = value;
+    // --- 4. 總覽與歷史表格渲染 ---
+    function buildTableHTML(dataSource, theadId, tbodyId) {
+      document.getElementById(theadId).innerHTML = `
+        <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 uppercase tracking-wider whitespace-nowrap">員工姓名</th>
+        ${CRITERIA.map(c => `<th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 whitespace-nowrap">${c.name}</th>`).join('')}
+        <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-bold text-stone-800 whitespace-nowrap text-right">加權總分</th>
+      `;
+      document.getElementById(tbodyId).innerHTML = EMPLOYEES.map(emp => `
+        <tr class="hover:bg-stone-50/30">
+          <td class="py-4 px-4 md:py-5 md:px-6 text-sm md:text-base font-medium text-stone-800 whitespace-nowrap">${emp}</td>
+          ${CRITERIA.map(c => {
+            const d = dataSource[emp][c.id];
+            const color = d.score >= 8 ? 'text-stone-800' : (d.score < 6 ? 'text-red-400' : 'text-stone-500');
+            const note = d.note ? `<div class="group/note relative cursor-help flex items-center"><i data-lucide="message-square" class="w-3 h-3 text-stone-400 ml-1.5"></i><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[120px] bg-stone-800 text-white text-xs p-2 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-10 text-center whitespace-normal">${d.note}</div></div>` : '';
+            return `<td class="py-4 px-4 md:py-5 md:px-6"><div class="flex items-center"><span class="text-base md:text-lg font-light ${color}">${d.score}</span>${note}</div></td>`;
+          }).join('')}
+          <td class="py-4 px-4 md:py-5 md:px-6 text-right font-medium text-stone-800 text-lg md:text-xl">${calculateScore(dataSource, emp)}</td>
+        </tr>
+      `).join('');
     }
 
-    // 切換頁籤 (店長評分 / 老闆總覽)
-    function switchTab(tab) {
-      const evaluateSec = document.getElementById('section-evaluate');
-      const dashboardSec = document.getElementById('section-dashboard');
-      const tabEvalBtn = document.getElementById('tab-evaluate');
-      const tabDashBtn = document.getElementById('tab-dashboard');
+    function renderDashboard() {
+      // 渲染頂部小卡
+      document.getElementById('dashboard-cards').innerHTML = EMPLOYEES.map(emp => `
+        <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-4 md:p-6 rounded-3xl shadow-sm text-center group hover:shadow-md transition-all">
+          <div class="w-12 h-12 md:w-14 md:h-14 mx-auto rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-2 shadow-sm"><i data-lucide="user" class="w-5 h-5 text-stone-600"></i></div>
+          <h3 class="text-lg font-medium text-stone-800">${emp}</h3>
+          <div class="text-3xl md:text-4xl font-light text-stone-800 mt-2">${calculateScore(currentEvalData, emp)}</div>
+        </div>
+      `).join('');
+      buildTableHTML(currentEvalData, 'dashboard-table-head', 'dashboard-table-body');
+      lucide.createIcons();
+    }
 
-      if (tab === 'evaluate') {
-        evaluateSec.classList.remove('hidden');
-        dashboardSec.classList.add('hidden');
-        tabEvalBtn.className = "flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-white text-stone-800 shadow-sm";
-        tabDashBtn.className = "flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 text-stone-500 hover:text-stone-700";
+    function initHistoryTab() {
+      const picker = document.getElementById('history-date-picker');
+      
+      // 設定日曆最大可選日期為「昨天」(因為今天是當日總覽，還沒進歷史紀錄)
+      let yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      picker.max = yesterday.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+
+      // 取得所有有歷史紀錄的日期
+      const dates = Object.keys(historyData).sort((a, b) => new Date(b) - new Date(a));
+      
+      if (dates.length > 0) {
+        // 如果有紀錄，預設將日曆設定為「最新的一筆日期」並顯示表格
+        picker.value = dates[0];
+        renderHistoryTable(dates[0]);
       } else {
-        evaluateSec.classList.add('hidden');
-        dashboardSec.classList.remove('hidden');
-        tabEvalBtn.className = "flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 text-stone-500 hover:text-stone-700";
-        tabDashBtn.className = "flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-white text-stone-800 shadow-sm";
-        renderDashboard(); // 切換時重新渲染總覽數據
+        // 完全沒有紀錄時
+        picker.value = '';
+        renderHistoryTable('');
       }
     }
 
-    // 渲染老闆總覽畫面
-    function renderDashboard() {
-      // 1. 渲染頂部卡片
-      const cardsContainer = document.getElementById('dashboard-cards');
-      cardsContainer.innerHTML = EMPLOYEES.map(emp => `
-        <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-stone-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:bg-stone-200 transition-colors"></div>
-          <div class="relative z-10 flex flex-col items-center text-center">
-            <div class="w-16 h-16 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-4 shadow-sm">
-              <i data-lucide="user" class="w-6 h-6 text-stone-600"></i>
-            </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-1">${emp}</h3>
-            <p class="text-sm text-stone-400 uppercase tracking-widest mb-4">Final Score</p>
-            <div class="text-5xl font-light text-stone-800 tracking-tight">${calculateTotalScore(emp)}</div>
-          </div>
-        </div>
-      `).join('');
+    function renderHistoryTable(dateString) {
+      const emptyState = document.getElementById('history-empty-state');
+      const tableHead = document.getElementById('history-table-head');
+      const tableBody = document.getElementById('history-table-body');
 
-      // 2. 渲染表格標頭
-      const thead = document.getElementById('dashboard-table-head');
-      thead.innerHTML = `
-        <th class="py-5 px-6 text-sm font-medium text-stone-500 uppercase tracking-wider whitespace-nowrap">員工姓名</th>
-        ${CRITERIA.map(c => `
-          <th class="py-5 px-6 text-sm font-medium text-stone-500 whitespace-nowrap">
-            ${c.name} <span class="text-stone-400 font-light text-xs">(${Math.round(c.weight * 100)}%)</span>
-          </th>
-        `).join('')}
-        <th class="py-5 px-6 text-sm font-bold text-stone-800 whitespace-nowrap text-right">加權總分</th>
-      `;
+      // 如果沒有選擇日期，或者選擇的日期「沒有資料」時的處理
+      if (!dateString || !historyData[dateString]) {
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+        emptyState.innerHTML = `
+            <i data-lucide="calendar-x" class="w-12 h-12 text-stone-300 mb-4"></i>
+            <p class="text-stone-500 font-medium">此日期沒有評分紀錄</p>
+            <p class="text-xs text-stone-400 mt-1">請嘗試透過日曆選擇其他日期</p>
+        `;
+        emptyState.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
 
-      // 3. 渲染表格內容
-      const tbody = document.getElementById('dashboard-table-body');
-      tbody.innerHTML = EMPLOYEES.map(emp => `
-        <tr class="hover:bg-stone-50/30 transition-colors">
-          <td class="py-5 px-6 font-medium text-stone-800">${emp}</td>
-          ${CRITERIA.map(c => {
-            const data = evalData[emp][c.id];
-            const colorClass = data.score >= 8 ? 'text-stone-800' : (data.score < 6 ? 'text-red-400' : 'text-stone-500');
-            
-            // 備註提示框 HTML
-            const noteHtml = data.note ? `
-              <div class="group/note relative cursor-help flex items-center">
-                <i data-lucide="message-square" class="w-3 h-3 text-stone-400 ml-2"></i>
-                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[150px] bg-stone-800 text-white text-xs p-2 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg text-center whitespace-normal">
-                  ${data.note}
-                </div>
-              </div>
-            ` : '';
-
-            return `
-              <td class="py-5 px-6">
-                <div class="flex items-center">
-                  <span class="text-lg font-light ${colorClass}">${data.score}</span>
-                  ${noteHtml}
-                </div>
-              </td>
-            `;
-          }).join('')}
-          <td class="py-5 px-6 text-right font-medium text-stone-800 text-xl">${calculateTotalScore(emp)}</td>
-        </tr>
-      `).join('');
-
-      lucide.createIcons(); // 重新渲染圖示
+      // 如果有資料，就隱藏空白提示並畫出表格
+      emptyState.classList.add('hidden');
+      buildTableHTML(historyData[dateString], 'history-table-head', 'history-table-body');
+      lucide.createIcons();
     }
 
-    // 儲存按鈕效果 (顯示 Toast)
-    function saveData() {
-      const toast = document.getElementById('toast');
-      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+    // --- 5. 頁籤切換 ---
+    function switchTab(tab) {
+      ['evaluate', 'dashboard', 'history'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700";
+      });
       
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-      }, 3000);
+      document.getElementById(`section-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm";
+      
+      if (tab === 'dashboard') renderDashboard();
+      if (tab === 'history') initHistoryTab();
     }
 
-    // 啟動應用程式
     window.onload = initApp;
   </script>
 </body>
