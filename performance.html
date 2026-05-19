@@ -35,6 +35,53 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* 星星評分 */
+    .star-rating { display: flex; gap: 6px; }
+    .star-btn {
+      font-size: 28px; cursor: pointer; color: #d6d3d1;
+      transition: color 0.15s, transform 0.1s;
+      background: none; border: none; padding: 0;
+    }
+    .star-btn:hover, .star-btn.active { color: #f59e0b; transform: scale(1.15); }
+
+    /* 等級徽章 */
+    .grade-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      font-weight: 700; font-size: 14px; letter-spacing: 0.05em;
+    }
+    .grade-O { background: #fef9c3; color: #854d0e; }
+    .grade-A { background: #dcfce7; color: #166534; }
+    .grade-B { background: #dbeafe; color: #1e40af; }
+    .grade-C { background: #f3e8ff; color: #6b21a8; }
+    .grade-D { background: #fee2e2; color: #991b1b; }
+
+    /* 崗位選擇按鈕 */
+    .station-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 10px 8px; border-radius: 12px; border: 1.5px solid #e7e5e4;
+      background: white; cursor: pointer; transition: all 0.2s; min-width: 70px;
+      font-size: 12px; color: #78716c;
+    }
+    .station-btn:hover { border-color: #a8a29e; background: #fafaf9; }
+    .station-btn.active {
+      border-color: #292524; background: #292524; color: white;
+    }
+    .station-btn .station-icon { font-size: 18px; }
+
+    /* 超額警告 */
+    .quota-bar { height: 4px; border-radius: 2px; transition: width 0.3s; }
+    .quota-ok { background: #86efac; }
+    .quota-warn { background: #fb923c; }
+    .quota-full { background: #f87171; }
+
+    /* 建議等級卡 */
+    .suggestion-card {
+      border-radius: 12px; padding: 12px 16px;
+      display: flex; align-items: center; gap-12px;
+      animation: fadeIn 0.3s ease;
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 selection:bg-stone-200">
@@ -46,13 +93,12 @@
         <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
       </svg>
     </button>
-    
     <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-100 overflow-hidden transition-all">
-        <a href="index.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 border-b border-slate-50">值班系統</a>
-        <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 border-b border-slate-50">每週金庫結算</a>
-        <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 border-b border-slate-50">庫存盤點</a>
-        <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-green-50 border-b border-slate-50">清潔與值班管理</a>
-        <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 border-b border-slate-50">績效評估系統</a>
+      <a href="index.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 border-b border-slate-50">值班系統</a>
+      <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 border-b border-slate-50">每週金庫結算</a>
+      <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 border-b border-slate-50">庫存盤點</a>
+      <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-green-50 border-b border-slate-50">清潔與值班管理</a>
+      <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 border-b border-slate-50">績效評估系統</a>
     </div>
   </div>
 
@@ -63,14 +109,14 @@
         <div class="hidden sm:flex w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-stone-200 to-stone-400 items-center justify-center shadow-inner">
           <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5 text-stone-800"></i>
         </div>
-        <h1 class="text-sm md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">
-          Evaluation
-        </h1>
+        <h1 class="text-sm md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">Evaluation</h1>
       </div>
-      
       <div class="flex bg-stone-100/80 p-1 rounded-full shadow-inner backdrop-blur-sm border border-white/50 overflow-x-auto hide-scrollbar">
         <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm">
           <i data-lucide="clipboard-edit" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 店長評分
+        </button>
+        <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700">
+          <i data-lucide="sparkles" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 清潔評分
         </button>
         <button id="tab-dashboard" onclick="switchTab('dashboard')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700">
           <i data-lucide="bar-chart-3" class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2"></i> 今日總覽
@@ -83,47 +129,108 @@
   </nav>
 
   <main class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
-    
-    <!-- 1. 店長評分區塊 -->
-    <div id="section-evaluate" class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 block">
-      <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
-        <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">Select Staff</h2>
-        <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x">
-          <!-- 員工列表由 JS 產生 -->
+
+    <!-- ===== 1. 店長評分 ===== -->
+    <div id="section-evaluate" class="block">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+
+        <!-- 左側員工列表 -->
+        <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
+          <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">Select Staff</h2>
+          <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x"></div>
         </div>
+
+        <!-- 右側評分表單 -->
+        <div class="md:col-span-8 lg:col-span-9">
+          <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-5 md:p-10">
+
+            <!-- 頂部：姓名 + 總分 + 建議等級 -->
+            <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 md:mb-8 border-b border-stone-100 pb-5 md:pb-6">
+              <div class="flex-1">
+                <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-1 md:mb-2 flex items-center gap-2">
+                  <span id="current-emp-name" class="font-medium"></span>
+                  <span class="text-stone-400 text-lg md:text-2xl">的績效評估</span>
+                </h2>
+                <p class="text-stone-500 text-xs md:text-sm mb-3">請選擇今日工作崗位，再進行 1-10 分評分</p>
+                <!-- 年資 & 建議等級 -->
+                <div id="seniority-suggestion" class="hidden flex items-center gap-3 mt-2 p-3 rounded-xl bg-stone-50 border border-stone-100 text-sm flex-wrap"></div>
+              </div>
+              <div class="text-left sm:text-right bg-stone-50 sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none flex-shrink-0">
+                <p class="text-[10px] md:text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">今日總分</p>
+                <p id="current-total-score" class="text-3xl md:text-4xl font-light text-stone-800">0.0</p>
+              </div>
+            </div>
+
+            <!-- 崗位選擇 (改善1) -->
+            <div class="mb-6 md:mb-8">
+              <p class="text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日工作崗位</p>
+              <div class="flex gap-2 flex-wrap" id="station-selector">
+                <!-- 由 JS 產生 -->
+              </div>
+            </div>
+
+            <!-- 評分項目表單 -->
+            <div id="criteria-form" class="space-y-4 md:space-y-6"></div>
+
+            <div class="mt-8 md:mt-10 flex justify-end">
+              <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
+                <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評分
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="md:col-span-8 lg:col-span-9">
-        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-5 md:p-10">
-          <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4 mb-6 md:mb-8 border-b border-stone-100 pb-5 md:pb-6">
-            <div>
-              <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-1 md:mb-2 flex items-center gap-2">
-                <span id="current-emp-name" class="font-medium"></span> 
-                <span class="text-stone-400 text-lg md:text-2xl">的績效評估</span>
-              </h2>
-              <p class="text-stone-500 text-xs md:text-sm">請針對各項目給予 1 至 10 分的評價 (每日自動重置)</p>
-            </div>
-            <div class="text-left sm:text-right bg-stone-50 sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none">
-              <p class="text-[10px] md:text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">今日總分</p>
-              <p id="current-total-score" class="text-3xl md:text-4xl font-light text-stone-800">0.0</p>
-            </div>
+    </div>
+
+    <!-- ===== 2. 清潔評分模組 (改善4) ===== -->
+    <div id="section-cleaning" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
+      <div class="text-center mb-6 md:mb-10">
+        <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
+        <p class="text-xs md:text-sm text-stone-500">獨立紀錄清潔人員的表現，與工作崗位評分分開計算</p>
+      </div>
+
+      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-10 max-w-2xl mx-auto">
+        <!-- 選擇清潔人員 -->
+        <div class="mb-8">
+          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員</label>
+          <div class="flex flex-wrap gap-2" id="cleaning-emp-selector">
+            <!-- 由 JS 產生 -->
           </div>
-          <div id="criteria-form" class="space-y-4 md:space-y-8"></div>
-          <div class="mt-8 md:mt-10 flex justify-end">
-            <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
-              <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評分
-            </button>
-          </div>
+        </div>
+
+        <!-- 選中的人員評分 -->
+        <div id="cleaning-selected-list" class="space-y-4"></div>
+
+        <div class="mt-8 flex justify-end">
+          <button onclick="saveCleaningData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
+            <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存清潔評分
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- 2. 老闆今日總覽區塊 -->
+    <!-- ===== 3. 今日總覽 ===== -->
     <div id="section-dashboard" class="hidden space-y-6 md:space-y-8 animate-[fadeIn_0.5s_ease-out]">
-      <div class="text-center mb-6 md:mb-12">
+      <div class="text-center mb-6 md:mb-10">
         <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-2 md:mb-3">今日總覽面板</h2>
-        <p class="text-xs md:text-sm text-stone-500">檢視所有員工 <span id="dashboard-date" class="font-medium"></span> 的加權總分</p>
+        <p class="text-xs md:text-sm text-stone-500">檢視所有員工 <span id="dashboard-date" class="font-medium"></span> 的績效與等級分配</p>
       </div>
+
+      <!-- 等級配額總覽 (改善3) -->
+      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-8">
+        <div class="flex items-center gap-2 mb-5">
+          <i data-lucide="award" class="w-5 h-5 text-stone-600"></i>
+          <h3 class="font-medium text-stone-800 text-base">等級配額使用狀況</h3>
+          <span class="text-xs text-stone-400 ml-1">（上限依規定）</span>
+        </div>
+        <div id="grade-quota-display" class="grid grid-cols-2 sm:grid-cols-5 gap-3"></div>
+      </div>
+
+      <!-- 員工卡片 -->
       <div id="dashboard-cards" class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"></div>
+
+      <!-- 詳細表格 -->
       <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 overflow-hidden mt-6 relative">
         <p class="text-xs text-stone-400 text-center py-2 md:hidden">👈 左右滑動查看完整表格 👉</p>
         <div class="overflow-x-auto hide-scrollbar">
@@ -133,20 +240,27 @@
           </table>
         </div>
       </div>
+
+      <!-- 清潔評分總覽 -->
+      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-8">
+        <div class="flex items-center gap-2 mb-5">
+          <i data-lucide="sparkles" class="w-5 h-5 text-stone-600"></i>
+          <h3 class="font-medium text-stone-800 text-base">今日清潔評分</h3>
+        </div>
+        <div id="cleaning-summary" class="text-stone-500 text-sm">尚無清潔評分紀錄</div>
+      </div>
     </div>
 
-    <!-- 3. 歷史紀錄區塊 -->
+    <!-- ===== 4. 歷史紀錄 ===== -->
     <div id="section-history" class="hidden space-y-6 md:space-y-8 animate-[fadeIn_0.5s_ease-out]">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/80 p-6 rounded-3xl shadow-sm border border-white/60">
         <div>
           <h2 class="text-xl font-medium text-stone-800">查詢歷史評分</h2>
           <p class="text-sm text-stone-500 mt-1">選擇過去的日期來查看詳細績效</p>
         </div>
-        <input type="date" id="history-date-picker" onchange="renderHistoryTable(this.value)" class="w-full sm:w-auto bg-stone-50 border border-stone-200 text-stone-800 text-sm rounded-xl focus:ring-stone-400 focus:border-stone-400 block p-2.5 outline-none font-medium cursor-pointer" />
-          <!-- 選項由 JS 產生 -->
-        </select>
+        <input type="date" id="history-date-picker" onchange="renderHistoryTable(this.value)"
+          class="w-full sm:w-auto bg-stone-50 border border-stone-200 text-stone-800 text-sm rounded-xl focus:ring-stone-400 focus:border-stone-400 block p-2.5 outline-none font-medium cursor-pointer" />
       </div>
-      
       <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 overflow-hidden relative">
         <p class="text-xs text-stone-400 text-center py-2 md:hidden">👈 左右滑動查看完整表格 👉</p>
         <div class="overflow-x-auto hide-scrollbar">
@@ -155,10 +269,9 @@
             <tbody id="history-table-body" class="divide-y divide-stone-100/50"></tbody>
           </table>
         </div>
-        <!-- 若未選擇日期的空狀態 -->
         <div id="history-empty-state" class="py-20 text-center flex flex-col items-center justify-center">
-            <i data-lucide="calendar-search" class="w-12 h-12 text-stone-300 mb-4"></i>
-            <p class="text-stone-500 font-medium">請從上方選擇日期</p>
+          <i data-lucide="calendar-search" class="w-12 h-12 text-stone-300 mb-4"></i>
+          <p class="text-stone-500 font-medium">請從上方選擇日期</p>
         </div>
       </div>
     </div>
@@ -167,92 +280,271 @@
 
   <div id="toast" class="fixed bottom-6 right-6 left-6 md:left-auto bg-stone-800 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
     <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
-    <span class="font-medium tracking-wide text-sm">今日評分已成功儲存</span>
+    <span id="toast-msg" class="font-medium tracking-wide text-sm">今日評分已成功儲存</span>
   </div>
 
   <script>
     function toggleGlobalMenu() {
-        document.getElementById('global-nav-menu').classList.toggle('hidden');
+      document.getElementById('global-nav-menu').classList.toggle('hidden');
     }
 
-    // --- 1. 基本資料與權重設定 ---
-    const EMPLOYEES = ['俐嬅', '小郭', '菟菟', '林宣', '若菱', '祥瑋', '翠翠', 'Sam', '偲璇'];
-    const CRITERIA = [
-      { id: 'service', name: '服務態度', desc: '禮貌、應對態度、團隊合作、顧客服務品質', weight: 0.30 },
-      { id: 'clean', name: '清潔', desc: '工作區域整潔、設備清潔維護', weight: 0.20 },
-      { id: 'make_quality', name: '做餐品質', desc: '餐點製作正確性、麵包顏色均勻、口味穩定度', weight: 0.15 },
-      { id: 'serve_quality', name: '出餐品質', desc: '出餐速度、餐點完整性、錯單率', weight: 0.15 },
-      { id: 'overall', name: '綜合表現', desc: '工作效率、責任感、配合度、整體表現', weight: 0.20 },
+    // =============================================
+    // 1. 基本資料設定
+    // =============================================
+    const EMPLOYEES = [
+      { name: '俐嬅',  joinDate: '2021-03-01' },
+      { name: '小郭',  joinDate: '2022-06-15' },
+      { name: '菟菟',  joinDate: '2023-01-10' },
+      { name: '林宣',  joinDate: '2020-09-01' },
+      { name: '若菱',  joinDate: '2024-02-20' },
+      { name: '祥瑋',  joinDate: '2023-07-05' },
+      { name: '翠翠',  joinDate: '2022-11-01' },
+      { name: 'Sam',   joinDate: '2021-08-15' },
+      { name: '偲璇',  joinDate: '2024-05-01' },
     ];
+
+    // =============================================
+    // 改善1：崗位設定與對應評分項目
+    // =============================================
+    const STATIONS = [
+      {
+        id: 'fryer', name: '油鍋', icon: '🍳',
+        criteria: [
+          { id: 'speed',    name: '速度',   desc: '讓做餐人員等候的時間長短', weight: 0.30 },
+          { id: 'fry',      name: '油炸狀態', desc: '是否過深/過淺、顏色均勻度', weight: 0.25 },
+          { id: 'technique',name: '手法',   desc: '三明治剪開深淺、是否筆直居中', weight: 0.25 },
+          { id: 'pro',      name: '專業度', desc: '挑出品質不佳的三明治、油渣集中收集、環境整潔', weight: 0.20 },
+        ]
+      },
+      {
+        id: 'sandwich_main', name: '三明治主手', icon: '🥪',
+        criteria: [
+          { id: 'teamwork',  name: '協作', desc: '是否協同副手作餐、確認應做的餐點數量', weight: 0.25 },
+          { id: 'filling',   name: '內餡擺放', desc: '美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開', weight: 0.30 },
+          { id: 'speed',     name: '速度', desc: '有無配合現場訂單視情況，整併數量出餐', weight: 0.25 },
+          { id: 'quality',   name: '品質把關', desc: '確認成品外觀、內餡是否完整正確', weight: 0.20 },
+        ]
+      },
+      {
+        id: 'sandwich_sub', name: '三明治副手', icon: '🤝',
+        criteria: [
+          { id: 'order',    name: '確認訂單', desc: '核對訂單內容出餐，出餐時客人是否方便帶走', weight: 0.25 },
+          { id: 'clean',    name: '環境整潔', desc: '工作環境是否隨時保持整潔', weight: 0.25 },
+          { id: 'filling',  name: '內餡擺放', desc: '美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開', weight: 0.25 },
+          { id: 'speed',    name: '速度配合', desc: '有無配合現場訂單視情況，整併數量出餐', weight: 0.25 },
+        ]
+      },
+      {
+        id: 'cashier', name: '結帳', icon: '💰',
+        criteria: [
+          { id: 'accuracy',  name: '結帳正確性', desc: '結帳清晰、是否有誤差', weight: 0.30 },
+          { id: 'stock',     name: '備品補充', desc: '備品是否即時補充', weight: 0.20 },
+          { id: 'service',   name: '服務性', desc: '態度是否良好且專業，幫助客人疑難排解', weight: 0.25 },
+          { id: 'packaging', name: '包裝完整性', desc: '餐點是否擺放平整、內容物及餐具是否正確擺放', weight: 0.25 },
+        ]
+      },
+      {
+        id: 'kitchen', name: '廚房', icon: '👨‍🍳',
+        criteria: [
+          { id: 'efficiency', name: '烹製效率', desc: '食品烹製效率、物料是否先進先出', weight: 0.25 },
+          { id: 'detail',     name: '料理細節', desc: '番茄的刀工、茶類奶精是否泡散、綠豆是否煮至柔軟', weight: 0.30 },
+          { id: 'clean',      name: '整潔度', desc: '餐具及鍋碗瓢盆是否整潔、環境的整潔及收納', weight: 0.25 },
+          { id: 'speed',      name: '出菜速度', desc: '配合前場需求的出菜節奏', weight: 0.20 },
+        ]
+      },
+    ];
+
+    // =============================================
+    // 改善2：等級配額上限
+    // =============================================
+    const GRADE_LIMITS = { O: 1, A: 2, B: 4, C: 3, D: 2 };
+    const GRADE_COLORS = {
+      O: { bg: '#fef9c3', text: '#854d0e', border: '#fde68a' },
+      A: { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },
+      B: { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },
+      C: { bg: '#f3e8ff', text: '#6b21a8', border: '#e9d5ff' },
+      D: { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
+    };
+
+    // 年資換算等級建議：[年資門檻月數, 超預期, 完全符合, 80%符合, 60%符合, 未達60%]
+    // 對應分數段 > 90, 80-90, 70-80, 60-70, < 60
+    const SENIORITY_GRADE_MAP = [
+      { maxMonths: 12,  label: '到職1年以內', map: [90, 80, 70, 60] }, // > map[0]=O, >map[1]=A, >map[2]=B, >map[3]=C, else D
+      { maxMonths: 36,  label: '到職1~3年',   map: [90, 80, 70, 60] },
+      { maxMonths: 60,  label: '到職3~5年',   map: [90, 80, 70, 60] },
+    ];
+    // 等級對應表：依年資段，以分數建議等級
+    // [年資段][分數段] => 等級
+    const GRADE_TABLE = {
+      '到職1年以內': { over90: 'O', over80: 'O', over70: 'A', over60: 'B', under60: 'C' },
+      '到職1~3年':   { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
+      '到職3~5年':   { over90: 'A', over80: 'B', over70: 'C', over60: 'D', under60: 'D' },
+    };
 
     let currentEvalData = {};
     let historyData = {};
-    let currentSelectedEmp = EMPLOYEES[0];
+    let cleaningData = {}; // 今日清潔
+    let currentSelectedEmp = EMPLOYEES[0].name;
+    let currentStation = STATIONS[0].id;
     let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
 
-    // --- 2. 核心邏輯：資料載入與換日判定 ---
+    // =============================================
+    // 年資計算
+    // =============================================
+    function getSeniorityMonths(joinDate) {
+      const join = new Date(joinDate);
+      const now = new Date();
+      return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
+    }
+    function getSeniorityLabel(months) {
+      if (months <= 12) return '到職1年以內';
+      if (months <= 36) return '到職1~3年';
+      return '到職3~5年';
+    }
+    function getSuggestedGrade(empName, score) {
+      const emp = EMPLOYEES.find(e => e.name === empName);
+      if (!emp) return null;
+      const months = getSeniorityMonths(emp.joinDate);
+      const label = getSeniorityLabel(months);
+      const table = GRADE_TABLE[label];
+      let grade;
+      const s = parseFloat(score);
+      if (s >= 90) grade = table.over90;
+      else if (s >= 80) grade = table.over80;
+      else if (s >= 70) grade = table.over70;
+      else if (s >= 60) grade = table.over60;
+      else grade = table.under60;
+      return { grade, seniorityLabel: label, months };
+    }
+
+    // =============================================
+    // 初始化
+    // =============================================
     function initApp() {
-      loadDataFromStorage(); // [資料庫整合點：這裡未來改為從 Supabase 抓取]
+      loadDataFromStorage();
       renderEmployeeList();
-      selectEmployee(EMPLOYEES[0]);
+      selectEmployee(EMPLOYEES[0].name);
+      renderStationSelector();
+      renderCleaningModule();
       document.getElementById('dashboard-date').innerText = `(${todayString})`;
       lucide.createIcons();
     }
 
-    // 產生預設的全新評分表 (皆為 5 分)
     function generateDefaultEval(defaultScore = 5) {
       let data = {};
       EMPLOYEES.forEach(emp => {
-        data[emp] = {};
-        CRITERIA.forEach(c => { data[emp][c.id] = { score: defaultScore, note: '' }; });
+        data[emp.name] = { station: STATIONS[0].id };
+        STATIONS.forEach(st => {
+          data[emp.name][st.id] = {};
+          st.criteria.forEach(c => { data[emp.name][st.id][c.id] = { score: defaultScore, note: '' }; });
+        });
+        data[emp.name].grade = ''; // 今日等級
       });
       return data;
     }
 
+    function generateDefaultCleaning() {
+      let d = {};
+      EMPLOYEES.forEach(emp => { d[emp.name] = { selected: false, stars: 0 }; });
+      return d;
+    }
+
     function loadDataFromStorage() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB'));
-      
-      // 假設第一次使用，建立基礎資料，並隨機塞一天昨天的歷史資料作為展示
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
       if (!storage) {
         let yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        let yesterdayStr = yesterday.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
-        
+        let yd = yesterday.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
         storage = {
           lastDate: todayString,
           current: generateDefaultEval(5),
-          history: {}
+          currentCleaning: generateDefaultCleaning(),
+          history: {},
+          historyCleaning: {}
         };
-        // 塞入昨天假資料 (全體 8 分) 方便測試
-        storage.history[yesterdayStr] = generateDefaultEval(8); 
-      } 
-      // 判斷是否換日：若記錄的日期不是今天，就把 current 移到 history，並重置 current
-      else if (storage.lastDate !== todayString) {
+        let yEval = generateDefaultEval(8);
+        EMPLOYEES.forEach(e => { yEval[e.name].grade = ['O','A','A','B','B','B','B','C','C'][Math.floor(Math.random()*4)]; });
+        storage.history[yd] = yEval;
+        storage.historyCleaning[yd] = generateDefaultCleaning();
+      } else if (storage.lastDate !== todayString) {
         storage.history[storage.lastDate] = storage.current;
+        storage.historyCleaning[storage.lastDate] = storage.currentCleaning;
         storage.current = generateDefaultEval(5);
+        storage.currentCleaning = generateDefaultCleaning();
         storage.lastDate = todayString;
       }
-      
       currentEvalData = storage.current;
       historyData = storage.history;
-      localStorage.setItem('EvalSystemDB', JSON.stringify(storage)); // 確保狀態更新
+      cleaningData = storage.currentCleaning || generateDefaultCleaning();
+      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
     }
 
-    // --- 3. UI 渲染邏輯 ---
+    // =============================================
+    // 分數計算
+    // =============================================
     function calculateScore(dataObj, empName) {
+      const stationId = dataObj[empName].station || STATIONS[0].id;
+      const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
       let total = 0;
-      CRITERIA.forEach(c => { total += (dataObj[empName][c.id].score * 10) * c.weight; });
+      station.criteria.forEach(c => {
+        const d = dataObj[empName][stationId];
+        if (d && d[c.id]) total += (d[c.id].score * 10) * c.weight;
+      });
       return total.toFixed(1);
+    }
+
+    // =============================================
+    // 崗位選擇 (改善1)
+    // =============================================
+    function renderStationSelector() {
+      document.getElementById('station-selector').innerHTML = STATIONS.map(st => `
+        <button class="station-btn ${currentEvalData[currentSelectedEmp]?.station === st.id ? 'active' : ''}"
+          onclick="selectStation('${st.id}')" id="station-btn-${st.id}">
+          <span class="station-icon">${st.icon}</span>
+          <span>${st.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function selectStation(stationId) {
+      currentEvalData[currentSelectedEmp].station = stationId;
+      currentStation = stationId;
+      STATIONS.forEach(st => {
+        const btn = document.getElementById(`station-btn-${st.id}`);
+        if (btn) btn.className = `station-btn ${stationId === st.id ? 'active' : ''}`;
+      });
+      renderEvaluationForm();
+      updateTotalAndSuggestion();
+    }
+
+    // =============================================
+    // 員工列表 & 選擇
+    // =============================================
+    function renderEmployeeList() {
+      document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => `
+        <button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')"
+          class="snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm">
+          <div class="flex items-center space-x-2 md:space-x-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg transition-colors bg-stone-100">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </div>
+            <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp.name}</span>
+          </div>
+          <span id="grade-badge-${emp.name}" class="grade-badge ${currentEvalData[emp.name]?.grade ? 'grade-' + currentEvalData[emp.name].grade : 'hidden'} ml-2">
+            ${currentEvalData[emp.name]?.grade || ''}
+          </span>
+        </button>
+      `).join('');
     }
 
     function selectEmployee(empName) {
       currentSelectedEmp = empName;
+      currentStation = currentEvalData[empName].station || STATIONS[0].id;
       document.getElementById('current-emp-name').innerText = empName;
-      document.getElementById('current-total-score').innerText = calculateScore(currentEvalData, empName);
-      
       EMPLOYEES.forEach(emp => {
-        const btn = document.getElementById(`btn-emp-${emp}`);
-        if (emp === empName) {
+        const btn = document.getElementById(`btn-emp-${emp.name}`);
+        if (!btn) return;
+        if (emp.name === empName) {
           btn.className = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
           btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-700";
         } else {
@@ -260,23 +552,21 @@
           btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-100";
         }
       });
+      renderStationSelector();
       renderEvaluationForm();
+      updateTotalAndSuggestion();
     }
 
-    function renderEmployeeList() {
-      document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => `
-        <button id="btn-emp-${emp}" onclick="selectEmployee('${emp}')" class="...">
-          <div class="flex items-center space-x-2 md:space-x-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg transition-colors"><i data-lucide="user" class="w-4 h-4"></i></div>
-            <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp}</span>
-          </div>
-        </button>
-      `).join('');
-    }
-
+    // =============================================
+    // 評分表單
+    // =============================================
     function renderEvaluationForm() {
-      document.getElementById('criteria-form').innerHTML = CRITERIA.map(c => {
-        const data = currentEvalData[currentSelectedEmp][c.id];
+      const stationId = currentEvalData[currentSelectedEmp].station || STATIONS[0].id;
+      const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
+      const empData = currentEvalData[currentSelectedEmp][stationId];
+
+      document.getElementById('criteria-form').innerHTML = station.criteria.map(c => {
+        const d = empData[c.id] || { score: 5, note: '' };
         return `
           <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-stone-50/50 border border-stone-100/50 hover:bg-white transition-colors">
             <div class="lg:w-1/3">
@@ -288,12 +578,16 @@
             </div>
             <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
               <div class="flex items-center space-x-4 md:space-x-6">
-                <input type="range" min="1" max="10" value="${data.score}" oninput="updateScore('${c.id}', this.value)" class="w-full h-2 bg-stone-200 rounded-lg cursor-pointer" />
-                <div id="score-display-${c.id}" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${data.score}</div>
+                <input type="range" min="1" max="10" value="${d.score}"
+                  oninput="updateScore('${stationId}', '${c.id}', this.value)"
+                  class="w-full h-2 bg-stone-200 rounded-lg cursor-pointer" />
+                <div id="score-display-${c.id}" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${d.score}</div>
               </div>
               <div class="relative">
                 <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-stone-400"></i>
-                <input type="text" placeholder="新增備註 (選填)..." value="${data.note}" onchange="updateNote('${c.id}', this.value)" class="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-stone-400/20 focus:outline-none" />
+                <input type="text" placeholder="新增備註 (選填)..." value="${d.note}"
+                  onchange="updateNote('${stationId}', '${c.id}', this.value)"
+                  class="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-stone-400/20 focus:outline-none" />
               </div>
             </div>
           </div>
@@ -302,117 +596,310 @@
       lucide.createIcons();
     }
 
-    function updateScore(cId, val) {
-      currentEvalData[currentSelectedEmp][cId].score = parseInt(val, 10);
+    function updateScore(stationId, cId, val) {
+      if (!currentEvalData[currentSelectedEmp][stationId]) return;
+      currentEvalData[currentSelectedEmp][stationId][cId].score = parseInt(val, 10);
       document.getElementById(`score-display-${cId}`).innerText = val;
-      document.getElementById('current-total-score').innerText = calculateScore(currentEvalData, currentSelectedEmp);
+      updateTotalAndSuggestion();
     }
-    function updateNote(cId, val) { currentEvalData[currentSelectedEmp][cId].note = val; }
+    function updateNote(stationId, cId, val) {
+      if (currentEvalData[currentSelectedEmp][stationId]) {
+        currentEvalData[currentSelectedEmp][stationId][cId].note = val;
+      }
+    }
 
+    // =============================================
+    // 改善2：總分 + 年資建議等級
+    // =============================================
+    function updateTotalAndSuggestion() {
+      const score = calculateScore(currentEvalData, currentSelectedEmp);
+      document.getElementById('current-total-score').innerText = score;
+
+      const suggestion = getSuggestedGrade(currentSelectedEmp, score);
+      const el = document.getElementById('seniority-suggestion');
+      if (!suggestion) { el.classList.add('hidden'); return; }
+
+      const gc = GRADE_COLORS[suggestion.grade];
+      el.classList.remove('hidden');
+      el.innerHTML = `
+        <i data-lucide="user-check" class="w-4 h-4 text-stone-500 flex-shrink-0"></i>
+        <span class="text-xs text-stone-500 mr-1">${suggestion.seniorityLabel}（${suggestion.months}個月）</span>
+        <span class="text-xs text-stone-500 mx-1">→ 建議等級：</span>
+        <span class="grade-badge grade-${suggestion.grade}" style="background:${gc.bg};color:${gc.text};">${suggestion.grade}</span>
+        <span class="text-xs text-stone-400 ml-2">（僅供參考）</span>
+        <button onclick="applyGrade('${suggestion.grade}')"
+          class="ml-auto text-xs px-3 py-1 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 transition-all whitespace-nowrap">
+          套用此等級
+        </button>
+      `;
+      lucide.createIcons();
+    }
+
+    function applyGrade(grade) {
+      currentEvalData[currentSelectedEmp].grade = grade;
+      // 更新員工列表徽章
+      const badge = document.getElementById(`grade-badge-${currentSelectedEmp}`);
+      if (badge) {
+        const gc = GRADE_COLORS[grade];
+        badge.className = `grade-badge grade-${grade} ml-2`;
+        badge.style.background = gc.bg;
+        badge.style.color = gc.text;
+        badge.innerText = grade;
+        badge.classList.remove('hidden');
+      }
+      showToast(`已套用等級 ${grade} 給 ${currentSelectedEmp}`);
+    }
+
+    // =============================================
+    // 儲存
+    // =============================================
     function saveData() {
-      // [資料庫整合點：這裡改為發送 UPSERT API 到 Supabase]
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB'));
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
       storage.current = currentEvalData;
-      localStorage.setItem('EvalSystemDB', JSON.stringify(storage));
-      
-      const toast = document.getElementById('toast');
-      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-      setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 3000);
+      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
+      showToast('今日評分已成功儲存');
     }
 
-    // --- 4. 總覽與歷史表格渲染 ---
+    // =============================================
+    // 改善4：清潔評分模組
+    // =============================================
+    function renderCleaningModule() {
+      const sel = document.getElementById('cleaning-emp-selector');
+      sel.innerHTML = EMPLOYEES.map(emp => {
+        const isSelected = cleaningData[emp.name]?.selected;
+        return `
+          <button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
+            class="px-3 py-1.5 rounded-full text-sm border transition-all ${isSelected
+              ? 'bg-stone-800 text-white border-stone-800'
+              : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'}">
+            ${emp.name}
+          </button>
+        `;
+      }).join('');
+      renderCleaningSelectedList();
+    }
+
+    function toggleCleaningEmp(empName) {
+      cleaningData[empName].selected = !cleaningData[empName].selected;
+      if (!cleaningData[empName].selected) cleaningData[empName].stars = 0;
+      renderCleaningModule();
+    }
+
+    function renderCleaningSelectedList() {
+      const selectedEmps = EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
+      const container = document.getElementById('cleaning-selected-list');
+      if (selectedEmps.length === 0) {
+        container.innerHTML = `<p class="text-center text-stone-400 text-sm py-8">請從上方選擇今日例行清潔人員</p>`;
+        return;
+      }
+      container.innerHTML = selectedEmps.map(emp => {
+        const stars = cleaningData[emp.name].stars || 0;
+        return `
+          <div class="flex items-center justify-between p-4 rounded-2xl bg-stone-50/50 border border-stone-100">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-stone-200 flex items-center justify-center text-stone-700 font-medium text-sm">
+                ${emp.name.charAt(0)}
+              </div>
+              <span class="font-medium text-stone-800">${emp.name}</span>
+            </div>
+            <div class="star-rating" id="stars-${emp.name}">
+              ${[1,2,3,4,5].map(n => `
+                <button class="star-btn ${n <= stars ? 'active' : ''}"
+                  onclick="setStars('${emp.name}', ${n})"
+                  title="${n}星">★</button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setStars(empName, n) {
+      cleaningData[empName].stars = n;
+      // 更新星星顯示
+      const container = document.getElementById(`stars-${empName}`);
+      if (container) {
+        container.querySelectorAll('.star-btn').forEach((btn, i) => {
+          btn.classList.toggle('active', i < n);
+        });
+      }
+    }
+
+    function saveCleaningData() {
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
+      storage.currentCleaning = cleaningData;
+      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
+      showToast('清潔評分已成功儲存');
+    }
+
+    // =============================================
+    // 改善3：等級配額總覽
+    // =============================================
+    function renderGradeQuota() {
+      const usedGrades = { O: 0, A: 0, B: 0, C: 0, D: 0 };
+      EMPLOYEES.forEach(emp => {
+        const g = currentEvalData[emp.name]?.grade;
+        if (g && usedGrades[g] !== undefined) usedGrades[g]++;
+      });
+
+      document.getElementById('grade-quota-display').innerHTML = Object.entries(GRADE_LIMITS).map(([grade, limit]) => {
+        const used = usedGrades[grade];
+        const pct = Math.min(100, (used / limit) * 100);
+        const isOver = used > limit;
+        const isFull = used === limit;
+        const gc = GRADE_COLORS[grade];
+        return `
+          <div class="rounded-2xl p-4 border" style="background:${gc.bg}; border-color:${gc.border};">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-lg font-bold" style="color:${gc.text};">${grade}級</span>
+              <span class="text-sm font-medium ${isOver ? 'text-red-600' : ''}" style="${!isOver ? 'color:' + gc.text : ''}">
+                ${used} / ${limit}
+              </span>
+            </div>
+            <div class="h-2 rounded-full bg-white/60 overflow-hidden mb-2">
+              <div class="h-full rounded-full transition-all ${isOver ? 'quota-warn' : isFull ? 'quota-full' : 'quota-ok'}"
+                style="width:${pct}%"></div>
+            </div>
+            ${isOver
+              ? `<p class="text-xs font-medium text-orange-600">⚠ 超額 ${used - limit} 人</p>`
+              : isFull
+                ? `<p class="text-xs font-medium" style="color:${gc.text}">已達上限</p>`
+                : `<p class="text-xs" style="color:${gc.text}">尚可 ${limit - used} 人</p>`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =============================================
+    // 總覽與歷史表格
+    // =============================================
     function buildTableHTML(dataSource, theadId, tbodyId) {
+      // 取第一個員工的崗位來決定顯示哪個崗位的欄位，或用通用方式
       document.getElementById(theadId).innerHTML = `
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 uppercase tracking-wider whitespace-nowrap">員工姓名</th>
-        ${CRITERIA.map(c => `<th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 whitespace-nowrap">${c.name}</th>`).join('')}
+        <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 whitespace-nowrap">崗位</th>
+        <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 whitespace-nowrap">年資</th>
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-bold text-stone-800 whitespace-nowrap text-right">加權總分</th>
+        <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-bold text-stone-800 whitespace-nowrap text-center">等級</th>
       `;
-      document.getElementById(tbodyId).innerHTML = EMPLOYEES.map(emp => `
-        <tr class="hover:bg-stone-50/30">
-          <td class="py-4 px-4 md:py-5 md:px-6 text-sm md:text-base font-medium text-stone-800 whitespace-nowrap">${emp}</td>
-          ${CRITERIA.map(c => {
-            const d = dataSource[emp][c.id];
-            const color = d.score >= 8 ? 'text-stone-800' : (d.score < 6 ? 'text-red-400' : 'text-stone-500');
-            const note = d.note ? `<div class="group/note relative cursor-help flex items-center"><i data-lucide="message-square" class="w-3 h-3 text-stone-400 ml-1.5"></i><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[120px] bg-stone-800 text-white text-xs p-2 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-10 text-center whitespace-normal">${d.note}</div></div>` : '';
-            return `<td class="py-4 px-4 md:py-5 md:px-6"><div class="flex items-center"><span class="text-base md:text-lg font-light ${color}">${d.score}</span>${note}</div></td>`;
-          }).join('')}
-          <td class="py-4 px-4 md:py-5 md:px-6 text-right font-medium text-stone-800 text-lg md:text-xl">${calculateScore(dataSource, emp)}</td>
-        </tr>
-      `).join('');
+      document.getElementById(tbodyId).innerHTML = EMPLOYEES.map(emp => {
+        const stationId = dataSource[emp.name]?.station || STATIONS[0].id;
+        const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
+        const score = calculateScore(dataSource, emp.name);
+        const grade = dataSource[emp.name]?.grade || '';
+        const months = getSeniorityMonths(emp.joinDate);
+        const gc = grade ? GRADE_COLORS[grade] : null;
+        return `
+          <tr class="hover:bg-stone-50/30">
+            <td class="py-4 px-4 md:py-5 md:px-6 text-sm md:text-base font-medium text-stone-800 whitespace-nowrap">${emp.name}</td>
+            <td class="py-4 px-4 md:py-5 md:px-6 text-sm text-stone-500 whitespace-nowrap">${station.icon} ${station.name}</td>
+            <td class="py-4 px-4 md:py-5 md:px-6 text-sm text-stone-500 whitespace-nowrap">${getSeniorityLabel(months)}</td>
+            <td class="py-4 px-4 md:py-5 md:px-6 text-right font-medium text-stone-800 text-lg md:text-xl">${score}</td>
+            <td class="py-4 px-4 md:py-5 md:px-6 text-center">
+              ${grade
+                ? `<span class="grade-badge grade-${grade}" style="background:${gc.bg};color:${gc.text};">${grade}</span>`
+                : '<span class="text-stone-300 text-sm">—</span>'}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderDashboard() {
-      // 渲染頂部小卡
-      document.getElementById('dashboard-cards').innerHTML = EMPLOYEES.map(emp => `
-        <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-4 md:p-6 rounded-3xl shadow-sm text-center group hover:shadow-md transition-all">
-          <div class="w-12 h-12 md:w-14 md:h-14 mx-auto rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-2 shadow-sm"><i data-lucide="user" class="w-5 h-5 text-stone-600"></i></div>
-          <h3 class="text-lg font-medium text-stone-800">${emp}</h3>
-          <div class="text-3xl md:text-4xl font-light text-stone-800 mt-2">${calculateScore(currentEvalData, emp)}</div>
-        </div>
-      `).join('');
+      renderGradeQuota();
+
+      document.getElementById('dashboard-cards').innerHTML = EMPLOYEES.map(emp => {
+        const score = calculateScore(currentEvalData, emp.name);
+        const grade = currentEvalData[emp.name]?.grade || '';
+        const gc = grade ? GRADE_COLORS[grade] : null;
+        return `
+          <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-4 md:p-6 rounded-3xl shadow-sm text-center group hover:shadow-md transition-all">
+            <div class="w-12 h-12 md:w-14 md:h-14 mx-auto rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-2 shadow-sm">
+              <i data-lucide="user" class="w-5 h-5 text-stone-600"></i>
+            </div>
+            <h3 class="text-lg font-medium text-stone-800">${emp.name}</h3>
+            <div class="text-3xl md:text-4xl font-light text-stone-800 mt-1 mb-2">${score}</div>
+            ${grade
+              ? `<span class="grade-badge grade-${grade} mx-auto" style="background:${gc.bg};color:${gc.text};">${grade}</span>`
+              : `<span class="text-xs text-stone-400">未設等級</span>`}
+          </div>
+        `;
+      }).join('');
+
       buildTableHTML(currentEvalData, 'dashboard-table-head', 'dashboard-table-body');
+
+      // 清潔摘要
+      const cleaningSelected = EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
+      const cleanSummaryEl = document.getElementById('cleaning-summary');
+      if (cleaningSelected.length === 0) {
+        cleanSummaryEl.innerHTML = '<p class="text-stone-400 text-sm">今日尚無清潔評分紀錄</p>';
+      } else {
+        cleanSummaryEl.innerHTML = `<div class="flex flex-wrap gap-3">${cleaningSelected.map(emp => {
+          const stars = cleaningData[emp.name].stars || 0;
+          return `
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-50 border border-stone-100">
+              <span class="font-medium text-stone-800">${emp.name}</span>
+              <span class="text-amber-400">${'★'.repeat(stars)}${'☆'.repeat(5-stars)}</span>
+              <span class="text-xs text-stone-500">${stars}/5</span>
+            </div>
+          `;
+        }).join('')}</div>`;
+      }
+
       lucide.createIcons();
     }
 
     function initHistoryTab() {
       const picker = document.getElementById('history-date-picker');
-      
-      // 設定日曆最大可選日期為「昨天」(因為今天是當日總覽，還沒進歷史紀錄)
       let yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       picker.max = yesterday.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
-
-      // 取得所有有歷史紀錄的日期
       const dates = Object.keys(historyData).sort((a, b) => new Date(b) - new Date(a));
-      
-      if (dates.length > 0) {
-        // 如果有紀錄，預設將日曆設定為「最新的一筆日期」並顯示表格
-        picker.value = dates[0];
-        renderHistoryTable(dates[0]);
-      } else {
-        // 完全沒有紀錄時
-        picker.value = '';
-        renderHistoryTable('');
-      }
+      if (dates.length > 0) { picker.value = dates[0]; renderHistoryTable(dates[0]); }
+      else { picker.value = ''; renderHistoryTable(''); }
     }
 
     function renderHistoryTable(dateString) {
       const emptyState = document.getElementById('history-empty-state');
       const tableHead = document.getElementById('history-table-head');
       const tableBody = document.getElementById('history-table-body');
-
-      // 如果沒有選擇日期，或者選擇的日期「沒有資料」時的處理
       if (!dateString || !historyData[dateString]) {
         tableHead.innerHTML = '';
         tableBody.innerHTML = '';
         emptyState.innerHTML = `
-            <i data-lucide="calendar-x" class="w-12 h-12 text-stone-300 mb-4"></i>
-            <p class="text-stone-500 font-medium">此日期沒有評分紀錄</p>
-            <p class="text-xs text-stone-400 mt-1">請嘗試透過日曆選擇其他日期</p>
-        `;
+          <i data-lucide="calendar-x" class="w-12 h-12 text-stone-300 mb-4"></i>
+          <p class="text-stone-500 font-medium">此日期沒有評分紀錄</p>
+          <p class="text-xs text-stone-400 mt-1">請嘗試透過日曆選擇其他日期</p>`;
         emptyState.classList.remove('hidden');
         lucide.createIcons();
         return;
       }
-
-      // 如果有資料，就隱藏空白提示並畫出表格
       emptyState.classList.add('hidden');
       buildTableHTML(historyData[dateString], 'history-table-head', 'history-table-body');
       lucide.createIcons();
     }
 
-    // --- 5. 頁籤切換 ---
+    // =============================================
+    // 頁籤切換
+    // =============================================
     function switchTab(tab) {
-      ['evaluate', 'dashboard', 'history'].forEach(t => {
+      ['evaluate', 'cleaning', 'dashboard', 'history'].forEach(t => {
         document.getElementById(`section-${t}`).classList.add('hidden');
         document.getElementById(`tab-${t}`).className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700";
       });
-      
       document.getElementById(`section-${tab}`).classList.remove('hidden');
       document.getElementById(`tab-${tab}`).className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm";
-      
       if (tab === 'dashboard') renderDashboard();
       if (tab === 'history') initHistoryTab();
+      if (tab === 'cleaning') renderCleaningModule();
+    }
+
+    function showToast(msg) {
+      document.getElementById('toast-msg').innerText = msg;
+      const toast = document.getElementById('toast');
+      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 3000);
     }
 
     window.onload = initApp;
