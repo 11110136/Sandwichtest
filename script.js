@@ -57,14 +57,57 @@ const monthSelect = document.getElementById('monthSelect');
 const emptyState = document.getElementById('emptyState');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 
-function init() {
+// --- 初始化 Lucide Icons ---
+lucide.createIcons();
+
+// --- 系統配置 ---
+const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 【新增 LIFF 設定 1】填入你的 LIFF ID
+const LIFF_ID = "2010172685-ZAaPpejo"; 
+let lineUserProfile = null; // 用來儲存登入者的 LINE 資訊
+
+const year = 2026;
+const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
+const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
+const storageKey = 'nordic_shift_v2026_db';
+
+// ... (中間保留你原本的變數與狀態宣告，如 isEditMode, ADMIN_PIN, leaveImages 等) ...
+
+// 【新增 LIFF 設定 2】新增 LIFF 初始化函式
+async function initLiff() {
+    try {
+        await liff.init({ liffId: LIFF_ID });
+        
+        if (!liff.isLoggedIn()) {
+            // 如果是在 LINE App 內開啟，可以直接呼叫登入
+            // 若不想強制登入，可以把這行註解掉
+            liff.login(); 
+        } else {
+            // 取得使用者的 LINE 資訊 (名稱、頭貼等)
+            lineUserProfile = await liff.getProfile();
+            console.log("LINE 登入成功:", lineUserProfile.displayName);
+            showToast(`歡迎回來，${lineUserProfile.displayName} 👋`);
+        }
+    } catch (err) {
+        console.error('LIFF 初始化失敗，可能是未在 LINE 環境或 ID 錯誤', err);
+    }
+}
+
+async function init() {
+    // 1. 先執行 LIFF 初始化
+    await initLiff();
+
+    // 2. 執行原有的初始化邏輯
     const now = new Date();
     if (now.getFullYear() === year) {
         currentMonth = now.getMonth();
     }
     monthSelect.value = currentMonth;
     
-    updateLockIcon(); // 初始化鎖定圖示
+    updateLockIcon(); 
     switchView('day');
     fetchFromSupabase();
 
@@ -72,7 +115,6 @@ function init() {
         if (e.key === 'Enter') calculatePersonalStats();
     });
 
-    // 密碼框按 Enter 也可以解鎖
     document.getElementById('pinInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') verifyPin();
     });
