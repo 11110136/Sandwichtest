@@ -6,6 +6,8 @@
 <title>清潔與值班管理系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 引入 LIFF SDK -->
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
     --sage: #7a9e7e;
@@ -267,11 +269,10 @@
   </button>
   <div id="global-nav-menu" class="nav-menu hidden">
     <a href="index.html" class="nav-item nav-indigo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> 值班系統 </a>
-    <a href="cash.html" class="nav-item nav-emerald"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> 每週收銀結算 </a>
+    <a href="cash.html" class="nav-item nav-emerald"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17" y1="5" x2="9.5" y2="5" rx="3.5" ry="3.5"></path></svg> 每週收銀結算 </a>
     <a href="inventory.html" class="nav-item nav-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> 庫存盤點系統 </a>
     <a href="clean.html" class="nav-item nav-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 清潔與值班管理系統 </a>
     <a href="performance.html" class="nav-item nav-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 績效評估系統 </a>
-  
   </div>
 </div>
 
@@ -409,7 +410,31 @@
     <div id="quick-tasks-container" class="quick-btns"></div>
   </div>
 </div>
+
 <script>
+// ══════════════════════════════════════════
+//  LIFF 初始化設定
+// ══════════════════════════════════════════
+const LIFF_ID = '2010172685-1n2pPU2d'; // ★ 請替換為你的 LIFF ID
+
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    console.log("LIFF 初始化成功");
+    
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      // 使用簡單的 alert 歡迎使用者 (也可以改用 console.log 避免干擾畫面)
+      alert(`歡迎回來，${profile.displayName}！`);
+    } else {
+      // 若希望使用者一進來就被要求登入 LINE，請取消註解下方這行
+      // liff.login();
+    }
+  } catch (error) {
+    console.error("LIFF 初始化失敗:", error);
+  }
+}
+
 // ══════════════════════════════════════════
 //  SUPABASE 設定
 // ══════════════════════════════════════════
@@ -614,7 +639,7 @@ function changeMonth(d) {
 
 function updateCleanLabels() {
   document.getElementById('monthLabel').textContent = `${cleanYear} 年 ${cleanMonth+1} 月`;
-  document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth+1} 月　清潔與洗餐具`;
+  document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth+1} 月 清潔與洗餐具`;
 }
 
 function renderCleanCal() { renderWeekdayCal('cleanCalBody', cleanYear, cleanMonth, 'clean'); }
@@ -856,7 +881,7 @@ function buildShiftCells(row) {
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
     <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerHTML); updateShiftStats();">${row.duty||''}</div></td>
     <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML); updateShiftStats();">${row.at20||''}</div></td>
-    <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||'　'}</div></td>`;
+    <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||' '}</div></td>`;
 }
 
 function saveShiftField(key, field, value) {
@@ -1100,7 +1125,7 @@ function insertTextToCell(text, type) {
   }
 
   let currentVal = activeCell.innerText;
-  if (currentVal === '未填' || currentVal === '　') currentVal = ''; 
+  if (currentVal === '未填' || currentVal === ' ') currentVal = ''; 
 
   let newVal = currentVal;
 
@@ -1124,7 +1149,7 @@ function insertTextToCell(text, type) {
   const key = activeCell.getAttribute('data-key');
   
   if (field === 'opener' || field === 'close') {
-    activeCell.innerText = newVal || (field === 'opener' ? '未填' : '　');
+    activeCell.innerText = newVal || (field === 'opener' ? '未填' : ' ');
     activeCell.style.cssText = getStaffStyle(newVal);
     if (field === 'opener') activeCell.parentElement.className = !newVal ? 'missing-opener' : '';
     if (key) { saveShiftField(key, field, newVal); updateShiftStats(); }
@@ -1170,7 +1195,13 @@ async function initApp() {
   updateCleanStats();
 }
 
-initApp();
+// 修改啟動流程：先等待 LIFF 初始化，再執行系統初始化
+async function startApp() {
+  await initLiff();
+  initApp();
+}
+
+startApp();
 </script>
 </body>
 </html>

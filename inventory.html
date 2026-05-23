@@ -10,6 +10,8 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 引入 LIFF SDK -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     /* 隱藏原生數字輸入的上下箭頭 */
@@ -548,6 +550,31 @@
 
   // ── App 主程式 ──
   function App() {
+    // ======== LIFF 初始化區塊 ========
+    const LIFF_ID = '2010172685-AS9WfPXH'; // ★ 請將此處替換為你的 LIFF ID
+
+    useEffect(() => {
+      const initLiff = async () => {
+        try {
+          await window.liff.init({ liffId: LIFF_ID });
+          console.log("LIFF 初始化成功");
+          
+          if (window.liff.isLoggedIn()) {
+            const profile = await window.liff.getProfile();
+            showToast(`歡迎回來，${profile.displayName}！`);
+          } else {
+            // 如果你希望使用者一開啟網頁就強制登入，請將下方的註解取消：
+            // window.liff.login();
+          }
+        } catch (error) {
+          console.error("LIFF 初始化失敗:", error);
+        }
+      };
+
+      initLiff();
+    }, []); // 僅在元件初次掛載時執行一次
+    // =================================
+
     const [isDBLoading, setIsDBLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('record');
     const [historyData, setHistoryData] = useState({});
@@ -819,12 +846,10 @@
       );
     };
 
-    // 用 useCallback 包裝關閉鍵盤函式以確保參照穩定 (必須放在條件 return 之前)
     const handleCloseKeypad = useCallback(() => setActiveInputId(null), []);
 
     if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-orange-600 font-bold bg-[#FFFDF9]">連線雲端資料庫中...</div>;
 
-    // 計算分類 Segmented Control 的位置
     const activeCategoryIndex = CATEGORIES.indexOf(activeCategory);
 
     return (
