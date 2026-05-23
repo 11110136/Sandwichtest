@@ -76,31 +76,29 @@ const storageKey = 'nordic_shift_v2026_db';
 
 // ... (中間保留你原本的變數與狀態宣告，如 isEditMode, ADMIN_PIN, leaveImages 等) ...
 
-// 【新增 LIFF 設定 2】新增 LIFF 初始化函式
+// 修改 1：將強制登入先註解掉，並加上狀態防護
 async function initLiff() {
     try {
         await liff.init({ liffId: LIFF_ID });
         
-        if (!liff.isLoggedIn()) {
-            // 如果是在 LINE App 內開啟，可以直接呼叫登入
-            // 若不想強制登入，可以把這行註解掉
-            liff.login(); 
-        } else {
-            // 取得使用者的 LINE 資訊 (名稱、頭貼等)
+        if (liff.isLoggedIn()) {
+            // 已登入狀態才抓資料
             lineUserProfile = await liff.getProfile();
             console.log("LINE 登入成功:", lineUserProfile.displayName);
             showToast(`歡迎回來，${lineUserProfile.displayName} 👋`);
+        } else {
+            // ⚠️ 開發測試階段，先不要強制跳轉登入，以免畫面卡住
+            // liff.login(); 
+            console.log("未登入 LINE，以一般網頁模式瀏覽");
         }
     } catch (err) {
-        console.error('LIFF 初始化失敗，可能是未在 LINE 環境或 ID 錯誤', err);
+        console.error('LIFF 初始化失敗 (請確認是否使用 http/https 環境，或 LIFF ID 是否正確):', err);
     }
 }
 
+// 修改 2：不要用 await 讓 LIFF 阻擋主執行緒
 async function init() {
-    // 1. 先執行 LIFF 初始化
-    await initLiff();
-
-    // 2. 執行原有的初始化邏輯
+    // 1. 先執行原有的系統初始化邏輯 (確保表格與介面順利顯示)
     const now = new Date();
     if (now.getFullYear() === year) {
         currentMonth = now.getMonth();
@@ -118,6 +116,9 @@ async function init() {
     document.getElementById('pinInput').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') verifyPin();
     });
+
+    // 2. 讓 LIFF 在背景獨立初始化，不影響系統運作
+    initLiff(); 
 }
 
 function switchView(viewMode) {
