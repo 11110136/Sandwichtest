@@ -7,6 +7,8 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- 引入 LIFF SDK -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
     body {
@@ -161,7 +163,7 @@
               </div>
             </div>
 
-            <!-- 崗位選擇 (改善1) -->
+            <!-- 崗位選擇 -->
             <div class="mb-6 md:mb-8">
               <p class="text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日工作崗位</p>
               <div class="flex gap-2 flex-wrap" id="station-selector">
@@ -183,7 +185,7 @@
       </div>
     </div>
 
-    <!-- ===== 2. 清潔評分模組 (改善4) ===== -->
+    <!-- ===== 2. 清潔評分模組 ===== -->
     <div id="section-cleaning" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
       <div class="text-center mb-6 md:mb-10">
         <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
@@ -217,7 +219,7 @@
         <p class="text-xs md:text-sm text-stone-500">檢視所有員工 <span id="dashboard-date" class="font-medium"></span> 的績效與等級分配</p>
       </div>
 
-      <!-- 等級配額總覽 (改善3) -->
+      <!-- 等級配額總覽 -->
       <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-8">
         <div class="flex items-center gap-2 mb-5">
           <i data-lucide="award" class="w-5 h-5 text-stone-600"></i>
@@ -284,6 +286,32 @@
   </div>
 
   <script>
+    // =============================================
+    // LIFF 與 API 設定
+    // =============================================
+    const LIFF_ID = '2010172685-ojhA52eN'; // 替換為你在 LINE Developers 取得的 LIFF ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
+
+    // 初始化 LIFF 流程
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        console.log("LIFF 初始化成功");
+        
+        // 若使用者尚未登入 LINE，且環境並非在 LINE App 內開啟，可強制跳轉登入
+        if (!liff.isLoggedIn()) {
+          // 若需要強制登入才能使用系統，請取消下方註解：
+          // liff.login();
+        } else {
+          // 取得使用者資訊 (例如：用來帶入登入者姓名)
+          const profile = await liff.getProfile();
+          showToast(`歡迎登入系統，${profile.displayName}`);
+        }
+      } catch (error) {
+        console.error("LIFF 初始化失敗:", error);
+      }
+    }
+
     function toggleGlobalMenu() {
       document.getElementById('global-nav-menu').classList.toggle('hidden');
     }
@@ -304,7 +332,7 @@
     ];
 
     // =============================================
-    // 改善1：崗位設定與對應評分項目
+    // 崗位設定與對應評分項目
     // =============================================
     const STATIONS = [
       {
@@ -355,7 +383,7 @@
     ];
 
     // =============================================
-    // 改善2：等級配額上限
+    // 等級配額上限
     // =============================================
     const GRADE_LIMITS = { O: 1, A: 2, B: 4, C: 3, D: 2 };
     const GRADE_COLORS = {
@@ -366,15 +394,12 @@
       D: { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
     };
 
-    // 年資換算等級建議：[年資門檻月數, 超預期, 完全符合, 80%符合, 60%符合, 未達60%]
-    // 對應分數段 > 90, 80-90, 70-80, 60-70, < 60
     const SENIORITY_GRADE_MAP = [
-      { maxMonths: 12,  label: '到職1年以內', map: [90, 80, 70, 60] }, // > map[0]=O, >map[1]=A, >map[2]=B, >map[3]=C, else D
+      { maxMonths: 12,  label: '到職1年以內', map: [90, 80, 70, 60] },
       { maxMonths: 36,  label: '到職1~3年',   map: [90, 80, 70, 60] },
       { maxMonths: 60,  label: '到職3~5年',   map: [90, 80, 70, 60] },
     ];
-    // 等級對應表：依年資段，以分數建議等級
-    // [年資段][分數段] => 等級
+
     const GRADE_TABLE = {
       '到職1年以內': { over90: 'O', over80: 'O', over70: 'A', over60: 'B', under60: 'C' },
       '到職1~3年':   { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
@@ -383,7 +408,7 @@
 
     let currentEvalData = {};
     let historyData = {};
-    let cleaningData = {}; // 今日清潔
+    let cleaningData = {}; 
     let currentSelectedEmp = EMPLOYEES[0].name;
     let currentStation = STATIONS[0].id;
     let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
@@ -418,7 +443,7 @@
     }
 
     // =============================================
-    // 初始化
+    // 初始化系統
     // =============================================
     function initApp() {
       loadDataFromStorage();
@@ -438,7 +463,7 @@
           data[emp.name][st.id] = {};
           st.criteria.forEach(c => { data[emp.name][st.id][c.id] = { score: defaultScore, note: '' }; });
         });
-        data[emp.name].grade = ''; // 今日等級
+        data[emp.name].grade = ''; 
       });
       return data;
     }
@@ -494,7 +519,7 @@
     }
 
     // =============================================
-    // 崗位選擇 (改善1)
+    // 崗位選擇
     // =============================================
     function renderStationSelector() {
       document.getElementById('station-selector').innerHTML = STATIONS.map(st => `
@@ -609,7 +634,7 @@
     }
 
     // =============================================
-    // 改善2：總分 + 年資建議等級
+    // 總分 + 年資建議等級
     // =============================================
     function updateTotalAndSuggestion() {
       const score = calculateScore(currentEvalData, currentSelectedEmp);
@@ -637,7 +662,6 @@
 
     function applyGrade(grade) {
       currentEvalData[currentSelectedEmp].grade = grade;
-      // 更新員工列表徽章
       const badge = document.getElementById(`grade-badge-${currentSelectedEmp}`);
       if (badge) {
         const gc = GRADE_COLORS[grade];
@@ -651,20 +675,13 @@
     }
 
     // =============================================
-    // API 設定
-    // =============================================
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-
-    // =============================================
-    // 修改後的績效儲存功能
+    // 績效儲存功能 (含 API)
     // =============================================
     async function saveData() {
-      // 1. 先照常存入 LocalStorage
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.current = currentEvalData;
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
-      // 2. 整理要上傳至 Google Sheets 的資料格式
       let records = [];
       EMPLOYEES.forEach(emp => {
         const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
@@ -686,12 +703,9 @@
         records: records
       };
 
-      // 3. 發送至 Google Sheets
       try {
-        // 改變按鈕狀態提示上傳中
         showToast('正在同步至 Google 試算表...');
         
-        // 傳送 text/plain 可避免前端發生 CORS Preflight 錯誤，後端依然可以 JSON 解析
         const response = await fetch(GAS_API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
@@ -711,7 +725,7 @@
     }
 
     // =============================================
-    // 改善4：清潔評分模組
+    // 清潔評分模組
     // =============================================
     function renderCleaningModule() {
       const sel = document.getElementById('cleaning-emp-selector');
@@ -766,7 +780,6 @@
 
     function setStars(empName, n) {
       cleaningData[empName].stars = n;
-      // 更新星星顯示
       const container = document.getElementById(`stars-${empName}`);
       if (container) {
         container.querySelectorAll('.star-btn').forEach((btn, i) => {
@@ -776,15 +789,13 @@
     }
 
     // =============================================
-    // 修改後的清潔儲存功能
+    // 清潔儲存功能 (含 API)
     // =============================================
     async function saveCleaningData() {
-      // 1. 存入 LocalStorage
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.currentCleaning = cleaningData;
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
-      // 2. 整理清潔評分資料 (只過濾出有被選中的人)
       let records = [];
       EMPLOYEES.forEach(emp => {
         if (cleaningData[emp.name]?.selected) {
@@ -806,7 +817,6 @@
         records: records
       };
 
-      // 3. 發送至 Google Sheets
       try {
         showToast('正在同步至 Google 試算表...');
         
@@ -828,7 +838,7 @@
     }
 
     // =============================================
-    // 改善3：等級配額總覽
+    // 等級配額總覽
     // =============================================
     function renderGradeQuota() {
       const usedGrades = { O: 0, A: 0, B: 0, C: 0, D: 0 };
@@ -870,7 +880,6 @@
     // 總覽與歷史表格
     // =============================================
     function buildTableHTML(dataSource, theadId, tbodyId) {
-      // 取第一個員工的崗位來決定顯示哪個崗位的欄位，或用通用方式
       document.getElementById(theadId).innerHTML = `
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 uppercase tracking-wider whitespace-nowrap">員工姓名</th>
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-medium text-stone-500 whitespace-nowrap">崗位</th>
@@ -924,7 +933,6 @@
 
       buildTableHTML(currentEvalData, 'dashboard-table-head', 'dashboard-table-body');
 
-      // 清潔摘要
       const cleaningSelected = EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
       const cleanSummaryEl = document.getElementById('cleaning-summary');
       if (cleaningSelected.length === 0) {
@@ -997,7 +1005,11 @@
       setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 3000);
     }
 
-    window.onload = initApp;
+    // 啟動流程：先等 LIFF 啟動再進入系統
+    window.onload = async () => {
+      await initLiff();
+      initApp();
+    };
   </script>
 </body>
 </html>
