@@ -651,13 +651,63 @@
     }
 
     // =============================================
-    // 儲存
+    // API 設定
     // =============================================
-    function saveData() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
+
+    // =============================================
+    // 修改後的績效儲存功能
+    // =============================================
+    async function saveData() {
+      // 1. 先照常存入 LocalStorage
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.current = currentEvalData;
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
-      showToast('今日評分已成功儲存');
+      
+      // 2. 整理要上傳至 Google Sheets 的資料格式
+      let records = [];
+      EMPLOYEES.forEach(emp => {
+        const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
+        const stationName = STATIONS.find(s => s.id === stationId)?.name || stationId;
+        const score = calculateScore(currentEvalData, emp.name);
+        const grade = currentEvalData[emp.name]?.grade || '未設等級';
+        
+        records.push({
+          name: emp.name,
+          station: stationName,
+          score: score,
+          grade: grade
+        });
+      });
+
+      const payload = {
+        type: 'evaluation',
+        date: todayString,
+        records: records
+      };
+
+      // 3. 發送至 Google Sheets
+      try {
+        // 改變按鈕狀態提示上傳中
+        showToast('正在同步至 Google 試算表...');
+        
+        // 傳送 text/plain 可避免前端發生 CORS Preflight 錯誤，後端依然可以 JSON 解析
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          showToast('今日評分已成功儲存並同步至雲端');
+        } else {
+          showToast('雲端同步失敗，但已存在本機');
+          console.error(result.message);
+        }
+      } catch (error) {
+        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+        console.error('API Error:', error);
+      }
     }
 
     // =============================================
@@ -725,11 +775,56 @@
       }
     }
 
-    function saveCleaningData() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
+    // =============================================
+    // 修改後的清潔儲存功能
+    // =============================================
+    async function saveCleaningData() {
+      // 1. 存入 LocalStorage
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.currentCleaning = cleaningData;
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
-      showToast('清潔評分已成功儲存');
+      
+      // 2. 整理清潔評分資料 (只過濾出有被選中的人)
+      let records = [];
+      EMPLOYEES.forEach(emp => {
+        if (cleaningData[emp.name]?.selected) {
+          records.push({
+            name: emp.name,
+            stars: cleaningData[emp.name].stars || 0
+          });
+        }
+      });
+
+      if (records.length === 0) {
+        showToast('本機儲存成功 (無人參與清潔)');
+        return;
+      }
+
+      const payload = {
+        type: 'cleaning',
+        date: todayString,
+        records: records
+      };
+
+      // 3. 發送至 Google Sheets
+      try {
+        showToast('正在同步至 Google 試算表...');
+        
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          showToast('清潔評分已成功儲存並同步至雲端');
+        } else {
+          showToast('雲端同步失敗，但已存在本機');
+        }
+      } catch (error) {
+        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+        console.error('API Error:', error);
+      }
     }
 
     // =============================================
