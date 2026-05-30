@@ -277,7 +277,7 @@
 </div>
 
 <div class="topbar">
-  <h1>📋 清潔與值班管理系統</h1>
+  <h1>📋 清潔與排班管理系統</h1>
   <div class="topbar-actions">
     <button class="btn btn-outline" onclick="switchTab('leavePanel')">🏖️ 排定休假</button>
     <button class="btn btn-outline" onclick="toggleFontSize()">🔠 字體大小</button>
@@ -288,7 +288,7 @@
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('cleanPanel')">🧹 清潔與洗餐具</div>
-  <div class="tab" onclick="switchTab('shiftPanel')">🏪 開店關帳值班</div>
+  <div class="tab" onclick="switchTab('shiftPanel')">🏪 開店關帳排班</div>
   <div class="tab" onclick="switchTab('leavePanel')">🏖️ 休假排定</div>
   <div class="tab" id="staffTabBtn" onclick="switchTab('staffPanel')" style="display:none;">👥 人員管理</div>
 </div>
@@ -328,7 +328,7 @@
 
   <div class="panel" id="shiftPanel">
     <div class="section-header">
-      <h2>開店關帳人員值班表</h2>
+      <h2>開店關帳人員排班表</h2>
       <div class="month-nav">
         <button onclick="changeShiftMonth(-1)">‹</button>
         <span id="shiftMonthLabel"></span>
