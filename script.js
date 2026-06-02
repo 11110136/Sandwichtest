@@ -270,7 +270,9 @@ async function saveDayToSupabase(m, d, dayData) {
         const { error } = await supabaseClient
             .from('shift_schedules')
             .upsert({ 
-                year: year, month: m, day: d, 
+                year: year, 
+                month: m + 1, // ✅ 將 JS 的 0~11 轉換為 DB 認得的 1~12
+                day: d, 
                 leave: dayData.leave || "", open: dayData.open || "",
                 shift: dayData.shift || "", t20: dayData.t20 || "",
                 dish: dayData.dish || "", clean: dayData.clean || "",
@@ -296,8 +298,10 @@ async function fetchFromSupabase() {
         if (data && data.length > 0) {
             fullYearData = {}; 
             data.forEach(row => {
-                if (!fullYearData[row.month]) fullYearData[row.month] = {};
-                fullYearData[row.month][row.day] = {
+                const jsMonth = row.month - 1; // ✅ 將 DB 的 1~12 轉換為 JS 的 0~11
+
+                if (!fullYearData[jsMonth]) fullYearData[jsMonth] = {};
+                fullYearData[jsMonth][row.day] = {
                     leave: row.leave || "", open: row.open || "", shift: row.shift || "",
                     t20: row.t20 || "", dish: row.dish || "", clean: row.clean || "",
                     close: row.close || "", notes: row.notes || ""
