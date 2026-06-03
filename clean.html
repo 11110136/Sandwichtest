@@ -6,7 +6,6 @@
 <title>清潔與排班管理系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 引入 LIFF SDK -->
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
@@ -220,7 +219,7 @@
     body { background: #fff !important; margin: 0; padding: 0; }
     
     .topbar, .tabs, .section-header .month-nav, .btn, .add-staff-row, .tip,
-    #staffPanel, #leavePanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats { display: none !important; } 
+    #staffPanel, #leavePanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats, #toast { display: none !important; } 
     
     .main { padding: 0 !important; margin: 0 !important; }
     .panel { display: none !important; }
@@ -257,6 +256,29 @@
 
     .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 85px !important; max-width: 85px !important; white-space: normal !important; word-break: break-all !important; }
     .shift-table th:nth-child(4), .shift-table td:nth-child(4), .shift-table th:nth-child(11), .shift-table td:nth-child(11) { width: 250px !important; max-width: 250px !important; white-space: normal !important; word-break: break-word !important; }
+  }
+
+  /* ── Toast 通知 ── */
+  #toast {
+    position: fixed; 
+    top: 24px; 
+    left: 50%; 
+    transform: translateX(-50%) translateY(-100px);
+    background: rgba(44, 62, 80, 0.95); 
+    color: white;
+    padding: 10px 24px; 
+    border-radius: 50px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0; 
+    font-size: 15px; 
+    font-weight: 500; 
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    pointer-events: none;
+  }
+  #toast.show { 
+    transform: translateX(-50%) translateY(0); 
+    opacity: 1; 
   }
 </style>
 </head>
@@ -411,6 +433,8 @@
   </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
 // ══════════════════════════════════════════
 //  LIFF 初始化設定
@@ -424,15 +448,22 @@ async function initLiff() {
     
     if (liff.isLoggedIn()) {
       const profile = await liff.getProfile();
-      // 使用簡單的 alert 歡迎使用者 (也可以改用 console.log 避免干擾畫面)
-      alert(`歡迎回來，${profile.displayName}！`);
+      console.log("LINE 登入成功:", profile.displayName);
+      showToast(`歡迎回來，${profile.displayName} 👋`);
     } else {
-      // 若希望使用者一進來就被要求登入 LINE，請取消註解下方這行
-      // liff.login();
+      console.log("未登入 LINE，以一般網頁模式瀏覽");
     }
   } catch (error) {
     console.error("LIFF 初始化失敗:", error);
   }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.innerText = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000); 
 }
 
 // ══════════════════════════════════════════

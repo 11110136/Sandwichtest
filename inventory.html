@@ -10,7 +10,6 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- 引入 LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
@@ -31,9 +30,10 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     .fade-in { animation: fadeIn 0.25s ease forwards; }
     
-    @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
-    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
-    .toast-enter { animation: toastIn 0.3s ease forwards; }
+    /* Toast 置中滑入與滑出動畫 (結合 translate-x 置中處理) */
+    @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -24px); } }
+    .toast-enter { animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     .toast-exit { animation: toastOut 0.3s ease forwards; }
     
     /* 自訂鍵盤向上滑入動畫 */
@@ -167,14 +167,18 @@
   const Toast = ({ message, type, onDone }) => {
     const [exiting, setExiting] = useState(false);
     useEffect(() => {
-      const t1 = setTimeout(() => setExiting(true), 2200);
-      const t2 = setTimeout(() => onDone(), 2500);
+      const t1 = setTimeout(() => setExiting(true), 2500);
+      const t2 = setTimeout(() => onDone(), 2800);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }, []);
-    const bg = type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-amber-500' : 'bg-stone-800';
+    const bg = type === 'error' ? 'bg-red-600/95' : type === 'warning' ? 'bg-amber-500/95' : 'bg-stone-800/95';
+    const Icon = type === 'error' ? X : type === 'warning' ? AlertCircle : CheckCircle2;
+    const iconColor = type === 'error' ? 'text-white' : type === 'warning' ? 'text-white' : 'text-emerald-400';
+
     return (
-      <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[999] ${bg} text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg pointer-events-none ${exiting ? 'toast-exit' : 'toast-enter'}`}>
-        {message}
+      <div className={`fixed top-6 left-1/2 z-[9999] ${bg} backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 pointer-events-none ${exiting ? 'toast-exit' : 'toast-enter'}`} style={{ transform: 'translate(-50%, 0)' }}>
+        <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
+        <span className="font-medium tracking-wide text-sm">{message}</span>
       </div>
     );
   };
@@ -218,11 +222,8 @@
       if (!activeId) return;
       
       const handleOutsideClick = (e) => {
-        // 如果點擊的是鍵盤本身，則不處理
         if (keypadRef.current && keypadRef.current.contains(e.target)) return;
-        // 如果點擊的是數量輸入區（包含 + - 按鈕），也不處理（交給它們自己的 onClick 去切換或輸入）
         if (e.target.closest('.prevent-keypad-close')) return;
-        
         onClose();
       };
 
@@ -561,8 +562,10 @@
           
           if (window.liff.isLoggedIn()) {
             const profile = await window.liff.getProfile();
-            showToast(`歡迎回來，${profile.displayName}！`);
+            console.log("LINE 登入成功:", profile.displayName);
+            showToast(`歡迎回來，${profile.displayName} 👋`);
           } else {
+            console.log("未登入 LINE，以一般網頁模式瀏覽");
             // 如果你希望使用者一開啟網頁就強制登入，請將下方的註解取消：
             // window.liff.login();
           }
