@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>員工績效評分系統 | 現代簡約版</title>
+  <title>員工績效評分系統</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -76,13 +76,6 @@
     .quota-ok { background: #86efac; }
     .quota-warn { background: #fb923c; }
     .quota-full { background: #f87171; }
-
-    /* 建議等級卡 */
-    .suggestion-card {
-      border-radius: 12px; padding: 12px 16px;
-      display: flex; align-items: center; gap: -12px;
-      animation: fadeIn 0.3s ease;
-    }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 selection:bg-stone-200">
@@ -147,7 +140,7 @@
                   <span class="text-stone-400 text-lg md:text-2xl">的績效評估</span>
                 </h2>
                 <p class="text-stone-500 text-xs md:text-sm mb-3">請選擇今日工作崗位，再進行 1-10 分評分</p>
-                <div id="seniority-suggestion" class="hidden flex items-center gap-3 mt-2 p-3 rounded-xl bg-stone-50 border border-stone-100 text-sm flex-wrap"></div>
+                <div id="seniority-suggestion"></div>
               </div>
               <div class="text-left sm:text-right bg-stone-50 sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none flex-shrink-0">
                 <p class="text-[10px] md:text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">今日總分</p>
@@ -157,15 +150,14 @@
 
             <div class="mb-6 md:mb-8">
               <p class="text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日工作崗位</p>
-              <div class="flex gap-2 flex-wrap" id="station-selector">
-                </div>
+              <div class="flex gap-2 flex-wrap" id="station-selector"></div>
             </div>
 
             <div id="criteria-form" class="space-y-4 md:space-y-6"></div>
 
             <div class="mt-8 md:mt-10 flex justify-end">
               <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
-                <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評分
+                <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評定紀錄
               </button>
             </div>
           </div>
@@ -259,8 +251,8 @@
 
   </main>
 
-  <div id="toast" class="fixed bottom-6 right-6 left-6 md:left-auto bg-stone-800 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
-    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+  <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-stone-800/95 backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 transition-all duration-300 opacity-0 -translate-y-6 pointer-events-none z-[1000]">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
     <span id="toast-msg" class="font-medium tracking-wide text-sm">今日評分已成功儲存</span>
   </div>
 
@@ -268,7 +260,7 @@
     // =============================================
     // LIFF 與 API 設定
     // =============================================
-    const LIFF_ID = '2010172685-ojhA52eN'; // 替換為你在 LINE Developers 取得的 LIFF ID
+    const LIFF_ID = '2010172685-ojhA52eN'; // 替換為你的 LIFF ID
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
 
     // 初始化 LIFF 流程
@@ -277,11 +269,12 @@
         await liff.init({ liffId: LIFF_ID });
         console.log("LIFF 初始化成功");
         
-        if (!liff.isLoggedIn()) {
-          // liff.login();
-        } else {
+        if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
-          showToast(`歡迎登入系統，${profile.displayName}`);
+          console.log("LINE 登入成功:", profile.displayName);
+          showToast(`歡迎回來，${profile.displayName} 👋`);
+        } else {
+          console.log("未登入 LINE，以一般網頁模式瀏覽");
         }
       } catch (error) {
         console.error("LIFF 初始化失敗:", error);
@@ -370,16 +363,10 @@
       D: { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
     };
 
-    const SENIORITY_GRADE_MAP = [
-      { maxMonths: 12,  label: '到職1年以內', map: [90, 80, 70, 60] },
-      { maxMonths: 36,  label: '到職1~3年',   map: [90, 80, 70, 60] },
-      { maxMonths: 60,  label: '到職3~5年',   map: [90, 80, 70, 60] },
-    ];
-
     const GRADE_TABLE = {
       '到職1年以內': { over90: 'O', over80: 'O', over70: 'A', over60: 'B', under60: 'C' },
-      '到職1~3年':   { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
-      '到職3~5年':   { over90: 'A', over80: 'B', over70: 'C', over60: 'D', under60: 'D' },
+      '到職1~3年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
+      '到職3~5年':  { over90: 'A', over80: 'B', over70: 'C', over60: 'D', under60: 'D' },
     };
 
     let currentEvalData = {};
@@ -430,14 +417,13 @@
       document.getElementById('dashboard-date').innerText = `(${todayString})`;
       lucide.createIcons();
       
-      // 嘗試從 GAS 讀取歷史資料（解決 Bug 4）
       await fetchHistoryFromGAS();
     }
 
     function generateDefaultEval(defaultScore = 5) {
       let data = {};
       EMPLOYEES.forEach(emp => {
-        data[emp.name] = { station: STATIONS[0].id, grade: '' };
+        data[emp.name] = { station: STATIONS[0].id, grade: '' }; // 空等級代表未評量
         STATIONS.forEach(st => {
           data[emp.name][st.id] = {};
           st.criteria.forEach(c => { data[emp.name][st.id][c.id] = { score: defaultScore, note: '' }; });
@@ -455,7 +441,6 @@
     function loadDataFromStorage() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
       
-      // 移除原先假資料的生成，確保新使用者不會看到假歷史紀錄 (修復 Bug 3)
       if (!storage) {
         storage = {
           lastDate: todayString,
@@ -477,10 +462,8 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
     }
 
-    // 從 Google Apps Script 拉取歷史紀錄 (解決換裝置遺失問題)
     async function fetchHistoryFromGAS() {
       try {
-        // 需在 GAS 中實作對應的 doGet 函式回傳歷史 JSON 結構
         const response = await fetch(GAS_API_URL + "?action=getHistory");
         if (!response.ok) return;
         const result = await response.json();
@@ -488,7 +471,6 @@
         if (result.status === 'success' && result.data) {
           let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
           
-          // 將雲端的歷史資料合併到本機端
           if (result.data.history) {
               storage.history = { ...storage.history, ...result.data.history };
           }
@@ -504,14 +486,18 @@
           }
         }
       } catch (error) {
-        console.warn("無法取得雲端歷史資料 (GAS 可能尚未實作 doGet 介面)，使用本機資料", error);
+        console.warn("無法取得雲端歷史資料", error);
       }
     }
 
     // =============================================
-    // 分數計算
+    // 分數計算 (修正：優先讀取歷史紀錄的預算分數)
     // =============================================
     function calculateScore(dataObj, empName) {
+      if (dataObj[empName] && dataObj[empName].precalculatedScore !== undefined) {
+        return dataObj[empName].precalculatedScore;
+      }
+      
       const stationId = dataObj[empName].station || STATIONS[0].id;
       const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
       let total = 0;
@@ -547,18 +533,33 @@
     }
 
     // =============================================
-    // 員工列表 & 選擇
+    // 員工列表 & 選擇 (加入完成狀態標示)
     // =============================================
     function renderEmployeeList() {
       document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => {
         const grade = currentEvalData[emp.name]?.grade;
         const gc = grade ? GRADE_COLORS[grade] : null;
+        const isCompleted = !!grade; // 有給等級代表完成評分
+        
+        let btnClass = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border ";
+        let iconBgClass = "w-8 h-8 rounded-full flex items-center justify-center transition-colors ";
+        
+        if (emp.name === currentSelectedEmp) {
+          btnClass += "bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
+          iconBgClass += "emp-icon-bg bg-stone-700";
+        } else if (isCompleted) {
+          btnClass += "bg-emerald-50/70 text-emerald-800 border-emerald-100 hover:bg-emerald-50 hover:shadow-sm";
+          iconBgClass += "emp-icon-bg bg-emerald-100/60";
+        } else {
+          btnClass += "bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm";
+          iconBgClass += "emp-icon-bg bg-stone-100";
+        }
+
         return `
-        <button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')"
-          class="snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm">
+        <button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')" class="${btnClass}">
           <div class="flex items-center space-x-2 md:space-x-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg transition-colors bg-stone-100">
-              <i data-lucide="user" class="w-4 h-4"></i>
+            <div class="${iconBgClass}">
+              <i data-lucide="${isCompleted && emp.name !== currentSelectedEmp ? 'check' : 'user'}" class="w-4 h-4"></i>
             </div>
             <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp.name}</span>
           </div>
@@ -567,51 +568,21 @@
           </span>
         </button>
       `}).join('');
+      lucide.createIcons();
     }
 
     function selectEmployee(empName) {
       currentSelectedEmp = empName;
       currentStation = currentEvalData[empName].station || STATIONS[0].id;
       document.getElementById('current-emp-name').innerText = empName;
-
-      EMPLOYEES.forEach(emp => {
-        const btn = document.getElementById(`btn-emp-${emp.name}`);
-        if (!btn) return;
-        
-        // 切換 Active 狀態樣式
-        if (emp.name === empName) {
-          btn.className = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
-          btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-700";
-        } else {
-          btn.className = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm";
-          btn.querySelector('.emp-icon-bg').className = "w-8 h-8 rounded-full flex items-center justify-center emp-icon-bg bg-stone-100";
-        }
-
-        // 修復 Bug 1 & 2: 獨立更新徽章，確保不會因為按鈕 className 的切換而導致徽章消失
-        const badge = document.getElementById(`grade-badge-${emp.name}`);
-        if (badge) {
-          const grade = currentEvalData[emp.name]?.grade;
-          if (grade) {
-            const gc = GRADE_COLORS[grade];
-            badge.className = `grade-badge grade-${grade} ml-2`;
-            badge.style.background = gc.bg;
-            badge.style.color = gc.text;
-            badge.innerText = grade;
-            badge.classList.remove('hidden');
-          } else {
-            badge.className = 'grade-badge hidden ml-2';
-            badge.innerText = '';
-          }
-        }
-      });
-      
+      renderEmployeeList(); // 重新渲染列表以更新狀態顏色
       renderStationSelector();
       renderEvaluationForm();
       updateTotalAndSuggestion();
     }
 
     // =============================================
-    // 評分表單
+    // 評分表單 (+/- 按鈕微調優化)
     // =============================================
     function renderEvaluationForm() {
       const stationId = currentEvalData[currentSelectedEmp].station || STATIONS[0].id;
@@ -630,11 +601,16 @@
               <p class="text-xs md:text-sm text-stone-500">${c.desc}</p>
             </div>
             <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
-              <div class="flex items-center space-x-4 md:space-x-6">
-                <input type="range" min="1" max="10" value="${d.score}"
+              <div class="flex items-center space-x-3 md:space-x-4">
+                <button onclick="adjustScore('${stationId}', '${c.id}', -1)" class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 hover:bg-stone-300 active:scale-95 transition-all">-</button>
+                
+                <input type="range" min="1" max="10" value="${d.score}" id="slider-${c.id}"
                   oninput="updateScore('${stationId}', '${c.id}', this.value)"
-                  class="w-full h-2 bg-stone-200 rounded-lg cursor-pointer" />
-                <div id="score-display-${c.id}" class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${d.score}</div>
+                  class="flex-1 h-2 bg-stone-200 rounded-lg cursor-pointer" />
+                  
+                <button onclick="adjustScore('${stationId}', '${c.id}', 1)" class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 hover:bg-stone-300 active:scale-95 transition-all">+</button>
+                
+                <div id="score-display-${c.id}" class="w-10 h-10 ml-2 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${d.score}</div>
               </div>
               <div class="relative">
                 <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-stone-400"></i>
@@ -649,12 +625,23 @@
       lucide.createIcons();
     }
 
+    function adjustScore(stationId, cId, delta) {
+      if (!currentEvalData[currentSelectedEmp][stationId]) return;
+      let currentScore = currentEvalData[currentSelectedEmp][stationId][cId].score;
+      let newScore = Math.min(10, Math.max(1, currentScore + delta));
+      currentEvalData[currentSelectedEmp][stationId][cId].score = newScore;
+      document.getElementById(`slider-${cId}`).value = newScore;
+      document.getElementById(`score-display-${cId}`).innerText = newScore;
+      updateTotalAndSuggestion();
+    }
+
     function updateScore(stationId, cId, val) {
       if (!currentEvalData[currentSelectedEmp][stationId]) return;
       currentEvalData[currentSelectedEmp][stationId][cId].score = parseInt(val, 10);
       document.getElementById(`score-display-${cId}`).innerText = val;
       updateTotalAndSuggestion();
     }
+    
     function updateNote(stationId, cId, val) {
       if (currentEvalData[currentSelectedEmp][stationId]) {
         currentEvalData[currentSelectedEmp][stationId][cId].note = val;
@@ -662,7 +649,7 @@
     }
 
     // =============================================
-    // 總分 + 年資建議等級
+    // 總分與直覺手動等級選擇器
     // =============================================
     function updateTotalAndSuggestion() {
       const score = calculateScore(currentEvalData, currentSelectedEmp);
@@ -670,40 +657,43 @@
 
       const suggestion = getSuggestedGrade(currentSelectedEmp, score);
       const el = document.getElementById('seniority-suggestion');
-      if (!suggestion) { el.classList.add('hidden'); return; }
-
-      const gc = GRADE_COLORS[suggestion.grade];
-      el.classList.remove('hidden');
-      el.innerHTML = `
-        <i data-lucide="user-check" class="w-4 h-4 text-stone-500 flex-shrink-0"></i>
-        <span class="text-xs text-stone-500 mr-1">${suggestion.seniorityLabel}（${suggestion.months}個月）</span>
-        <span class="text-xs text-stone-500 mx-1">→ 建議等級：</span>
-        <span class="grade-badge grade-${suggestion.grade}" style="background:${gc.bg};color:${gc.text};">${suggestion.grade}</span>
-        <span class="text-xs text-stone-400 ml-2">（僅供參考）</span>
-        <button onclick="applyGrade('${suggestion.grade}')"
-          class="ml-auto text-xs px-3 py-1 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 transition-all whitespace-nowrap">
-          套用此等級
-        </button>
+      
+      let html = `
+        <div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-stone-50 border border-stone-100">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold text-stone-500 uppercase tracking-widest">評定今日等級</span>
+            ${suggestion ? `<span class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full">系統依照年資建議: ${suggestion.grade}</span>` : ''}
+          </div>
+          <div class="flex gap-2 sm:gap-3 flex-wrap">
       `;
-      lucide.createIcons();
+      
+      ['O', 'A', 'B', 'C', 'D'].forEach(g => {
+        const gc = GRADE_COLORS[g];
+        const isSelected = currentEvalData[currentSelectedEmp]?.grade === g;
+        
+        html += `
+          <button onclick="applyGrade('${g}')" 
+            class="flex-1 min-w-[40px] h-10 sm:h-12 rounded-xl font-bold transition-all border-2 flex items-center justify-center text-sm sm:text-base
+            ${isSelected ? 'ring-2 ring-offset-2 ring-stone-400 scale-105 shadow-sm' : 'hover:scale-105 opacity-60 hover:opacity-100'}"
+            style="background:${gc.bg}; color:${gc.text}; border-color:${isSelected ? gc.text : gc.border};">
+            ${g}
+          </button>
+        `;
+      });
+      
+      html += `</div></div>`;
+      el.innerHTML = html;
     }
 
     function applyGrade(grade) {
       currentEvalData[currentSelectedEmp].grade = grade;
-      const badge = document.getElementById(`grade-badge-${currentSelectedEmp}`);
-      if (badge) {
-        const gc = GRADE_COLORS[grade];
-        badge.className = `grade-badge grade-${grade} ml-2`;
-        badge.style.background = gc.bg;
-        badge.style.color = gc.text;
-        badge.innerText = grade;
-        badge.classList.remove('hidden');
-      }
-      showToast(`已套用等級 ${grade} 給 ${currentSelectedEmp}`);
+      renderEmployeeList(); // 更新左側列表狀態
+      updateTotalAndSuggestion(); // 重新渲染自己的選擇器狀態
+      showToast(`已成功評定 ${currentSelectedEmp} 今日等級為 ${grade}`);
     }
 
     // =============================================
-    // 績效儲存功能 (含 API)
+    // 績效儲存功能 (新增：過濾未排班人員)
     // =============================================
     async function saveData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -712,18 +702,27 @@
       
       let records = [];
       EMPLOYEES.forEach(emp => {
-        const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
-        const stationName = STATIONS.find(s => s.id === stationId)?.name || stationId;
-        const score = calculateScore(currentEvalData, emp.name);
-        const grade = currentEvalData[emp.name]?.grade || '未設等級';
+        const grade = currentEvalData[emp.name]?.grade;
         
-        records.push({
-          name: emp.name,
-          station: stationName,
-          score: score,
-          grade: grade
-        });
+        // 【重要修改】只有給予等級的人，才算是今天有上班/被評分，才會寫入雲端
+        if (grade) {
+          const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
+          const stationName = STATIONS.find(s => s.id === stationId)?.name || stationId;
+          const score = calculateScore(currentEvalData, emp.name);
+          
+          records.push({
+            name: emp.name,
+            station: stationName,
+            score: score,
+            grade: grade
+          });
+        }
       });
+
+      if (records.length === 0) {
+        showToast('尚未替任何員工設定等級，無資料可儲存');
+        return;
+      }
 
       const payload = {
         type: 'evaluation',
@@ -817,7 +816,7 @@
     }
 
     // =============================================
-    // 清潔儲存功能 (含 API)
+    // 清潔儲存功能
     // =============================================
     async function saveCleaningData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -839,29 +838,16 @@
         return;
       }
 
-      const payload = {
-        type: 'cleaning',
-        date: todayString,
-        records: records
-      };
+      const payload = { type: 'cleaning', date: todayString, records: records };
 
       try {
         showToast('正在同步至 Google 試算表...');
-        
-        const response = await fetch(GAS_API_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        
+        const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
-        if (result.status === 'success') {
-          showToast('清潔評分已成功儲存並同步至雲端');
-        } else {
-          showToast('雲端同步失敗，但已存在本機');
-        }
+        if (result.status === 'success') showToast('清潔評分已成功儲存並同步至雲端');
+        else showToast('雲端同步失敗，但已存在本機');
       } catch (error) {
         showToast('網路錯誤：雲端同步失敗，已儲存於本機');
-        console.error('API Error:', error);
       }
     }
 
@@ -905,7 +891,7 @@
     }
 
     // =============================================
-    // 總覽與歷史表格
+    // 總覽與歷史表格 (過濾未評分員工)
     // =============================================
     function buildTableHTML(dataSource, theadId, tbodyId) {
       document.getElementById(theadId).innerHTML = `
@@ -915,7 +901,16 @@
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-bold text-stone-800 whitespace-nowrap text-right">加權總分</th>
         <th class="py-4 px-4 md:py-5 md:px-6 text-xs md:text-sm font-bold text-stone-800 whitespace-nowrap text-center">等級</th>
       `;
-      document.getElementById(tbodyId).innerHTML = EMPLOYEES.map(emp => {
+      
+      // 只列出有評分(有指派等級)的員工
+      const evaluatedEmps = EMPLOYEES.filter(emp => dataSource[emp.name]?.grade);
+      
+      if (evaluatedEmps.length === 0) {
+        document.getElementById(tbodyId).innerHTML = `<tr><td colspan="5" class="py-8 text-center text-stone-400">目前尚無評估紀錄</td></tr>`;
+        return;
+      }
+
+      document.getElementById(tbodyId).innerHTML = evaluatedEmps.map(emp => {
         const stationId = dataSource[emp.name]?.station || STATIONS[0].id;
         const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
         const score = calculateScore(dataSource, emp.name);
@@ -941,23 +936,30 @@
     function renderDashboard() {
       renderGradeQuota();
 
-      document.getElementById('dashboard-cards').innerHTML = EMPLOYEES.map(emp => {
-        const score = calculateScore(currentEvalData, emp.name);
-        const grade = currentEvalData[emp.name]?.grade || '';
-        const gc = grade ? GRADE_COLORS[grade] : null;
-        return `
-          <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-4 md:p-6 rounded-3xl shadow-sm text-center group hover:shadow-md transition-all">
-            <div class="w-12 h-12 md:w-14 md:h-14 mx-auto rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-2 shadow-sm">
-              <i data-lucide="user" class="w-5 h-5 text-stone-600"></i>
+      // 卡片區也只顯示有被評估的員工
+      const evaluatedEmps = EMPLOYEES.filter(emp => currentEvalData[emp.name]?.grade);
+      
+      if(evaluatedEmps.length === 0) {
+        document.getElementById('dashboard-cards').innerHTML = `<div class="col-span-full text-center py-6 text-stone-400">尚未指派任何評估等級</div>`;
+      } else {
+        document.getElementById('dashboard-cards').innerHTML = evaluatedEmps.map(emp => {
+          const score = calculateScore(currentEvalData, emp.name);
+          const grade = currentEvalData[emp.name]?.grade || '';
+          const gc = grade ? GRADE_COLORS[grade] : null;
+          return `
+            <div class="bg-white/80 backdrop-blur-xl border border-white/60 p-4 md:p-6 rounded-3xl shadow-sm text-center group hover:shadow-md transition-all">
+              <div class="w-12 h-12 md:w-14 md:h-14 mx-auto rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center mb-2 shadow-sm">
+                <i data-lucide="user" class="w-5 h-5 text-stone-600"></i>
+              </div>
+              <h3 class="text-lg font-medium text-stone-800">${emp.name}</h3>
+              <div class="text-3xl md:text-4xl font-light text-stone-800 mt-1 mb-2">${score}</div>
+              ${grade
+                ? `<span class="grade-badge grade-${grade} mx-auto" style="background:${gc.bg};color:${gc.text};">${grade}</span>`
+                : `<span class="text-xs text-stone-400">未設等級</span>`}
             </div>
-            <h3 class="text-lg font-medium text-stone-800">${emp.name}</h3>
-            <div class="text-3xl md:text-4xl font-light text-stone-800 mt-1 mb-2">${score}</div>
-            ${grade
-              ? `<span class="grade-badge grade-${grade} mx-auto" style="background:${gc.bg};color:${gc.text};">${grade}</span>`
-              : `<span class="text-xs text-stone-400">未設等級</span>`}
-          </div>
-        `;
-      }).join('');
+          `;
+        }).join('');
+      }
 
       buildTableHTML(currentEvalData, 'dashboard-table-head', 'dashboard-table-body');
 
@@ -1029,8 +1031,10 @@
     function showToast(msg) {
       document.getElementById('toast-msg').innerText = msg;
       const toast = document.getElementById('toast');
-      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-      setTimeout(() => toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'), 3000);
+      // 移除隱藏屬性，讓訊息彈出
+      toast.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
+      // 3 秒後加回隱藏屬性
+      setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
 
     // 啟動流程：先等 LIFF 啟動再進入系統
