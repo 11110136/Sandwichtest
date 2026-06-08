@@ -323,58 +323,55 @@
     }
 
     async function fetchTodayShift() {
-      const today = new Date();
-      // 明確轉為 Number，確保與 int4 欄位型別一致
-      const year = parseInt(today.getFullYear());
-      const month = parseInt(today.getMonth() + 1);
-      const day = parseInt(today.getDate());
+  const today = new Date();
+  const year = parseInt(today.getFullYear());
+  const month = parseInt(today.getMonth() + 1);
+  const day = parseInt(today.getDate());
 
-      console.log(`正在查詢 (數字比對): ${year}/${month}/${day}`);
+  try {
+    // 修正：只選取 open 與 shift 兩個欄位
+    const { data, error } = await supabase
+      .from('shift_schedules')
+      .select('open, shift') 
+      .eq('year', year)
+      .eq('month', month)
+      .eq('day', day)
+      .maybeSingle();
 
-      try {
-        const { data, error } = await supabase
-          .from('shift_schedules')
-          .select('level, open')
-          .eq('year', year)
-          .eq('month', month)
-          .eq('day', day)
-          .maybeSingle();
-
-        // 如果查不到資料，為了測試，強制撈取最新的一筆
-        let targetData = data;
-        if (!targetData) {
-            console.warn("當天無資料，嘗試抓取最新排班...");
-            const { data: latest } = await supabase
-                .from('shift_schedules')
-                .select('level, open')
-                .order('year', { ascending: false })
-                .order('month', { ascending: false })
-                .order('day', { ascending: false })
-                .limit(1)
-                .single();
-            targetData = latest;
-        }
-
-        if (targetData) {
-          console.log("成功撈取資料:", targetData);
-          let allShiftPeople = [];
-          if (targetData.level) allShiftPeople.push(...targetData.level.split('、').map(n => n.trim()).filter(n => n));
-          if (targetData.open) allShiftPeople.push(...targetData.open.split('、').map(n => n.trim()).filter(n => n && n !== '可柔'));
-
-          const uniqueNames = [...new Set(allShiftPeople)];
-          EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
-          
-          uniqueNames.forEach(name => {
-            if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
-              EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
-            }
-          });
-          renderEmployeeList(); // 成功撈到後，記得呼叫這行渲染名單
-        }
-      } catch (err) {
-        console.error('取得班表失敗:', err);
-      }
+    if (error) {
+      console.error("Supabase 查詢錯誤:", error);
+      return;
     }
+
+    if (data) {
+      console.log("成功撈取資料:", data);
+      
+      let allShiftPeople = [];
+      // 只將 open 與 shift 的人員放入名單
+      if (data.open)  allShiftPeople.push(...data.open.split('、').map(n => n.trim()));
+      if (data.shift) allShiftPeople.push(...data.shift.split('、').map(n => n.trim()));
+
+      // 過濾掉無效字元
+      const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''))];
+      
+      // 更新 EMPLOYEES
+      EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
+      
+      // 如果資料庫出現了不在 ALL_EMPLOYEES 的名字，手動加入
+      uniqueNames.forEach(name => {
+        if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
+          EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+        }
+      });
+
+      renderEmployeeList(); // 渲染名單
+    } else {
+      console.warn("今日查無資料");
+    }
+  } catch (err) {
+    console.error('取得班表失敗:', err);
+  }
+}
 
     async function initApp() {
       await fetchTodayShift();
