@@ -205,12 +205,17 @@
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
 
-    // ✅ 直接在前端初始化，不需要後端
-    const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  // 從你的 .env 複製
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  // 從你的 .env 複製貼上完整的 anon key
-    // 使用 var 或 window 屬性，避免 const 在重複執行時報錯
-    window.supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const supabase = window.supabaseClient;
+    // ✅ 直接在前端初始化，採用「更安全」的初始化方式
+    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  // 從你的 .env 複製
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  // 從你的 .env 複製貼上完整的 anon key
+    
+    // 檢查該變數是否存在，若已存在則直接使用，避免重複宣告與重複建立連線
+    if (!window.supabaseClient) {
+        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    
+    // 將 const 改為 var，徹底避開 Identifier 'supabase' has already been declared 錯誤
+    var supabase = window.supabaseClient;
     // -----------------
 
     async function initSupabase() {
@@ -354,7 +359,7 @@
       if (data.shift) allShiftPeople.push(...data.shift.split('、').map(n => n.trim()));
 
       // 過濾掉無效字元
-      const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''))];
+      const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''&& n !== '可柔'))];
       
       // 更新 EMPLOYEES
       EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
