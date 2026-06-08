@@ -204,40 +204,36 @@
     // =============================================
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-    let supabase; // 改為全域變數，等待從後端取得設定後再初始化
+    let supabase; 
 
-  // 新增：從後端取得 Supabase 設定並初始化 (加強版)
-  async function initSupabase() {
-    try {
-      console.log("正在向後端取得資料庫設定...");
-      const backendUrl = 'https://handsfree-proposal-lugged.ngrok-free.dev/api/supabase-config'; 
-      
-      const response = await fetch(backendUrl, {
-        method: 'GET',
-        headers: {
-          // 🚀 關鍵：加入這行標頭，直接繞過 ngrok 的免費版警告畫面
-          'ngrok-skip-browser-warning': 'true' 
-        }
-      });
-      
-      if (!response.ok) throw new Error(`Network error: ${response.status}`);
-      
-      const config = await response.json();
-      console.log("成功取得後端設定！");
-      
-      supabase = window.supabase.createClient(config.url, config.key);
-      console.log("Supabase 初始化成功");
-      return true;
-    } catch (error) {
-      console.error("取得 Supabase 設定失敗:", error);
-      showToast("無法連接至後端，請確認伺服器狀態");
-      return false;
+    // 從後端取得 Supabase 設定並初始化 (加入 ngrok 防護)
+    async function initSupabase() {
+      try {
+        console.log("正在向後端取得資料庫設定...");
+        const backendUrl = 'https://handsfree-proposal-lugged.ngrok-free.dev/api/supabase-config'; 
+        
+        const response = await fetch(backendUrl, {
+          method: 'GET',
+          headers: {
+            'ngrok-skip-browser-warning': 'true' // 繞過 ngrok 警告畫面
+          }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const config = await response.json();
+        supabase = window.supabase.createClient(config.url, config.key);
+        console.log("Supabase 初始化成功");
+        return true;
+      } catch (error) {
+        console.error("取得 Supabase 設定失敗:", error);
+        return false;
+      }
     }
-  }
+
     // =============================================
     // 1. 基本資料設定 
     // =============================================
-    // 保留總檔用來作為「到職日 (年資)」的計算對照表
     const ALL_EMPLOYEES = [
       { name: '俐嬅',  joinDate: '2021-03-01' },
       { name: '小郭',  joinDate: '2022-06-15' },
@@ -250,7 +246,7 @@
       { name: '偲璇',  joinDate: '2024-05-01' },
     ];
 
-    let EMPLOYEES = []; // 將會被 Supabase 當天班表覆蓋
+    let EMPLOYEES = []; 
 
     const STATIONS = [
       {
@@ -329,9 +325,6 @@
     let currentStation = STATIONS[0].id;
     let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
 
-    // =============================================
-    // 初始化與拉取 Supabase 班表資料
-    // =============================================
     async function initLiff() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -351,6 +344,7 @@
       const day = today.getDate();
 
       try {
+        console.log(`正在查詢 Supabase: ${year}/${month}/${day}`);
         const { data, error } = await supabase
           .from('shift_schedules')
           .select('shift')
@@ -362,13 +356,9 @@
         if (error) throw error;
 
         if (data && data.shift) {
-          // 以頓號分割並清理空白
           const shiftNames = data.shift.split('、').map(n => n.trim()).filter(n => n);
-          
-          // 從總表篩選出有上班的員工，以便帶入年資
           EMPLOYEES = ALL_EMPLOYEES.filter(emp => shiftNames.includes(emp.name));
           
-          // 如果班表出現不在 ALL_EMPLOYEES 裡的新人，自動建立並預設今天到職
           shiftNames.forEach(name => {
             if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
               EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
@@ -377,13 +367,11 @@
         }
       } catch (err) {
         console.error('取得今日班表失敗:', err);
-        showToast('無法取得雲端班表，將載入預設所有員工');
         EMPLOYEES = [...ALL_EMPLOYEES];
       }
     }
 
     async function initApp() {
-      showToast('正在同步今日班表...');
       await fetchTodayShift();
 
       if (EMPLOYEES.length === 0) {
@@ -439,7 +427,6 @@
         storage.lastDate = todayString;
       }
       
-      // 確保動態載入的員工如果在 storage 沒有預設值，幫他們建立空殼
       if(!storage.current) storage.current = {};
       if(!storage.currentCleaning) storage.currentCleaning = {};
       
@@ -461,9 +448,6 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
     }
 
-    // =============================================
-    // 計算邏輯
-    // =============================================
     function getSeniorityMonths(joinDate) {
       const join = new Date(joinDate);
       const now = new Date();
@@ -506,9 +490,6 @@
       return total.toFixed(1);
     }
 
-    // =============================================
-    // UI 渲染功能
-    // =============================================
     function renderStationSelector() {
       document.getElementById('station-selector').innerHTML = STATIONS.map(st => `
         <button class="station-btn ${currentEvalData[currentSelectedEmp]?.station === st.id ? 'active' : ''}"
@@ -684,9 +665,6 @@
       showToast(`已成功評定 ${currentSelectedEmp} 今日等級為 ${grade}`);
     }
 
-    // =============================================
-    // 儲存功能
-    // =============================================
     async function saveData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.current = currentEvalData;
@@ -862,39 +840,41 @@
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
 
-    // 修改：加上超時防護的啟動流程
-  window.onload = async () => {
-    try {
-      console.log("網頁載入完成，開始啟動流程...");
-      
-      // 1. 啟動 LIFF (加上 3 秒超時防護，避免在電腦版瀏覽器上無限卡住)
-      await Promise.race([
-        initLiff(),
-        new Promise(resolve => setTimeout(() => {
-          console.warn("LIFF 初始化超時，自動跳過以繼續執行...");
-          resolve();
-        }, 3000))
-      ]);
-      
-      // 2. 取得 Supabase 設定
-      const isSupabaseReady = await initSupabase();
-      
-      // 3. 啟動主程式
-      if (isSupabaseReady) {
-        initApp();
-      } else {
-        // 如果失敗了，直接把錯誤顯示在畫面上，不會再白白卡住
-        document.getElementById('evaluate-content').innerHTML = `
-          <div class="h-64 flex flex-col items-center justify-center text-stone-500">
-            <p class="font-medium text-lg text-red-500 mb-2">⚠ 系統初始化失敗，無法取得資料庫連線</p>
-            <p class="text-sm">請確認您的後端伺服器 (Node.js) 與 ngrok 是否正常運作中。</p>
-            <p class="text-xs mt-4 opacity-60">開發人員請按 F12 查看 Console 錯誤訊息</p>
-          </div>`;
+    // 🚀 保護機制加強版的啟動流程
+    window.onload = async () => {
+      try {
+        console.log("網頁載入完成，開始啟動流程...");
+        
+        // 1. 啟動 LIFF (加上 3 秒超時防護，避免在電腦版瀏覽器上無限卡住)
+        await Promise.race([
+          initLiff(),
+          new Promise(resolve => setTimeout(() => {
+            console.warn("LIFF 初始化超時，自動跳過以繼續執行...");
+            resolve();
+          }, 3000))
+        ]);
+        
+        // 2. 取得 Supabase 設定
+        const isSupabaseReady = await initSupabase();
+        
+        // 3. 啟動主程式
+        if (isSupabaseReady) {
+          initApp();
+        } else {
+          // 如果連線失敗，直接把錯誤顯示在畫面上，不再白白卡住
+          document.getElementById('evaluate-content').innerHTML = `
+            <div class="h-64 flex flex-col items-center justify-center text-stone-500 bg-white/50 backdrop-blur rounded-3xl border border-stone-200">
+              <i data-lucide="server-crash" class="w-12 h-12 text-red-400 mb-4"></i>
+              <p class="font-medium text-lg text-red-500 mb-2">系統初始化失敗，無法取得資料庫連線</p>
+              <p class="text-sm">請確認您的後端伺服器 (Node.js) 與 ngrok 是否正常運作中。</p>
+              <p class="text-xs mt-4 opacity-60">開發人員請按 F12 查看 Console 錯誤訊息</p>
+            </div>`;
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error("嚴重錯誤:", err);
       }
-    } catch (err) {
-      console.error("嚴重錯誤:", err);
-    }
-  };
+    };
   </script>
 </body>
 </html>
