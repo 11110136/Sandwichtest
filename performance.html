@@ -356,7 +356,7 @@
         if (error) throw error;
 
         if (data && data.level) {
-          const shiftNames = data.shift.split('、').map(n => n.trim()).filter(n => n);
+          const shiftNames = data.level.split('、').map(n => n.trim()).filter(n => n);
           EMPLOYEES = ALL_EMPLOYEES.filter(emp => shiftNames.includes(emp.name));
           
           shiftNames.forEach(name => {
