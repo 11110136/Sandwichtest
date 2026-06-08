@@ -204,31 +204,16 @@
     // =============================================
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-    let supabase; 
 
-    // 從後端取得 Supabase 設定並初始化 (加入 ngrok 防護)
+    // ✅ 直接在前端初始化，不需要後端
+    const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  // 從你的 .env 複製
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  // 從你的 .env 複製貼上完整的 anon key
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     async function initSupabase() {
-      try {
-        console.log("正在向後端取得資料庫設定...");
-        const backendUrl = 'https://handsfree-proposal-lugged.ngrok-free.dev/api/supabase-config'; 
-        
-        const response = await fetch(backendUrl, {
-          method: 'GET',
-          headers: {
-            'ngrok-skip-browser-warning': 'true' // 繞過 ngrok 警告畫面
-          }
-        });
-        
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        const config = await response.json();
-        supabase = window.supabase.createClient(config.url, config.key);
-        console.log("Supabase 初始化成功");
-        return true;
-      } catch (error) {
-        console.error("取得 Supabase 設定失敗:", error);
-        return false;
-      }
+      // 不需要再 fetch 後端，直接回傳 true
+      return true;
     }
 
     // =============================================
@@ -863,34 +848,15 @@
     // 🚀 保護機制加強版的啟動流程
     window.onload = async () => {
       try {
-        console.log("網頁載入完成，開始啟動流程...");
-        
-        // 1. 啟動 LIFF (加上 3 秒超時防護，避免在電腦版瀏覽器上無限卡住)
+        // 1. LIFF 超時保護
         await Promise.race([
           initLiff(),
-          new Promise(resolve => setTimeout(() => {
-            console.warn("LIFF 初始化超時，自動跳過以繼續執行...");
-            resolve();
-          }, 3000))
+          new Promise(resolve => setTimeout(resolve, 3000))
         ]);
-        
-        // 2. 取得 Supabase 設定
-        const isSupabaseReady = await initSupabase();
-        
-        // 3. 啟動主程式
-        if (isSupabaseReady) {
-          initApp();
-        } else {
-          // 如果連線失敗，直接把錯誤顯示在畫面上，不再白白卡住
-          document.getElementById('evaluate-content').innerHTML = `
-            <div class="h-64 flex flex-col items-center justify-center text-stone-500 bg-white/50 backdrop-blur rounded-3xl border border-stone-200">
-              <i data-lucide="server-crash" class="w-12 h-12 text-red-400 mb-4"></i>
-              <p class="font-medium text-lg text-red-500 mb-2">系統初始化失敗，無法取得資料庫連線</p>
-              <p class="text-sm">請確認您的後端伺服器 (Node.js) 與 ngrok 是否正常運作中。</p>
-              <p class="text-xs mt-4 opacity-60">開發人員請按 F12 查看 Console 錯誤訊息</p>
-            </div>`;
-          lucide.createIcons();
-        }
+
+        // 2. 直接啟動（不需要等 initSupabase 了）
+        initApp();
+
       } catch (err) {
         console.error("嚴重錯誤:", err);
       }
