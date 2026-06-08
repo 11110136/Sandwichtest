@@ -339,50 +339,59 @@
 
     async function fetchTodayShift() {
       const today = new Date();
+      // 使用更精確的時區時間
       const year = today.getFullYear();
       const month = today.getMonth() + 1;
       const day = today.getDate();
 
+      console.log(`正在查詢: ${year}/${month}/${day}`);
+
       try {
-        console.log(`正在查詢 Supabase: ${year}/${month}/${day}`);
-        // 同時撈取 level (值班) 與 open (開店)
+        // 先嘗試單一查詢
         const { data, error } = await supabase
           .from('shift_schedules')
-          .select('level, open') 
+          .select('shift, open')
           .eq('year', year)
           .eq('month', month)
           .eq('day', day)
-          .single();
+          .maybeSingle(); // 使用 maybeSingle() 避免找不到資料直接報錯
 
-        if (error) throw error;
-
-        let allShiftPeople = [];
-
-        // 1. 處理值班人員 (level)
-        if (data && data.level) {
-          const levelNames = data.level.split('、').map(n => n.trim()).filter(n => n);
-          allShiftPeople.push(...levelNames);
+        if (error) {
+            console.error("Supabase 查詢錯誤:", error);
+            throw error;
         }
 
-        // 2. 處理開店人員 (open)，排除 "可柔"
-        if (data && data.open) {
-          const openNames = data.open.split('、').map(n => n.trim()).filter(n => n && n !== '可柔');
-          allShiftPeople.push(...openNames);
-        }
+        if (data) {
+          console.log("成功撈到資料:", data);
+          let allShiftPeople = [];
 
-        // 3. 去除重複名字並過濾人員名單
-        const uniqueNames = [...new Set(allShiftPeople)];
-        
-        // 從總表篩選出有上班的員工
-        EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
-        
-        // 如果有不在 ALL_EMPLOYEES 裡的新人，自動加入
-        uniqueNames.forEach(name => {
-          if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
-            EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+          // 1. 處理值班人員 (shift)
+          if (data.shift) {
+            const shiftNames = data.shift.split('、').map(n => n.trim()).filter(n => n);
+            allShiftPeople.push(...shiftNames);
           }
-        });
 
+          // 2. 處理開店人員 (open)，排除 "可柔"
+          if (data.open) {
+            const openNames = data.open.split('、').map(n => n.trim()).filter(n => n && n !== '可柔');
+            allShiftPeople.push(...openNames);
+          }
+
+          // 3. 去重
+          const uniqueNames = [...new Set(allShiftPeople)];
+          console.log("最終名單:", uniqueNames);
+
+          EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
+          
+          uniqueNames.forEach(name => {
+            if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
+              EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+            }
+          });
+        } else {
+            console.warn("該日期查無資料");
+            EMPLOYEES = [...ALL_EMPLOYEES];
+        }
       } catch (err) {
         console.error('取得今日班表失敗:', err);
         EMPLOYEES = [...ALL_EMPLOYEES];
