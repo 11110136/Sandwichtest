@@ -208,8 +208,10 @@
     // ✅ 直接在前端初始化，不需要後端
     const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  // 從你的 .env 複製
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  // 從你的 .env 複製貼上完整的 anon key
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 使用 var 或 window 屬性，避免 const 在重複執行時報錯
+    window.supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = window.supabaseClient;
+    // -----------------
 
     async function initSupabase() {
       // 不需要再 fetch 後端，直接回傳 true
