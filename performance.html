@@ -254,16 +254,17 @@
     // =============================================
     // 1. 基本資料設定 
     // =============================================
+    // 將原有的 ALL_EMPLOYEES 更新為包含級距的結構
     const ALL_EMPLOYEES = [
-      { name: '俐嬅',  joinDate: '2021-03-01' },
-      { name: '小郭',  joinDate: '2022-06-15' },
-      { name: '菟菟',  joinDate: '2023-01-10' },
-      { name: '林宣',  joinDate: '2020-09-01' },
-      { name: '若菱',  joinDate: '2024-02-20' },
-      { name: '祥瑋',  joinDate: '2023-07-05' },
-      { name: '翠翠',  joinDate: '2022-11-01' },
-      { name: 'Sam',   joinDate: '2021-08-15' },
-      { name: '偲璇',  joinDate: '2024-05-01' },
+      { name: '俐嬅', joinDate: '2021-03-01', gradeTier: 'C' },
+      { name: '小郭', joinDate: '2022-06-15', gradeTier: 'C' },
+      { name: '菟菟', joinDate: '2023-01-10', gradeTier: 'B' },
+      { name: '林宣', joinDate: '2020-09-01', gradeTier: 'B' },
+      { name: '若菱', joinDate: '2024-02-20', gradeTier: 'A' },
+      { name: '祥瑋', joinDate: '2023-07-05', gradeTier: 'A' },
+      { name: 'Sam',  joinDate: '2021-08-15', gradeTier: 'D' },
+      { name: '翠翠', joinDate: '2022-11-01', gradeTier: 'C' },
+      { name: '偲璇', joinDate: '2024-05-01', gradeTier: 'A' },
     ];
 
     let EMPLOYEES = []; 
@@ -336,7 +337,8 @@
     const GRADE_TABLE = {
       '到職1年以內': { over90: 'O', over80: 'O', over70: 'A', over60: 'B', under60: 'C' },
       '到職1~3年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
-      '到職3~5年':  { over90: 'A', over80: 'B', over70: 'C', over60: 'D', under60: 'D' },
+      '到職3~5年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
+      '到職5~8年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
     };
 
     let currentEvalData = {};
@@ -491,18 +493,26 @@
       return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
     }
     
-    function getSeniorityLabel(months) {
-      if (months <= 12) return '到職1年以內';
-      if (months <= 36) return '到職1~3年';
-      return '到職3~5年';
+    // 改為根據 gradeTier 進行對應
+    function getGradeTableKey(tier) {
+      const map = {
+        'A': '到職1年以內',
+        'B': '到職1~3年',
+        'C': '到職3~5年',
+        'D': '到職5~8年'
+      };
+      return map[tier] || '到職1年以內';
     }
 
+    // 在 getSuggestedGrade 中使用新邏輯
     function getSuggestedGrade(empName, score) {
       const emp = EMPLOYEES.find(e => e.name === empName);
       if (!emp) return null;
-      const months = getSeniorityMonths(emp.joinDate);
-      const label = getSeniorityLabel(months);
+      
+      // 直接獲取該員工的級距，再查表
+      const label = getGradeTableKey(emp.gradeTier);
       const table = GRADE_TABLE[label];
+      
       let grade;
       const s = parseFloat(score);
       if (s >= 90) grade = table.over90;
@@ -510,7 +520,8 @@
       else if (s >= 70) grade = table.over70;
       else if (s >= 60) grade = table.over60;
       else grade = table.under60;
-      return { grade, seniorityLabel: label, months };
+      
+      return { grade, seniorityLabel: label };
     }
 
     function calculateScore(dataObj, empName) {
