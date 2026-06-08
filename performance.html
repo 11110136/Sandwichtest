@@ -731,40 +731,42 @@
         return;
       }
 
-      // 1. 開啟 Modal 並顯示 Loading
-        const modal = document.getElementById('status-modal');
-        const loading = document.getElementById('modal-loading');
-        const success = document.getElementById('modal-success');
-        
-        modal.showModal();
-        loading.classList.remove('hidden');
-        success.classList.add('hidden');
+      // 定義 payload
+      const payload = { type: 'evaluation', date: todayString, records: records };
 
-        try {
-          const response = await fetch(GAS_API_URL, {
-            method: 'POST', redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-          });
-          
-          const result = await response.json();
-          
-          // 2. 切換畫面
-          loading.classList.add('hidden');
-          if (result.status === 'success') {
-            success.classList.remove('hidden');
-            lucide.createIcons(); // 確保成功後的勾勾 icon 出現
-          } else {
-            modal.close();
-            showToast('雲端同步失敗，但已存在本機');
-          }
-        // saveData 的 catch 區塊修正
-          } catch (error) {
-              loading.classList.add('hidden'); // 必須隱藏轉圈圈
-              modal.close(); // 關閉彈窗
-              showToast('網路錯誤：雲端同步失敗，已儲存於本機');
-          }
+      // 1. 開啟 Modal 並顯示 Loading (正確寫在函式內)
+      const modal = document.getElementById('status-modal');
+      const loading = document.getElementById('modal-loading');
+      const success = document.getElementById('modal-success');
+      
+      modal.showModal();
+      loading.classList.remove('hidden');
+      success.classList.add('hidden');
+
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST', redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        // 2. 切換畫面
+        loading.classList.add('hidden');
+        if (result.status === 'success') {
+          success.classList.remove('hidden');
+          lucide.createIcons();
+        } else {
+          modal.close();
+          showToast('雲端同步失敗，但已存在本機');
+        }
+      } catch (error) {
+        loading.classList.add('hidden');
+        modal.close();
+        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
       }
+    }
 
     async function saveCleaningData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -891,16 +893,24 @@
     }
 
     function switchTab(tab) {
-      ['evaluate', 'cleaning'].forEach(t => {
-        document.getElementById(`section-${t}`).classList.add('hidden');
-        const tabBtn = document.getElementById(`tab-${t}`);
-        if(tabBtn) tabBtn.className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700";
-      });
-      document.getElementById(`section-${tab}`).classList.remove('hidden');
-      const activeTabBtn = document.getElementById(`tab-${tab}`);
-      if(activeTabBtn) activeTabBtn.className = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm";
-      if (tab === 'cleaning') renderCleaningModule();
-    }
+    const activeClasses = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm";
+    const inactiveClasses = "flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all text-stone-500 hover:text-stone-700";
+
+    ['evaluate', 'cleaning'].forEach(t => {
+      const section = document.getElementById(`section-${t}`);
+      const btn = document.getElementById(`tab-${t}`);
+      
+      if (t === tab) {
+        section.classList.remove('hidden');
+        btn.className = activeClasses;
+      } else {
+        section.classList.add('hidden');
+        btn.className = inactiveClasses;
+      }
+    });
+
+    if (tab === 'cleaning') renderCleaningModule();
+  }
 
     function showToast(msg) {
       document.getElementById('toast-msg').innerText = msg;
