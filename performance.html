@@ -204,7 +204,27 @@
     // =============================================
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-  
+    let supabase; // 改為全域變數，等待從後端取得設定後再初始化
+
+  // 新增：從後端取得 Supabase 設定並初始化
+  async function initSupabase() {
+    try {
+      // 👇 將這裡替換成你後端的網址 (例如你的 ngrok 網址 + /api/supabase-config)
+      const backendUrl = 'https://你的後端網址.ngrok-free.app/api/supabase-config'; 
+      const response = await fetch(backendUrl);
+      
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      const config = await response.json();
+      supabase = window.supabase.createClient(config.url, config.key);
+      console.log("Supabase 初始化成功");
+      return true;
+    } catch (error) {
+      console.error("取得 Supabase 設定失敗:", error);
+      showToast("無法連接至後端取得資料庫設定");
+      return false;
+    }
+  }
     // =============================================
     // 1. 基本資料設定 
     // =============================================
@@ -834,9 +854,18 @@
     }
 
     window.onload = async () => {
-      await initLiff();
+    await initLiff();
+    
+    // 先向後端要金鑰並初始化 Supabase
+    const isSupabaseReady = await initSupabase();
+    
+    // 確定初始化成功後，才啟動主程式碼去抓班表
+    if (isSupabaseReady) {
       initApp();
-    };
+    } else {
+      document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-stone-400">系統初始化失敗，請確認後端連線</div>';
+    }
+  };
   </script>
 </body>
 </html>
