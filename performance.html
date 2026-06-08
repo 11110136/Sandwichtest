@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     body {
@@ -58,7 +59,6 @@
     .grade-C { background: #f3e8ff; color: #6b21a8; }
     .grade-D { background: #fee2e2; color: #991b1b; }
 
-    /* 崗位選擇按鈕 */
     /* 崗位選擇按鈕 (優化版) */
     .station-btn {
       display: inline-flex; align-items: center; justify-content: center;
@@ -128,11 +128,11 @@
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
 
         <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
-          <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">Select Staff</h2>
+          <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">當天值班人員</h2>
           <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x"></div>
         </div>
 
-        <div class="md:col-span-8 lg:col-span-9">
+        <div class="md:col-span-8 lg:col-span-9" id="evaluate-content">
           <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-5 md:p-10">
 
             <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 md:mb-8 border-b border-stone-100 pb-5 md:pb-6">
@@ -176,7 +176,7 @@
 
       <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-10 max-w-2xl mx-auto">
         <div class="mb-8">
-          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員</label>
+          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員 (當天值班)</label>
           <div class="flex flex-wrap gap-2" id="cleaning-emp-selector">
             </div>
         </div>
@@ -200,37 +200,16 @@
 
   <script>
     // =============================================
-    // LIFF 與 API 設定
+    // 雲端與連線設定 (請替換為你的真實 URL 與 Key)
     // =============================================
-    const LIFF_ID = '2010172685-ojhA52eN'; // 替換為你的 LIFF ID
+    const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-
-    // 初始化 LIFF 流程
-    async function initLiff() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        console.log("LIFF 初始化成功");
-        
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          console.log("LINE 登入成功:", profile.displayName);
-          showToast(`歡迎回來，${profile.displayName}`);
-        } else {
-          console.log("未登入 LINE，以一般網頁模式瀏覽");
-        }
-      } catch (error) {
-        console.error("LIFF 初始化失敗:", error);
-      }
-    }
-
-    function toggleGlobalMenu() {
-      document.getElementById('global-nav-menu').classList.toggle('hidden');
-    }
-
+  
     // =============================================
-    // 1. 基本資料設定
+    // 1. 基本資料設定 
     // =============================================
-    const EMPLOYEES = [
+    // 保留總檔用來作為「到職日 (年資)」的計算對照表
+    const ALL_EMPLOYEES = [
       { name: '俐嬅',  joinDate: '2021-03-01' },
       { name: '小郭',  joinDate: '2022-06-15' },
       { name: '菟菟',  joinDate: '2023-01-10' },
@@ -242,9 +221,8 @@
       { name: '偲璇',  joinDate: '2024-05-01' },
     ];
 
-    // =============================================
-    // 崗位設定與對應評分項目 (新增附餐並套用帶顏色的圖標)
-    // =============================================
+    let EMPLOYEES = []; // 將會被 Supabase 當天班表覆蓋
+
     const STATIONS = [
       {
         id: 'fryer', name: '油鍋', icon: 'flame', color: 'text-orange-500',
@@ -301,9 +279,6 @@
       }
     ];
 
-    // =============================================
-    // 等級配額上限
-    // =============================================
     const GRADE_LIMITS = { O: 1, A: 2, B: 4, C: 3, D: 2 };
     const GRADE_COLORS = {
       O: { bg: '#fef9c3', text: '#854d0e', border: '#fde68a' },
@@ -321,46 +296,78 @@
 
     let currentEvalData = {};
     let cleaningData = {}; 
-    let currentSelectedEmp = EMPLOYEES[0].name;
+    let currentSelectedEmp = "";
     let currentStation = STATIONS[0].id;
     let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
 
     // =============================================
-    // 年資計算
+    // 初始化與拉取 Supabase 班表資料
     // =============================================
-    function getSeniorityMonths(joinDate) {
-      const join = new Date(joinDate);
-      const now = new Date();
-      return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
-    }
-    function getSeniorityLabel(months) {
-      if (months <= 12) return '到職1年以內';
-      if (months <= 36) return '到職1~3年';
-      return '到職3~5年';
-    }
-    function getSuggestedGrade(empName, score) {
-      const emp = EMPLOYEES.find(e => e.name === empName);
-      if (!emp) return null;
-      const months = getSeniorityMonths(emp.joinDate);
-      const label = getSeniorityLabel(months);
-      const table = GRADE_TABLE[label];
-      let grade;
-      const s = parseFloat(score);
-      if (s >= 90) grade = table.over90;
-      else if (s >= 80) grade = table.over80;
-      else if (s >= 70) grade = table.over70;
-      else if (s >= 60) grade = table.over60;
-      else grade = table.under60;
-      return { grade, seniorityLabel: label, months };
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          showToast(`歡迎回來，${profile.displayName}`);
+        }
+      } catch (error) {
+        console.error("LIFF 初始化失敗:", error);
+      }
     }
 
-    // =============================================
-    // 初始化系統
-    // =============================================
+    async function fetchTodayShift() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const day = today.getDate();
+
+      try {
+        const { data, error } = await supabase
+          .from('shift_schedules')
+          .select('shift')
+          .eq('year', year)
+          .eq('month', month)
+          .eq('day', day)
+          .single();
+
+        if (error) throw error;
+
+        if (data && data.shift) {
+          // 以頓號分割並清理空白
+          const shiftNames = data.shift.split('、').map(n => n.trim()).filter(n => n);
+          
+          // 從總表篩選出有上班的員工，以便帶入年資
+          EMPLOYEES = ALL_EMPLOYEES.filter(emp => shiftNames.includes(emp.name));
+          
+          // 如果班表出現不在 ALL_EMPLOYEES 裡的新人，自動建立並預設今天到職
+          shiftNames.forEach(name => {
+            if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
+              EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+            }
+          });
+        }
+      } catch (err) {
+        console.error('取得今日班表失敗:', err);
+        showToast('無法取得雲端班表，將載入預設所有員工');
+        EMPLOYEES = [...ALL_EMPLOYEES];
+      }
+    }
+
     async function initApp() {
+      showToast('正在同步今日班表...');
+      await fetchTodayShift();
+
+      if (EMPLOYEES.length === 0) {
+        document.getElementById('employee-list').innerHTML = '<p class="text-stone-400 text-sm p-4 text-center border-2 border-dashed border-stone-200 rounded-2xl">今日查無班表</p>';
+        document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-stone-400">目前沒有人員可以評分</div>';
+        return;
+      }
+
+      currentSelectedEmp = EMPLOYEES[0].name;
+
       loadDataFromStorage();
       renderEmployeeList();
-      selectEmployee(EMPLOYEES[0].name);
+      selectEmployee(currentSelectedEmp);
       renderStationSelector();
       renderCleaningModule();
       lucide.createIcons();
@@ -369,7 +376,7 @@
     function generateDefaultEval(defaultScore = 5) {
       let data = {};
       EMPLOYEES.forEach(emp => {
-        data[emp.name] = { station: STATIONS[0].id, grade: '' }; // 空等級代表未評量
+        data[emp.name] = { station: STATIONS[0].id, grade: '' };
         STATIONS.forEach(st => {
           data[emp.name][st.id] = {};
           st.criteria.forEach(c => { data[emp.name][st.id][c.id] = { score: defaultScore, note: '' }; });
@@ -402,19 +409,64 @@
         storage.currentCleaning = generateDefaultCleaning();
         storage.lastDate = todayString;
       }
+      
+      // 確保動態載入的員工如果在 storage 沒有預設值，幫他們建立空殼
+      if(!storage.current) storage.current = {};
+      if(!storage.currentCleaning) storage.currentCleaning = {};
+      
+      EMPLOYEES.forEach(emp => {
+        if(!storage.current[emp.name]) {
+          storage.current[emp.name] = { station: STATIONS[0].id, grade: '' };
+          STATIONS.forEach(st => {
+            storage.current[emp.name][st.id] = {};
+            st.criteria.forEach(c => { storage.current[emp.name][st.id][c.id] = { score: 5, note: '' }; });
+          });
+        }
+        if(!storage.currentCleaning[emp.name]) {
+          storage.currentCleaning[emp.name] = { selected: false, stars: 0 };
+        }
+      });
+
       currentEvalData = storage.current;
-      cleaningData = storage.currentCleaning || generateDefaultCleaning();
+      cleaningData = storage.currentCleaning;
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
     }
 
     // =============================================
-    // 分數計算
+    // 計算邏輯
     // =============================================
+    function getSeniorityMonths(joinDate) {
+      const join = new Date(joinDate);
+      const now = new Date();
+      return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
+    }
+    
+    function getSeniorityLabel(months) {
+      if (months <= 12) return '到職1年以內';
+      if (months <= 36) return '到職1~3年';
+      return '到職3~5年';
+    }
+
+    function getSuggestedGrade(empName, score) {
+      const emp = EMPLOYEES.find(e => e.name === empName);
+      if (!emp) return null;
+      const months = getSeniorityMonths(emp.joinDate);
+      const label = getSeniorityLabel(months);
+      const table = GRADE_TABLE[label];
+      let grade;
+      const s = parseFloat(score);
+      if (s >= 90) grade = table.over90;
+      else if (s >= 80) grade = table.over80;
+      else if (s >= 70) grade = table.over70;
+      else if (s >= 60) grade = table.over60;
+      else grade = table.under60;
+      return { grade, seniorityLabel: label, months };
+    }
+
     function calculateScore(dataObj, empName) {
       if (dataObj[empName] && dataObj[empName].precalculatedScore !== undefined) {
         return dataObj[empName].precalculatedScore;
       }
-      
       const stationId = dataObj[empName].station || STATIONS[0].id;
       const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
       let total = 0;
@@ -426,7 +478,7 @@
     }
 
     // =============================================
-    // 崗位選擇
+    // UI 渲染功能
     // =============================================
     function renderStationSelector() {
       document.getElementById('station-selector').innerHTML = STATIONS.map(st => `
@@ -452,9 +504,6 @@
       updateTotalAndSuggestion();
     }
 
-    // =============================================
-    // 員工列表 & 選擇
-    // =============================================
     function renderEmployeeList() {
       document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => {
         const grade = currentEvalData[emp.name]?.grade;
@@ -501,9 +550,6 @@
       updateTotalAndSuggestion();
     }
 
-    // =============================================
-    // 評分表單
-    // =============================================
     function renderEvaluationForm() {
       const stationId = currentEvalData[currentSelectedEmp].station || STATIONS[0].id;
       const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
@@ -568,9 +614,6 @@
       }
     }
 
-    // =============================================
-    // 總分與直覺手動等級選擇器
-    // =============================================
     function updateTotalAndSuggestion() {
       const score = calculateScore(currentEvalData, currentSelectedEmp);
       document.getElementById('current-total-score').innerText = score;
@@ -613,7 +656,7 @@
     }
 
     // =============================================
-    // 績效儲存功能
+    // 儲存功能
     // =============================================
     async function saveData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -662,9 +705,6 @@
       }
     }
 
-    // =============================================
-    // 清潔儲存功能
-    // =============================================
     async function saveCleaningData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
       storage.currentCleaning = cleaningData;
@@ -703,9 +743,6 @@
       }
     }
 
-    // =============================================
-    // 清潔評分模組
-    // =============================================
     function renderCleaningModule() {
       const sel = document.getElementById('cleaning-emp-selector');
       sel.innerHTML = EMPLOYEES.map(emp => {
@@ -773,9 +810,10 @@
       }
     }
 
-    // =============================================
-    // 頁籤切換
-    // =============================================
+    function toggleGlobalMenu() {
+      document.getElementById('global-nav-menu').classList.toggle('hidden');
+    }
+
     function switchTab(tab) {
       ['evaluate', 'cleaning'].forEach(t => {
         document.getElementById(`section-${t}`).classList.add('hidden');
@@ -795,7 +833,6 @@
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
 
-    // 啟動流程
     window.onload = async () => {
       await initLiff();
       initApp();
