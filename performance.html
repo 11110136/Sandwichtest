@@ -206,22 +206,31 @@
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
     let supabase; // 改為全域變數，等待從後端取得設定後再初始化
 
-  // 新增：從後端取得 Supabase 設定並初始化
+  // 新增：從後端取得 Supabase 設定並初始化 (加強版)
   async function initSupabase() {
     try {
-      // 👇 將這裡替換成你後端的網址 (例如你的 ngrok 網址 + /api/supabase-config)
+      console.log("正在向後端取得資料庫設定...");
       const backendUrl = 'https://handsfree-proposal-lugged.ngrok-free.dev/api/supabase-config'; 
-      const response = await fetch(backendUrl);
       
-      if (!response.ok) throw new Error('Network response was not ok');
+      const response = await fetch(backendUrl, {
+        method: 'GET',
+        headers: {
+          // 🚀 關鍵：加入這行標頭，直接繞過 ngrok 的免費版警告畫面
+          'ngrok-skip-browser-warning': 'true' 
+        }
+      });
+      
+      if (!response.ok) throw new Error(`Network error: ${response.status}`);
       
       const config = await response.json();
+      console.log("成功取得後端設定！");
+      
       supabase = window.supabase.createClient(config.url, config.key);
       console.log("Supabase 初始化成功");
       return true;
     } catch (error) {
       console.error("取得 Supabase 設定失敗:", error);
-      showToast("無法連接至後端取得資料庫設定");
+      showToast("無法連接至後端，請確認伺服器狀態");
       return false;
     }
   }
@@ -853,17 +862,37 @@
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
 
-    window.onload = async () => {
-    await initLiff();
-    
-    // 先向後端要金鑰並初始化 Supabase
-    const isSupabaseReady = await initSupabase();
-    
-    // 確定初始化成功後，才啟動主程式碼去抓班表
-    if (isSupabaseReady) {
-      initApp();
-    } else {
-      document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-stone-400">系統初始化失敗，請確認後端連線</div>';
+    // 修改：加上超時防護的啟動流程
+  window.onload = async () => {
+    try {
+      console.log("網頁載入完成，開始啟動流程...");
+      
+      // 1. 啟動 LIFF (加上 3 秒超時防護，避免在電腦版瀏覽器上無限卡住)
+      await Promise.race([
+        initLiff(),
+        new Promise(resolve => setTimeout(() => {
+          console.warn("LIFF 初始化超時，自動跳過以繼續執行...");
+          resolve();
+        }, 3000))
+      ]);
+      
+      // 2. 取得 Supabase 設定
+      const isSupabaseReady = await initSupabase();
+      
+      // 3. 啟動主程式
+      if (isSupabaseReady) {
+        initApp();
+      } else {
+        // 如果失敗了，直接把錯誤顯示在畫面上，不會再白白卡住
+        document.getElementById('evaluate-content').innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-stone-500">
+            <p class="font-medium text-lg text-red-500 mb-2">⚠ 系統初始化失敗，無法取得資料庫連線</p>
+            <p class="text-sm">請確認您的後端伺服器 (Node.js) 與 ngrok 是否正常運作中。</p>
+            <p class="text-xs mt-4 opacity-60">開發人員請按 F12 查看 Console 錯誤訊息</p>
+          </div>`;
+      }
+    } catch (err) {
+      console.error("嚴重錯誤:", err);
     }
   };
   </script>
