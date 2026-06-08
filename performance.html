@@ -84,6 +84,14 @@
     .station-btn.active .icon-wrapper {
       background: white; 
     }
+    /* 加入此段 CSS，確保 dialog 顯示時不會有奇怪的邊距 */
+    dialog {
+      border: none;
+      background: white;
+    }
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.4);
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 selection:bg-stone-200">
@@ -109,7 +117,7 @@
         <div class="hidden sm:flex w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-stone-200 to-stone-400 items-center justify-center shadow-inner">
           <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5 text-stone-800"></i>
         </div>
-        <h1 class="text-sm md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">員工績效評分系統</h1>
+        <h1 class="text-sm md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">績效評分系統</h1>
       </div>
       <div class="flex bg-stone-100/80 p-1 rounded-full shadow-inner backdrop-blur-sm border border-white/50 overflow-x-auto hide-scrollbar">
         <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-shrink-0 flex items-center px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-medium transition-all bg-white text-stone-800 shadow-sm">
@@ -190,7 +198,27 @@
         </div>
       </div>
     </div>
+    <dialog id="status-modal" class="backdrop:bg-stone-900/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-stone-200 w-[90%] max-w-sm">
+    <div class="p-8 text-center">
+      <div id="modal-loading" class="hidden">
+        <div class="w-16 h-16 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin mx-auto mb-4"></div>
+        <h3 class="text-xl font-bold text-stone-800 mb-2">同步中</h3>
+        <p class="text-stone-500 text-sm">正在將資料傳送至雲端，請稍候...</p>
+      </div>
 
+    <div id="modal-success" class="hidden">
+      <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="check" class="w-8 h-8 text-emerald-600"></i>
+      </div>
+      <h3 class="text-xl font-bold text-stone-800 mb-2">儲存成功</h3>
+      <p class="text-stone-500 text-sm mb-6">今日的評定紀錄已成功上傳。</p>
+      <button onclick="document.getElementById('status-modal').close()" 
+              class="w-full py-3 bg-stone-800 text-white rounded-xl font-medium hover:bg-stone-900 transition-all">
+        確認
+      </button>
+    </div>
+  </div>
+</dialog>
   </main>
 
   <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-stone-800/95 backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 transition-all duration-300 opacity-0 -translate-y-6 pointer-events-none z-[1000]">
@@ -703,23 +731,40 @@
         return;
       }
 
-      const payload = { type: 'evaluation', date: todayString, records: records };
-
-      try {
-        showToast('正在同步至 Google 試算表...');
-        const response = await fetch(GAS_API_URL, {
-          method: 'POST', redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
+      // 1. 開啟 Modal 並顯示 Loading
+        const modal = document.getElementById('status-modal');
+        const loading = document.getElementById('modal-loading');
+        const success = document.getElementById('modal-success');
         
-        const result = await response.json();
-        if (result.status === 'success') showToast('今日評分已成功儲存並同步至雲端');
-        else showToast('雲端同步失敗，但已存在本機');
-      } catch (error) {
-        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+        modal.showModal();
+        loading.classList.remove('hidden');
+        success.classList.add('hidden');
+
+        try {
+          const response = await fetch(GAS_API_URL, {
+            method: 'POST', redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+          
+          const result = await response.json();
+          
+          // 2. 切換畫面
+          loading.classList.add('hidden');
+          if (result.status === 'success') {
+            success.classList.remove('hidden');
+            lucide.createIcons(); // 確保成功後的勾勾 icon 出現
+          } else {
+            modal.close();
+            showToast('雲端同步失敗，但已存在本機');
+          }
+        // saveData 的 catch 區塊修正
+          } catch (error) {
+              loading.classList.add('hidden'); // 必須隱藏轉圈圈
+              modal.close(); // 關閉彈窗
+              showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+          }
       }
-    }
 
     async function saveCleaningData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -741,10 +786,17 @@
         return;
       }
 
+      const modal = document.getElementById('status-modal');
+      const loading = document.getElementById('modal-loading');
+      const success = document.getElementById('modal-success');
+      
+      modal.showModal();
+      loading.classList.remove('hidden');
+      success.classList.add('hidden');
+
       const payload = { type: 'cleaning', date: todayString, records: records };
 
       try {
-        showToast('正在同步至 Google 試算表...');
         const response = await fetch(GAS_API_URL, { 
           method: 'POST', redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -752,10 +804,18 @@
         });
         
         const result = await response.json();
-        if (result.status === 'success') showToast('清潔評分已成功儲存並同步至雲端');
-        else showToast('雲端同步失敗，但已存在本機');
+        loading.classList.add('hidden'); // 記得關閉轉圈圈
+        
+        if (result.status === 'success') {
+          success.classList.remove('hidden');
+          lucide.createIcons();
+        } else {
+          modal.close();
+          showToast('雲端同步失敗');
+        }
       } catch (error) {
-        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+        modal.close();
+        showToast('網路錯誤，請檢查連線');
       }
     }
 
