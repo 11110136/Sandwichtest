@@ -347,7 +347,7 @@
         console.log(`正在查詢 Supabase: ${year}/${month}/${day}`);
         const { data, error } = await supabase
           .from('shift_schedules')
-          .select('shift')
+          .select('level')
           .eq('year', year)
           .eq('month', month)
           .eq('day', day)
@@ -355,7 +355,7 @@
 
         if (error) throw error;
 
-        if (data && data.shift) {
+        if (data && data.level) {
           const shiftNames = data.shift.split('、').map(n => n.trim()).filter(n => n);
           EMPLOYEES = ALL_EMPLOYEES.filter(emp => shiftNames.includes(emp.name));
           
