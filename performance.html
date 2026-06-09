@@ -840,7 +840,7 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
       let records = [];
-      // 這裡改成 ALL_EMPLOYEES
+      // 針對所有人檢查是否有被選中
       ALL_EMPLOYEES.forEach(emp => {
         if (cleaningData[emp.name]?.selected) {
           records.push({
@@ -850,15 +850,18 @@
         }
       });
 
+      // 如果都沒有人被選中，用黑色小提示(Toast)顯示即可，不用跳大視窗
       if (records.length === 0) {
         showToast('本機儲存成功 (無人參與清潔)');
         return;
       }
 
+      // 抓取 Modal 元素
       const modal = document.getElementById('status-modal');
       const loading = document.getElementById('modal-loading');
       const success = document.getElementById('modal-success');
       
+      // 開啟 Modal，顯示 Loading，隱藏 Success
       modal.showModal();
       loading.classList.remove('hidden');
       success.classList.add('hidden');
@@ -873,9 +876,12 @@
         });
         
         const result = await response.json();
-        loading.classList.add('hidden'); // 記得關閉轉圈圈
+        
+        // 資料回傳完畢，關閉轉圈圈
+        loading.classList.add('hidden'); 
         
         if (result.status === 'success') {
+          // 顯示綠色打勾成功畫面
           success.classList.remove('hidden');
           lucide.createIcons();
         } else {
@@ -883,6 +889,8 @@
           showToast('雲端同步失敗');
         }
       } catch (error) {
+        // 【微調點】：確保網路錯誤時，轉圈圈也會被正確隱藏
+        loading.classList.add('hidden'); 
         modal.close();
         showToast('網路錯誤，請檢查連線');
       }
@@ -1006,9 +1014,19 @@
       }, 50); // 稍微延遲讓瀏覽器畫完字體，抓到的寬度才會精準
     });
 
-    function showToast(msg) {
+    function showToast(msg, isWarning = false) {
       document.getElementById('toast-msg').innerText = msg;
       const toast = document.getElementById('toast');
+      
+      // 如果標記為警告，就把背景變成橘色；否則維持原本的深石灰色
+      if (isWarning) {
+        toast.classList.remove('bg-stone-800/95');
+        toast.classList.add('bg-orange-500/95');
+      } else {
+        toast.classList.add('bg-stone-800/95');
+        toast.classList.remove('bg-orange-500/95');
+      }
+
       toast.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
