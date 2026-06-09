@@ -126,20 +126,19 @@
       </div>
 
       <div class="px-4 md:px-6 relative">
-        <div class="relative flex w-full" id="tab-container">
-          <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-1 pb-3 text-sm md:text-base font-medium flex justify-center items-center transition-colors text-stone-800">
-            <i data-lucide="clipboard-edit" class="w-4 h-4 mr-1.5"></i> 店長評分
+        <div class="relative flex w-full border-b border-stone-200/80" id="tab-container">
+          
+          <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-stone-800">
+            <i data-lucide="clipboard-edit" class="w-4 h-4 mr-1.5 opacity-80"></i> 店長評分
           </button>
           
-          <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-1 pb-3 text-sm md:text-base font-medium flex justify-center items-center transition-colors text-stone-400 hover:text-stone-600">
-            <i data-lucide="sparkles" class="w-4 h-4 mr-1.5"></i> 清潔評分
+          <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-stone-400 hover:text-stone-600">
+            <i data-lucide="sparkles" class="w-4 h-4 mr-1.5 opacity-80"></i> 清潔評分
           </button>
 
-          <div id="tab-indicator" class="absolute bottom-0 left-0 h-[2px] bg-orange-500 transition-all duration-300 ease-out z-10" style="width: 0; transform: translateX(0);"></div>
+          <div id="tab-indicator" class="absolute bottom-[-1px] left-0 h-[3px] bg-stone-800 rounded-t-full transition-transform duration-300 ease-out z-10" style="width: 0; transform: translateX(0);"></div>
         </div>
       </div>
-
-      <div class="w-full h-px bg-stone-200/60"></div>
     </div>
   </nav>
 
@@ -197,9 +196,9 @@
 
       <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-10 max-w-2xl mx-auto">
         <div class="mb-8">
-          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員 (當天值班)</label>
+          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員 (全體名單)</label>
           <div class="flex flex-wrap gap-2" id="cleaning-emp-selector">
-            </div>
+          </div>
         </div>
 
         <div id="cleaning-selected-list" class="space-y-4"></div>
@@ -471,7 +470,7 @@
 
     function generateDefaultCleaning() {
       let d = {};
-      EMPLOYEES.forEach(emp => { d[emp.name] = { selected: false, stars: 0 }; });
+      ALL_EMPLOYEES.forEach(emp => { d[emp.name] = { selected: false, stars: 0 }; });
       return d;
     }
 
@@ -497,6 +496,8 @@
       if(!storage.current) storage.current = {};
       if(!storage.currentCleaning) storage.currentCleaning = {};
       
+      // 將原本寫在一起的迴圈拆開
+      // 1. 績效評分：只針對今天有上班的人 (EMPLOYEES)
       EMPLOYEES.forEach(emp => {
         if(!storage.current[emp.name]) {
           storage.current[emp.name] = { station: STATIONS[0].id, grade: '' };
@@ -505,6 +506,10 @@
             st.criteria.forEach(c => { storage.current[emp.name][st.id][c.id] = { score: 5, note: '' }; });
           });
         }
+      });
+
+      // 2. 清潔評分：針對店內所有人 (ALL_EMPLOYEES)
+      ALL_EMPLOYEES.forEach(emp => {
         if(!storage.currentCleaning[emp.name]) {
           storage.currentCleaning[emp.name] = { selected: false, stars: 0 };
         }
@@ -835,7 +840,8 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
       let records = [];
-      EMPLOYEES.forEach(emp => {
+      // 這裡改成 ALL_EMPLOYEES
+      ALL_EMPLOYEES.forEach(emp => {
         if (cleaningData[emp.name]?.selected) {
           records.push({
             name: emp.name,
@@ -884,7 +890,8 @@
 
     function renderCleaningModule() {
       const sel = document.getElementById('cleaning-emp-selector');
-      sel.innerHTML = EMPLOYEES.map(emp => {
+      // 這裡改成 ALL_EMPLOYEES
+      sel.innerHTML = ALL_EMPLOYEES.map(emp => {
         const isSelected = cleaningData[emp.name]?.selected;
         return `
           <button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
@@ -905,7 +912,7 @@
     }
 
     function renderCleaningSelectedList() {
-      const selectedEmps = EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
+      const selectedEmps = ALL_EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
       const container = document.getElementById('cleaning-selected-list');
       if (selectedEmps.length === 0) {
         container.innerHTML = `<p class="text-center text-stone-400 text-sm py-8">請從上方選擇今日例行清潔人員</p>`;
@@ -961,32 +968,28 @@
       const sectionCleaning = document.getElementById('section-cleaning');
 
       if (tab === 'evaluate') {
-        // 切換內容區塊
         sectionEvaluate.classList.remove('hidden');
         sectionCleaning.classList.add('hidden');
         
-        // 【關鍵修復】只切換顏色 class，絕對不要用 .className = 覆寫全部
+        // 柔和切換文字顏色
         evaluateBtn.classList.remove('text-stone-400', 'hover:text-stone-600');
         evaluateBtn.classList.add('text-stone-800');
         cleaningBtn.classList.remove('text-stone-800');
         cleaningBtn.classList.add('text-stone-400', 'hover:text-stone-600');
 
-        // 精準移動橘色底線 (因為按鈕 flex-1，寬度會自動變成完美的 50%)
         indicator.style.width = `${evaluateBtn.offsetWidth}px`;
         indicator.style.transform = `translateX(${evaluateBtn.offsetLeft}px)`;
 
       } else {
-        // 切換內容區塊
         sectionEvaluate.classList.add('hidden');
         sectionCleaning.classList.remove('hidden');
         
-        // 【關鍵修復】只切換顏色 class
+        // 柔和切換文字顏色
         cleaningBtn.classList.remove('text-stone-400', 'hover:text-stone-600');
         cleaningBtn.classList.add('text-stone-800');
         evaluateBtn.classList.remove('text-stone-800');
         evaluateBtn.classList.add('text-stone-400', 'hover:text-stone-600');
 
-        // 精準移動橘色底線
         indicator.style.width = `${cleaningBtn.offsetWidth}px`;
         indicator.style.transform = `translateX(${cleaningBtn.offsetLeft}px)`;
         
