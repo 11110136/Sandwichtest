@@ -66,7 +66,7 @@
   const ChevronRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
   const ChevronDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
   const ListPlus = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>;
-  const MenuIcon = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>;
+  const MenuIcon = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" py2="18"/></svg>;
   const BarChart2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>;
   const Download = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
   const Copy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
@@ -78,9 +78,9 @@
   const Check = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
   const Filter = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 
-  // --- 商品主表 (新增 category 屬性) ---
+  // --- 商品主表 (擴充 火腿S 的換算率) ---
   const initialInventory = [
-    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', systemStock: 1.2, alertLevel: 0.5, tag: '每日', category: '食材' },
+    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', subUnit: '條', conversionRate: 20, systemStock: 1.2, alertLevel: 0.5, tag: '每日', category: '食材' },
     { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日', category: '食材' },
     { id: 3, name: '水煮蛋', spec: '50顆/包', unit: '顆', systemStock: 1200.0, alertLevel: 400, tag: '每日', category: '食材' },
     { id: 4, name: '涼麵條', spec: '3公斤/包', unit: '包', systemStock: 22.0, alertLevel: 12, tag: '每日', category: '食材' },
@@ -148,7 +148,6 @@
     { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周', category: '備品' }
   ];
 
-  // 取得所有的分類清單
   const CATEGORIES = ['全部', ...new Set(initialInventory.map(i => i.category))];
 
   const buildSystemStockMap = (overrides) => {
@@ -214,8 +213,8 @@
     );
   };
 
-  // ── 自訂底部數字鍵盤 (暖色版 + 點擊空白關閉) ──
-  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear }) => {
+  // ── 自訂底部數字鍵盤 ──
+  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear, remainingUncounted, activeItem }) => {
     const keypadRef = useRef(null);
 
     useEffect(() => {
@@ -246,18 +245,32 @@
       onKeyPress(k);
     };
 
+    // 動態讀取當前正在輸入的單位 (若有子單位如"條"，鍵盤標題自動顯示"條")
+    const currentUnit = activeItem?.subUnit || activeItem?.unit || '數量';
+
     return (
       <div ref={keypadRef} className="fixed bottom-0 left-0 right-0 bg-stone-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-stone-300">
         <div className="flex justify-between items-center px-4 py-2 bg-stone-100 rounded-t-2xl border-b border-stone-300">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-stone-500">數量輸入</span>
-            <button onMouseDown={(e) => { e.preventDefault(); onClear(); }} className="px-3 py-1 bg-red-50 text-red-600 active:bg-red-100 text-xs font-bold rounded-lg flex items-center shadow-sm border border-red-100 transition-colors">清空 (C)</button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-stone-500">正在輸入: <span className="text-orange-600 font-extrabold">{currentUnit}</span></span>
+            <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+              剩 {remainingUncounted} 項未填
+            </span>
+            <button onMouseDown={(e) => { e.preventDefault(); onClear(); }} className="px-2 py-0.5 bg-red-50 text-red-600 active:bg-red-100 text-xs font-bold rounded-lg flex items-center shadow-sm border border-red-100 transition-colors">清空</button>
           </div>
           <div className="flex gap-2">
             <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-orange-600 flex items-center">下一列 ⏭</button>
             <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-stone-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-stone-600 flex items-center">完成 🔽</button>
           </div>
         </div>
+        
+        {/* 如果有換算率，在鍵盤最上方提示使用者 */}
+        {activeItem?.conversionRate && (
+          <div className="bg-amber-50 text-amber-800 text-center text-[11px] py-1 font-medium border-b border-stone-300/60 leading-none">
+            💡 換算提示：輸入【{activeItem.subUnit}】系統會自動除以 {activeItem.conversionRate} 轉為【{activeItem.unit}】儲存
+          </div>
+        )}
+
         <div className="grid grid-cols-3 gap-1.5 p-2 bg-stone-200 max-w-md mx-auto">
           {keys.map(k => (
             <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-2.5 text-xl font-bold rounded-lg shadow-sm active:bg-stone-100 active:scale-95 transition-transform flex items-center justify-center text-stone-800">
@@ -269,14 +282,24 @@
     );
   };
 
-  // ── StockCard (暖色版) ──
+  // ── StockCard ──
   const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput, status }) => {
+    // 判斷該項目是否有獨立的清點子單位 (如: 條)
+    const isSubUnitMode = !!item.subUnit && !!item.conversionRate;
+    
     const countStr = item.actualCount ?? '';
     const hasCounted = countStr !== '';
-    const count = parseFloat(countStr);
+    const count = parseFloat(countStr); // 內部儲存的依然是系統主單位 (箱數)
     const isLow = !isNaN(count) && count < item.alertLevel;
 
     const sysStock = systemStock !== undefined ? systemStock : item.systemStock;
+
+    // 如果是子單位模式，介面上輸入框要顯示換算後的數值 (例如箱數 0.5 箱 -> 介面顯示 10 條)
+    let displayInputValue = countStr;
+    if (isSubUnitMode && hasCounted && !isNaN(count)) {
+      const rawSubValue = count * item.conversionRate;
+      displayInputValue = String(Math.round(rawSubValue * 100) / 100); // 防四捨五入浮點數誤差
+    }
 
     let varianceText = '尚未輸入', varianceColor = 'text-stone-400', isAbnormal = false;
     if (hasCounted && !isNaN(count)) {
@@ -307,17 +330,26 @@
     const cardBg = hasCounted ? 'bg-white shadow-sm' : 'bg-white shadow-md ring-1 ring-orange-50';
     const isActive = activeInputId === item.id;
 
+    // 步進按鈕功能 (如果是有子單位的品項，加減是以 1 條為基準單位)
     const handleStep = (delta) => {
-      let current = parseFloat(countStr);
-      if (isNaN(current)) current = 0;
-      let next = Math.max(0, current + delta);
-      next = Math.round(next * 10) / 10;
-      onUpdate(item.id, String(next));
+      if (isSubUnitMode) {
+        let currentSubVal = parseFloat(displayInputValue);
+        if (isNaN(currentSubVal)) currentSubVal = 0;
+        let nextSubVal = Math.max(0, currentSubVal + delta);
+        // 自動除以換算率，轉回箱數傳給父組件
+        const nextMainVal = nextSubVal / item.conversionRate;
+        onUpdate(item.id, String(Math.round(nextMainVal * 1000) / 1000));
+      } else {
+        let current = parseFloat(countStr);
+        if (isNaN(current)) current = 0;
+        let next = Math.max(0, current + delta);
+        next = Math.round(next * 10) / 10;
+        onUpdate(item.id, String(next));
+      }
     };
 
     return (
       <div id={`stock-card-${item.id}`} className={`relative rounded-xl border-l-4 fade-in transition-all duration-300 ${cardBg} ${border}`}>
-        {/* 同步狀態提示 */}
         {status && (
           <div className="absolute top-3 right-3 flex items-center justify-center bg-white/80 rounded-full backdrop-blur-sm p-0.5 shadow-sm">
             {status === 'saving' && <RefreshCw className="w-4 h-4 text-orange-500 animate-spin-slow" />}
@@ -330,15 +362,17 @@
           <div className="flex justify-between items-start mb-2 pr-6">
             <div>
               <h3 className={`font-bold text-base ${hasCounted ? 'text-stone-600' : 'text-stone-800'}`}>{item.name}</h3>
-              <p className="text-xs text-stone-400 mt-0.5">{item.spec} · 安全線: <span className="text-orange-500 font-medium">{item.alertLevel}</span></p>
+              <p className="text-xs text-stone-400 mt-0.5">規格: {item.spec} · 安全線: <span className="text-orange-500 font-medium">{item.alertLevel} {item.unit}</span></p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
             <div className={`flex-1 rounded-lg p-2 flex justify-between items-center transition-colors ${isActive ? 'bg-orange-50' : 'bg-white'}`}>
-              <span className="text-xs text-stone-500 font-medium whitespace-nowrap">盤點數量</span>
+              <div className="flex flex-col">
+                <span className="text-xs text-stone-500 font-medium whitespace-nowrap">盤點輸入</span>
+                {isSubUnitMode && <span className="text-[10px] text-orange-600 font-bold leading-none mt-0.5">(輸入以{item.subUnit}計算)</span>}
+              </div>
               
-              {/* 加入 prevent-keypad-close 以防點擊輸入區域時鍵盤關閉 */}
               <div className="flex items-center gap-1.5 ml-2 prevent-keypad-close">
                 <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">-</button>
                 
@@ -346,11 +380,11 @@
                   onClick={(e) => { e.preventDefault(); onFocusInput(item.id); }}
                   className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-orange-500 ring-2 ring-orange-500 text-orange-700' : isLow ? 'border-red-300 text-red-600' : 'border-stone-300 text-stone-800'}`}
                 >
-                  {countStr === '' ? <span className="text-stone-300 font-normal text-sm">輸入..</span> : countStr}
+                  {displayInputValue === '' ? <span className="text-stone-300 font-normal text-sm">輸入..</span> : displayInputValue}
                 </div>
                 
                 <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">+</button>
-                <span className="text-sm text-stone-500 ml-1 w-4 shrink-0">{item.unit}</span>
+                <span className="text-sm font-bold text-stone-600 ml-1 w-6 shrink-0">{isSubUnitMode ? item.subUnit : item.unit}</span>
               </div>
             </div>
 
@@ -364,8 +398,17 @@
             )}
 
             <div className={`flex justify-between items-center text-xs px-1 pt-1 mt-1 border-t border-stone-100 ${isAbnormal ? 'bg-orange-50 p-1.5 rounded' : ''}`}>
-              <span className="text-stone-500">帳面庫存：{sysStock}</span>
-              <span className="flex items-center text-stone-500">盤差：<span className={`ml-1 ${varianceColor}`}>{varianceText}</span>{isAbnormal && <AlertCircle className="w-3 h-3 text-orange-500 ml-1"/>}</span>
+              <span className="text-stone-500">
+                帳面庫存：{sysStock} {item.unit}
+                {isSubUnitMode && <span className="text-stone-400 text-[10px] ml-1">({Math.round(sysStock * item.conversionRate)}條)</span>}
+              </span>
+              <span className="flex items-center text-stone-500">
+                盤差：
+                <span className={`ml-1 ${varianceColor}`}>
+                  {varianceText} {item.unit}
+                </span>
+                {isAbnormal && <AlertCircle className="w-3 h-3 text-orange-500 ml-1"/>}
+              </span>
             </div>
           </div>
           {isLow && <div className="mt-2 flex items-center text-xs font-medium text-red-600"><AlertCircle className="w-3.5 h-3.5 mr-1"/>低於安全警戒，需叫貨</div>}
@@ -486,15 +529,7 @@
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-stone-500">目前帳面庫存</span>
-                    <span className="font-bold text-stone-800">{curStock}</span>
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-stone-200 flex justify-between items-center">
-                    <span className="text-xs font-bold text-emerald-600 flex items-center">
-                      <AlertCircle className="w-3 h-3 mr-1"/> 加總計算基準
-                    </span>
-                    <span className="font-bold text-emerald-700">
-                      {baseStock} <span className="text-xs font-normal text-emerald-600">{selectedItem.unit}</span>
-                    </span>
+                    <span className="font-bold text-stone-800">{curStock} {selectedItem.unit}</span>
                   </div>
                 </div>
 
@@ -551,32 +586,22 @@
 
   // ── App 主程式 ──
   function App() {
-    // ======== LIFF 初始化區塊 ========
-    const LIFF_ID = '2010172685-AS9WfPXH'; // ★ 請將此處替換為你的 LIFF ID
+    const LIFF_ID = '2010172685-AS9WfPXH';
 
     useEffect(() => {
       const initLiff = async () => {
         try {
           await window.liff.init({ liffId: LIFF_ID });
-          console.log("LIFF 初始化成功");
-          
           if (window.liff.isLoggedIn()) {
             const profile = await window.liff.getProfile();
-            console.log("LINE 登入成功:", profile.displayName);
             showToast(`歡迎回來，${profile.displayName} 👋`);
-          } else {
-            console.log("未登入 LINE，以一般網頁模式瀏覽");
-            // 如果你希望使用者一開啟網頁就強制登入，請將下方的註解取消：
-            // window.liff.login();
           }
         } catch (error) {
           console.error("LIFF 初始化失敗:", error);
         }
       };
-
       initLiff();
-    }, []); // 僅在元件初次掛載時執行一次
-    // =================================
+    }, []);
 
     const [isDBLoading, setIsDBLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('record');
@@ -592,17 +617,27 @@
     const [toast, setToast] = useState(null);
     const [systemStockMap, setSystemStockMap] = useState({});
     
-    // 狀態
     const [activeInputId, setActiveInputId] = useState(null);
     const [hideCounted, setHideCounted] = useState(false); 
-    const [activeCategory, setActiveCategory] = useState('全部'); 
+    
+    const [searchCategory, setSearchCategory] = useState('全部'); 
+    const [listCategory, setListCategory] = useState('全部');     
+    
     const [overviewFilter, setOverviewFilter] = useState('all'); 
     const [itemSaveStatus, setItemSaveStatus] = useState({}); 
+
+    const lastActiveInputId = useRef(null);
 
     const todayStr = getTodayStr();
     const todayCounts = useMemo(() => historyData[todayStr] || [], [historyData, todayStr]);
 
     const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
+
+    // 取得當前作用中的品項定義
+    const activeItemDef = useMemo(() => {
+      if (!activeInputId) return null;
+      return initialInventory.find(i => i.id === activeInputId);
+    }, [activeInputId]);
 
     const getPreviousRecord = useCallback((itemId) => {
       const dates = Object.keys(historyData).filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
@@ -643,20 +678,22 @@
           setSystemStockMap(buildSystemStockMap(null));
         } finally { setIsDBLoading(false); }
       };
-
-      if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-        alert("⚠️ 開發者提示：請先設定 SUPABASE_URL");
-        setSystemStockMap(buildSystemStockMap(null)); setIsDBLoading(false);
-      } else { fetchAll(); }
+      fetchAll();
     }, [showToast]);
 
-    useEffect(() => { setActiveInputId(null); }, [activeTab]);
+    useEffect(() => {
+      if (activeTab !== 'record') {
+        if (activeInputId) lastActiveInputId.current = activeInputId;
+        setActiveInputId(null);
+      } else if (activeTab === 'record' && lastActiveInputId.current) {
+        setActiveInputId(lastActiveInputId.current);
+      }
+    }, [activeTab]);
 
     useEffect(() => {
       if (activeInputId) {
         const el = document.getElementById(`stock-card-${activeInputId}`);
         if (el) setTimeout(() => {
-          // 調整捲動偏移量
           const y = el.getBoundingClientRect().top + window.pageYOffset - 240;
           window.scrollTo({top: y, behavior: 'smooth'});
         }, 50);
@@ -665,19 +702,29 @@
 
     const handleRestock = useCallback((itemId, newVal) => { setSystemStockMap(prev => ({ ...prev, [itemId]: newVal })); }, []);
 
-    const filteredItems = useMemo(() => {
-      if (!searchQuery) return initialInventory;
-      return initialInventory.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()) || (i.tag && i.tag.includes(searchQuery)));
-    }, [searchQuery]);
+    const filteredSearchItems = useMemo(() => {
+      let list = initialInventory;
+      if (searchCategory !== '全部') list = list.filter(i => i.category === searchCategory);
+      if (!searchQuery) return list;
+      return list.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()) || (i.tag && i.tag.includes(searchQuery)));
+    }, [searchQuery, searchCategory]);
 
     const handleSelectItem = (item) => {
       setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setInputValue('');
     };
 
+    // 頂部手動搜尋新增：支援子單位自動換算箱數
     const handleAddRecord = async () => {
       if (!selectedItem || inputValue === '') return;
-      const count = parseFloat(inputValue);
+      let count = parseFloat(inputValue);
       if (isNaN(count)) return;
+
+      // 如果有子單位，自動將輸入的數量除以換算率 (如 10 條 / 20 = 0.5 箱)
+      if (selectedItem.subUnit && selectedItem.conversionRate) {
+        count = count / selectedItem.conversionRate;
+        count = Math.round(count * 1000) / 1000;
+      }
+
       const newItem = { ...selectedItem, actualCount: count };
       setHistoryData(prev => {
         const list = [...(prev[todayStr] || [])];
@@ -685,37 +732,59 @@
         if (idx >= 0) list.splice(idx, 1);
         return { ...prev, [todayStr]: [newItem, ...list] };
       });
-      showToast(`已記錄「${selectedItem.name}」`);
+      showToast(`已記錄「${selectedItem.name}」為 ${count} ${selectedItem.unit}`);
       setSelectedItem(null); setSearchQuery(''); setInputValue('');
       await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
     };
 
     const handleQuickLoad = async (tag) => {
-      const items = initialInventory.filter(i => i.tag === tag);
+      const targetItems = initialInventory.filter(i => i.tag === tag);
+      const currentList = historyData[todayStr] || [];
+      const currentIds = currentList.map(i => i.id);
+      const newItemsToAppend = targetItems.filter(i => !currentIds.includes(i.id));
+
+      if (newItemsToAppend.length > 0 || currentList.length > 0) {
+        const confirmMsg = `此操作將會：\n1. 合併補入 ${newItemsToAppend.length} 項新「${tag}」品項。\n2. 今日已填寫的盤點數量將「完整保留」。\n\n是否繼續？`;
+        if (!window.confirm(confirmMsg)) return;
+      }
+
       const { data: todayRecords } = await supabase.from('inventory_records').select('item_id, actual_count').eq('record_date', todayStr);
       const dbCountMap = {};
       if (todayRecords) todayRecords.forEach(r => { if (r.actual_count !== null) dbCountMap[r.item_id] = r.actual_count; });
 
-      let newListForDB = [];
+      let mergedList = [];
       setHistoryData(prev => {
-        const currentList = prev[todayStr] || [];
-        const localCountMap = {};
-        currentList.forEach(i => { if (i.actualCount !== '') localCountMap[i.id] = i.actualCount; });
+        const existingList = prev[todayStr] || [];
+        const existingMap = {};
+        existingList.forEach(item => { existingMap[item.id] = item; });
+        const updatedList = [...existingList];
         
-        const newList = items.map(item => {
-          let count = '';
-          if (localCountMap[item.id] !== undefined) count = localCountMap[item.id];
-          else if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id]; 
-          return { ...item, actualCount: count };
+        targetItems.forEach(item => {
+          if (!existingMap[item.id]) {
+            let count = '';
+            if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id];
+            updatedList.push({ ...item, actualCount: count });
+          }
         });
-        newListForDB = newList;
-        return { ...prev, [todayStr]: newList };
+        mergedList = updatedList;
+        return { ...prev, [todayStr]: updatedList };
       });
 
-      if (newListForDB.length > 0) {
-        const dbUpserts = newListForDB.map(item => ({ record_date: todayStr, item_id: item.id, actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null }));
+      if (mergedList.length > 0) {
+        const dbUpserts = mergedList.map(item => ({ 
+          record_date: todayStr, 
+          item_id: item.id, 
+          actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null 
+        }));
         await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
       }
+
+      showToast(`已成功載入與合併「${tag}」盤點表`);
+
+      setTimeout(() => {
+        const remainingUncounted = mergedList.filter(i => i.actualCount === '');
+        if (remainingUncounted.length > 0) setActiveInputId(remainingUncounted[0].id);
+      }, 300);
     };
 
     const handleUpdateListItem = async (id, val) => {
@@ -736,30 +805,61 @@
       }
     };
 
+    // 自訂虛擬鍵盤輸入：處理換算邏輯
     const handleKeypadPress = (key) => {
       if (!activeInputId) return;
       const item = todayCounts.find(i => i.id === activeInputId);
       if (!item) return;
+
+      const isSubUnitMode = !!item.subUnit && !!item.conversionRate;
       
-      let currentStr = String(item.actualCount ?? '');
-      if (key === '⌫') {
-        currentStr = currentStr.slice(0, -1);
-      } else if (key === '.') {
-        if (!currentStr.includes('.')) currentStr += '.';
-      } else {
-        currentStr += key;
+      // 讀取目前的顯示字串
+      let currentDisplayStr = '';
+      if (item.actualCount !== '') {
+        if (isSubUnitMode) {
+          // 如果是子單位模式，當前鍵盤抓到並操作的字串是「條數」
+          currentDisplayStr = String(Math.round(parseFloat(item.actualCount) * item.conversionRate * 100) / 100);
+        } else {
+          currentDisplayStr = String(item.actualCount);
+        }
       }
-      handleUpdateListItem(activeInputId, currentStr);
+
+      if (key === '⌫') {
+        currentDisplayStr = currentDisplayStr.slice(0, -1);
+      } else if (key === '.') {
+        if (!currentDisplayStr.includes('.')) currentDisplayStr += '.';
+      } else {
+        currentDisplayStr += key;
+      }
+
+      // 準備存入的值
+      if (currentDisplayStr === '') {
+        handleUpdateListItem(activeInputId, '');
+      } else {
+        let finalMainValue = parseFloat(currentDisplayStr);
+        if (!isNaN(finalMainValue)) {
+          if (isSubUnitMode) {
+            // 如果是子單位輸入，存入資料庫前自動除以換算率
+            finalMainValue = finalMainValue / item.conversionRate;
+            finalMainValue = Math.round(finalMainValue * 1000) / 1000;
+          }
+          handleUpdateListItem(activeInputId, String(finalMainValue));
+        }
+      }
     };
 
     const handleKeypadNext = () => {
       const currentDisplayedIds = displayedRecordItems.map(i => i.id);
-      const idx = currentDisplayedIds.indexOf(activeInputId);
-      if (idx >= 0 && idx < currentDisplayedIds.length - 1) {
-        setActiveInputId(currentDisplayedIds[idx + 1]);
-      } else {
-        setActiveInputId(null);
+      const currentIdx = currentDisplayedIds.indexOf(activeInputId);
+      if (currentIdx >= 0) {
+        const nextUncountedItem = displayedRecordItems.slice(currentIdx + 1).find(i => i.actualCount === '');
+        if (nextUncountedItem) {
+          setActiveInputId(nextUncountedItem.id);
+          return;
+        }
       }
+      setActiveInputId(null);
+      showToast('此區塊未填寫品項已全部聚焦完畢！');
     };
 
     const handleExportCSV = () => {
@@ -773,8 +873,7 @@
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-      link.download = `庫存總表_${getTodayStr()}.csv`; link.style.visibility = 'hidden';
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      link.download = `庫存總表_${getTodayStr()}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
     };
 
     const handleCopyAndLine = async () => {
@@ -789,10 +888,14 @@
 
     const displayedRecordItems = useMemo(() => {
       let list = todayCounts;
-      if (activeCategory !== '全部') list = list.filter(i => i.category === activeCategory);
+      if (listCategory !== '全部') list = list.filter(i => i.category === listCategory);
       if (hideCounted) list = list.filter(i => i.actualCount === '');
       return list;
-    }, [todayCounts, activeCategory, hideCounted]);
+    }, [todayCounts, listCategory, hideCounted]);
+
+    const remainingUncountedCount = useMemo(() => {
+      return displayedRecordItems.filter(i => i.actualCount === '').length;
+    }, [displayedRecordItems]);
 
     const displayedOverviewItems = useMemo(() => {
       let list = initialInventory;
@@ -849,11 +952,14 @@
       );
     };
 
-    const handleCloseKeypad = useCallback(() => setActiveInputId(null), []);
+    const handleCloseKeypad = useCallback(() => {
+      setActiveInputId(null); lastActiveInputId.current = null;
+    }, []);
 
     if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-orange-600 font-bold bg-[#FFFDF9]">連線雲端資料庫中...</div>;
 
-    const activeCategoryIndex = CATEGORIES.indexOf(activeCategory);
+    const searchCategoryIndex = CATEGORIES.indexOf(searchCategory);
+    const listCategoryIndex = CATEGORIES.indexOf(listCategory);
 
     return (
       <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-60' : 'pb-24'}`}>
@@ -919,21 +1025,18 @@
                     </div>
                   </div>
                   
-                  {/* 滑動式分類選單 (Segmented Control) */}
                   <div className="w-full overflow-x-auto hide-scrollbar mb-2 pb-1">
                     <div className="relative inline-flex bg-stone-100 p-1.5 rounded-2xl shadow-inner border border-stone-200/60">
                       <div 
                         className="absolute top-1.5 bottom-1.5 w-20 bg-stone-800 rounded-xl shadow-md transition-transform duration-300 ease-out"
-                        style={{ transform: `translateX(${activeCategoryIndex * 100}%)` }}
+                        style={{ transform: `translateX(${searchCategoryIndex * 100}%)` }}
                       />
                       {CATEGORIES.map((cat) => (
                         <button
                           key={cat}
-                          onClick={() => setActiveCategory(cat)}
+                          onClick={() => setSearchCategory(cat)}
                           className={`relative z-10 w-20 py-2 text-sm font-bold rounded-xl transition-colors duration-300 whitespace-nowrap ${
-                            activeCategory === cat
-                              ? 'text-white' 
-                              : 'text-stone-500 hover:text-stone-800'
+                            searchCategory === cat ? 'text-white' : 'text-stone-500 hover:text-stone-800'
                           }`}
                         >
                           {cat}
@@ -945,7 +1048,7 @@
                   {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={()=>setIsDropdownOpen(false)}/>}
                   {isDropdownOpen && (
                     <div className="relative mt-2 bg-white border border-stone-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
-                      {filteredItems.length > 0 ? filteredItems.map(item=>(
+                      {filteredSearchItems.length > 0 ? filteredSearchItems.map(item=>(
                         <div key={item.id} onClick={()=>handleSelectItem(item)}
                           className="px-4 py-3 hover:bg-orange-50 cursor-pointer border-b border-stone-50 last:border-0 flex justify-between items-center transition-colors">
                           <div><span className="font-bold text-stone-800 block">{item.name}</span><span className="text-xs text-stone-400 block mt-0.5">{item.spec||'無規格'}</span></div>
@@ -964,10 +1067,13 @@
                 {selectedItem && (
                   <div className="mt-4 pt-4 border-t border-stone-100 flex items-end gap-3 fade-in">
                     <div className="flex-1">
-                      <label className="block text-xs font-bold text-stone-500 mb-1.5">輸入數量 ({selectedItem.unit})</label>
+                      <label className="block text-xs font-bold text-stone-500 mb-1.5">
+                        輸入數量 ({selectedItem.subUnit || selectedItem.unit})
+                        {selectedItem.subUnit && <span className="text-orange-600 ml-1">(系統會自動換算成{selectedItem.unit})</span>}
+                      </label>
                       <input type="number" inputMode="decimal" step="0.1" min="0" value={inputValue}
                         onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAddRecord()}
-                        placeholder={`帳面庫存: ${systemStockMap[selectedItem.id] ?? selectedItem.systemStock}`}
+                        placeholder={selectedItem.subUnit ? `換算基準: 1箱 = ${selectedItem.conversionRate}條` : `帳面庫存: ${systemStockMap[selectedItem.id] ?? selectedItem.systemStock}`}
                         className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-orange-50/30"/>
                     </div>
                     <button onClick={handleAddRecord} disabled={inputValue===''}
@@ -976,14 +1082,42 @@
                 )}
               </div>
 
+              {todayCounts.length > 0 && (
+                <div className="w-full overflow-x-auto hide-scrollbar bg-white p-2 rounded-2xl border border-stone-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-1 px-2">
+                    <span className="text-xs font-bold text-stone-500">清單分類篩選:</span>
+                  </div>
+                  <div className="relative inline-flex bg-stone-50 p-1 rounded-xl border border-stone-200/60">
+                    <div 
+                      className="absolute top-1 bottom-1 bg-orange-500 rounded-lg shadow-sm transition-transform duration-300 ease-out"
+                      style={{ 
+                        width: '72px',
+                        transform: `translateX(${listCategoryIndex * 72}%)` 
+                      }}
+                    />
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setListCategory(cat)}
+                        className={`relative z-10 w-[72px] py-1.5 text-xs font-bold rounded-lg transition-colors duration-300 text-center ${
+                          listCategory === cat ? 'text-white' : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 {todayCounts.length === 0 ? (
                   <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
                     <ClipboardList className="w-12 h-12 text-stone-300 mx-auto mb-2"/>
-                    <p className="text-stone-400">目前還沒有紀錄<br/>請從上方搜尋並加入品項</p>
+                    <p className="text-stone-400">目前還沒有紀錄<br/>請從上方搜尋或載入盤點表</p>
                   </div>
                 ) : displayedRecordItems.length === 0 ? (
-                  <div className="text-center py-12 text-stone-400">
+                  <div className="text-center py-12 text-stone-400 bg-white rounded-2xl border border-stone-100 shadow-sm">
                     <p>🎉 這個分類的項目都盤點完囉！</p>
                   </div>
                 ) : (
@@ -1095,9 +1229,19 @@
                         }
                         return (
                           <tr key={item.id} className="hover:bg-stone-50 transition-colors">
-                            <td className="px-4 py-3"><div className="font-bold text-stone-800">{item.name}</div><div className="text-[10px] text-stone-400">{item.unit}</div></td>
+                            <td className="px-4 py-3">
+                              <div className="font-bold text-stone-800">{item.name}</div>
+                              <div className="text-[10px] text-stone-400">{item.unit}{item.subUnit ? ` (1${item.unit}=${item.conversionRate}${item.subUnit})` : ''}</div>
+                            </td>
                             <td className="px-4 py-3 text-right text-stone-600">{sysStock}</td>
-                            <td className="px-4 py-3 text-right font-bold text-stone-800">{has?c:'-'}</td>
+                            <td className="px-4 py-3 text-right font-bold text-stone-800">
+                              {has ? (
+                                <span>
+                                  {c}
+                                  {item.subUnit && <span className="text-xs font-normal text-stone-400 ml-1">({Math.round(c * item.conversionRate)}{item.subUnit})</span>}
+                                </span>
+                              ) : '-'}
+                            </td>
                             <td className={`px-4 py-3 text-right ${vc}`}>{vt}</td>
                             <td className="px-4 py-3 text-center">{badge}</td>
                           </tr>
@@ -1163,6 +1307,8 @@
           onNext={handleKeypadNext} 
           onClose={handleCloseKeypad} 
           onClear={() => handleUpdateListItem(activeInputId, '')}
+          remainingUncounted={remainingUncountedCount}
+          activeItem={activeItemDef}
         />
       </div>
     );
