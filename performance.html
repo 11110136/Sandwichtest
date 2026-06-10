@@ -12,22 +12,19 @@
   
   <style>
     body {
-      background-image: linear-gradient(to bottom right, rgba(250, 250, 249, 0.95), rgba(245, 245, 244, 0.85)), url('https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2000&auto=format&fit=crop');
-      background-size: cover;
-      background-attachment: fixed;
-      background-position: center;
+      background-color: #F6F7F2; 
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
-      background: #292524; cursor: pointer; margin-top: -8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.1s;
+      background: #6C8673; cursor: pointer; margin-top: -8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.1s;
     }
     input[type=range]::-webkit-slider-thumb:active { transform: scale(1.1); }
     input[type=range]::-webkit-slider-runnable-track {
-      width: 100%; height: 8px; cursor: pointer; background: #e7e5e4; border-radius: 4px;
+      width: 100%; height: 8px; cursor: pointer; background: #D4DCD5; border-radius: 4px;
     }
 
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -41,7 +38,7 @@
     /* 星星評分 */
     .star-rating { display: flex; gap: 6px; }
     .star-btn {
-      cursor: pointer; color: #d6d3d1;
+      cursor: pointer; color: #D4DCD5;
       transition: color 0.15s, transform 0.1s;
       background: none; border: none; padding: 0;
     }
@@ -59,84 +56,84 @@
     .grade-C { background: #f3e8ff; color: #6b21a8; }
     .grade-D { background: #fee2e2; color: #991b1b; }
 
-    /* 崗位選擇按鈕 (優化版) */
+    /* 崗位選擇按鈕 */
     .station-btn {
       display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 8px 16px 8px 8px; border-radius: 999px; border: 1.5px solid #e7e5e4;
+      gap: 8px; padding: 8px 16px 8px 8px; border-radius: 999px; border: 1.5px solid #D4DCD5;
       background: white; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      font-size: 14px; font-weight: 600; color: #57534e; letter-spacing: 0.025em;
+      font-size: 14px; font-weight: 600; color: #4F6354; letter-spacing: 0.025em;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .station-btn:hover { 
-      border-color: #d6d3d1; background: #fafaf9; transform: translateY(-1px);
+      border-color: #A3B4A5; background: #F8FAF8; transform: translateY(-1px);
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     .station-btn.active {
-      border-color: #292524; background: #292524; color: white;
-      box-shadow: 0 4px 12px rgba(41, 37, 36, 0.2);
+      border-color: #6C8673; background: #6C8673; color: white;
+      box-shadow: 0 4px 12px rgba(108, 134, 115, 0.2);
     }
-    /* 給 Icon 獨立的圓形保護底色 */
     .station-btn .icon-wrapper {
       display: flex; align-items: center; justify-content: center;
       width: 28px; height: 28px; border-radius: 50%;
-      background: #f5f5f4; transition: all 0.2s;
+      background: #F0F4F1; transition: all 0.2s;
     }
     .station-btn.active .icon-wrapper {
       background: white; 
     }
-    /* 加入此段 CSS，確保 dialog 顯示時不會有奇怪的邊距 */
+    
     dialog {
       border: none;
       background: white;
     }
     dialog::backdrop {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(45, 58, 49, 0.5); 
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-800 selection:bg-stone-200">
+<body class="min-h-screen text-[#2D3A31] selection:bg-[#D4DCD5]">
 
-  <div class="fixed top-4 left-4 z-[999] no-print">
-    <button onclick="toggleGlobalMenu()" class="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 bg-white/90 backdrop-blur border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:shadow-md transition-all">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
-        <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
-      </svg>
-    </button>
-    <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-100 overflow-hidden transition-all">
-      <a href="index.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-indigo-50 border-b border-slate-50">值班系統</a>
-      <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-emerald-50 border-b border-slate-50">每週金庫結算</a>
-      <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 border-b border-slate-50">庫存盤點</a>
-      <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-green-50 border-b border-slate-50">清潔與值班管理</a>
-      <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-slate-700 hover:bg-purple-50 border-b border-slate-50">績效評估系統</a>
-    </div>
-  </div>
-
-  <nav class="bg-white/60 backdrop-blur-xl sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto">
-      
-      <div class="flex items-center px-4 md:px-6 pt-4 pb-2 md:pb-4">
-        <div class="w-12 md:w-14 flex-shrink-0"></div> 
-        
-        <div class="flex items-center space-x-2 md:space-x-3">
-          <div class="hidden sm:flex w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-stone-200 to-stone-400 items-center justify-center shadow-inner">
-            <i data-lucide="clipboard-list" class="w-4 h-4 md:w-5 md:h-5 text-stone-800"></i>
+  <nav class="sticky top-0 z-50 flex flex-col shadow-sm">
+    <div class="bg-[#6C8673]">
+      <div class="max-w-6xl mx-auto px-4 md:px-6 py-4">
+        <div class="flex items-center space-x-4 md:space-x-5">
+          
+          <div class="relative flex items-center">
+            <button onclick="toggleGlobalMenu()" class="flex items-center justify-center p-1 text-white hover:text-white/80 transition-all focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+              </svg>
+            </button>
+            
+            <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-[#E5EBE6] overflow-hidden transition-all z-[999]">
+              <a href="index.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">值班系統</a>
+              <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">每週金庫結算</a>
+              <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">庫存盤點</a>
+              <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">清潔與值班管理</a>
+              <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">績效評估系統</a>
+            </div>
           </div>
-          <h1 class="text-base md:text-xl font-bold md:font-light tracking-widest text-stone-800 uppercase">績效評分系統</h1>
+          
+          <div class="flex items-center space-x-2.5 md:space-x-3 select-none">
+            <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+            <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
+          </div>
+
         </div>
       </div>
+    </div>
 
-      <div class="px-4 md:px-6 relative">
-        <div class="relative flex w-full border-b border-stone-200/80" id="tab-container">
-          
-          <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-stone-800">
+    <div class="bg-white border-b border-[#D4DCD5]">
+      <div class="max-w-6xl mx-auto px-4 md:px-6 relative">
+        <div class="relative flex w-full" id="tab-container">
+          <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-[#2D3A31]">
             <i data-lucide="clipboard-edit" class="w-4 h-4 mr-1.5 opacity-80"></i> 店長評分
           </button>
           
-          <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-stone-400 hover:text-stone-600">
+          <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-[#8FA192] hover:text-[#4F6354]">
             <i data-lucide="sparkles" class="w-4 h-4 mr-1.5 opacity-80"></i> 清潔評分
           </button>
 
-          <div id="tab-indicator" class="absolute bottom-[-1px] left-0 h-[3px] bg-stone-800 rounded-t-full transition-transform duration-300 ease-out z-10" style="width: 0; transform: translateX(0);"></div>
+          <div id="tab-indicator" class="absolute bottom-0 left-0 h-[3px] bg-[#6C8673] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width: 0; transform: translateX(0);"></div>
         </div>
       </div>
     </div>
@@ -148,37 +145,37 @@
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
 
         <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
-          <h2 class="text-xs md:text-sm font-semibold text-stone-400 tracking-widest uppercase mb-2 md:mb-4 pl-1">當天值班人員</h2>
+          <h2 class="text-xs md:text-sm font-semibold text-[#8FA192] tracking-widest uppercase mb-2 md:mb-4 pl-1">當天值班人員</h2>
           <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x"></div>
         </div>
 
         <div class="md:col-span-8 lg:col-span-9" id="evaluate-content">
-          <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-5 md:p-10">
+          <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-5 md:p-10">
 
-            <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 md:mb-8 border-b border-stone-100 pb-5 md:pb-6">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 md:mb-8 border-b border-[#E5EBE6] pb-5 md:pb-6">
               <div class="flex-1">
-                <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-1 md:mb-2 flex items-center gap-2">
+                <h2 class="text-2xl md:text-3xl font-light text-[#2D3A31] tracking-wide mb-1 md:mb-2 flex items-center gap-2">
                   <span id="current-emp-name" class="font-medium"></span>
-                  <span class="text-stone-400 text-lg md:text-2xl">的績效評估</span>
+                  <span class="text-[#8FA192] text-lg md:text-2xl">的績效評估</span>
                 </h2>
-                <p class="text-stone-500 text-xs md:text-sm mb-3">請選擇今日工作崗位，再進行 1-10 分評分</p>
+                <p class="text-[#687A6B] text-xs md:text-sm mb-3">請選擇今日工作崗位，再進行 1-10 分評分</p>
                 <div id="seniority-suggestion"></div>
               </div>
-              <div class="text-left sm:text-right bg-stone-50 sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none flex-shrink-0">
-                <p class="text-[10px] md:text-xs font-semibold text-stone-400 uppercase tracking-widest mb-1">今日總分</p>
-                <p id="current-total-score" class="text-3xl md:text-4xl font-light text-stone-800">0.0</p>
+              <div class="text-left sm:text-right bg-[#F0F4F1] sm:bg-transparent p-4 sm:p-0 rounded-2xl sm:rounded-none flex-shrink-0">
+                <p class="text-[10px] md:text-xs font-semibold text-[#8FA192] uppercase tracking-widest mb-1">今日總分</p>
+                <p id="current-total-score" class="text-3xl md:text-4xl font-light text-[#2D3A31]">0.0</p>
               </div>
             </div>
 
             <div class="mb-6 md:mb-8">
-              <p class="text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日工作崗位</p>
+              <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">今日工作崗位</p>
               <div class="flex gap-2 flex-wrap" id="station-selector"></div>
             </div>
 
             <div id="criteria-form" class="space-y-4 md:space-y-6"></div>
 
             <div class="mt-8 md:mt-10 flex justify-end">
-              <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
+              <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl shadow-lg shadow-[#6C8673]/20 transition-all active:scale-95 font-medium tracking-wide">
                 <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評定紀錄
               </button>
             </div>
@@ -190,13 +187,13 @@
 
     <div id="section-cleaning" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
       <div class="text-center mb-6 md:mb-10">
-        <h2 class="text-2xl md:text-3xl font-light text-stone-800 tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
-        <p class="text-xs md:text-sm text-stone-500">獨立紀錄清潔人員的表現，與工作崗位評分分開計算</p>
+        <h2 class="text-2xl md:text-3xl font-light text-[#2D3A31] tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
+        <p class="text-xs md:text-sm text-[#687A6B]">獨立紀錄清潔人員的表現，與工作崗位評分分開計算</p>
       </div>
 
-      <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/60 p-6 md:p-10 max-w-2xl mx-auto">
+      <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-6 md:p-10 max-w-2xl mx-auto">
         <div class="mb-8">
-          <label class="block text-xs font-semibold text-stone-400 tracking-widest uppercase mb-3">今日例行清潔人員 (全體名單)</label>
+          <label class="block text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">今日例行清潔人員 (全體名單)</label>
           <div class="flex flex-wrap gap-2" id="cleaning-emp-selector">
           </div>
         </div>
@@ -204,69 +201,64 @@
         <div id="cleaning-selected-list" class="space-y-4"></div>
 
         <div class="mt-8 flex justify-end">
-          <button onclick="saveCleaningData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-stone-800 hover:bg-stone-900 text-white rounded-xl shadow-lg shadow-stone-800/20 transition-all active:scale-95 font-medium tracking-wide">
+          <button onclick="saveCleaningData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl shadow-lg shadow-[#6C8673]/20 transition-all active:scale-95 font-medium tracking-wide">
             <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存清潔評分
           </button>
         </div>
       </div>
     </div>
-    <dialog id="status-modal" class="backdrop:bg-stone-900/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-stone-200 w-[90%] max-w-sm">
-    <div class="p-8 text-center">
-      <div id="modal-loading" class="hidden">
-        <div class="w-16 h-16 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin mx-auto mb-4"></div>
-        <h3 class="text-xl font-bold text-stone-800 mb-2">同步中</h3>
-        <p class="text-stone-500 text-sm">正在將資料傳送至雲端，請稍候...</p>
-      </div>
+    
+    <dialog id="status-modal" class="backdrop:bg-[#2D3A31]/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-[#E5EBE6] w-[90%] max-w-sm">
+      <div class="p-8 text-center">
+        <div id="modal-loading" class="hidden">
+          <div class="w-16 h-16 border-4 border-[#D4DCD5] border-t-[#6C8673] rounded-full animate-spin mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-[#2D3A31] mb-2">同步中</h3>
+          <p class="text-[#687A6B] text-sm">正在將資料傳送至雲端，請稍候...</p>
+        </div>
 
-    <div id="modal-success" class="hidden">
-      <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="check" class="w-8 h-8 text-emerald-600"></i>
+        <div id="modal-success" class="hidden">
+          <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="check" class="w-8 h-8 text-emerald-600"></i>
+          </div>
+          <h3 class="text-xl font-bold text-[#2D3A31] mb-2">儲存成功</h3>
+          <p class="text-[#687A6B] text-sm mb-6">今日的評定紀錄已成功上傳。</p>
+          <button onclick="document.getElementById('status-modal').close()" 
+                  class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-medium hover:bg-[#5A705F] transition-all">
+            確認
+          </button>
+        </div>
       </div>
-      <h3 class="text-xl font-bold text-stone-800 mb-2">儲存成功</h3>
-      <p class="text-stone-500 text-sm mb-6">今日的評定紀錄已成功上傳。</p>
-      <button onclick="document.getElementById('status-modal').close()" 
-              class="w-full py-3 bg-stone-800 text-white rounded-xl font-medium hover:bg-stone-900 transition-all">
-        確認
-      </button>
-    </div>
-  </div>
-</dialog>
+    </dialog>
   </main>
 
-  <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-stone-800/95 backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 transition-all duration-300 opacity-0 -translate-y-6 pointer-events-none z-[1000]">
-    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+  <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-[#3F5144]/95 backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 transition-all duration-300 opacity-0 -translate-y-6 pointer-events-none z-[1000]">
+    <i data-lucide="check-circle" class="w-4 h-4 text-[#A3B4A5] flex-shrink-0"></i>
     <span id="toast-msg" class="font-medium tracking-wide text-sm">今日評分已成功儲存</span>
   </div>
 
   <script>
     // =============================================
-    // 雲端與連線設定 (請替換為你的真實 URL 與 Key)
+    // 雲端與連線設定
     // =============================================
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
 
-    // ✅ 直接在前端初始化，採用「更安全」的初始化方式
-    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  // 從你的 .env 複製
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  // 從你的 .env 複製貼上完整的 anon key
+    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  
     
-    // 檢查該變數是否存在，若已存在則直接使用，避免重複宣告與重複建立連線
     if (!window.supabaseClient) {
         window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
     
-    // 將 const 改為 var，徹底避開 Identifier 'supabase' has already been declared 錯誤
     var supabase = window.supabaseClient;
-    // -----------------
 
     async function initSupabase() {
-      // 不需要再 fetch 後端，直接回傳 true
       return true;
     }
 
     // =============================================
-    // 1. 基本資料設定 
+    // 基本資料設定 
     // =============================================
-    // 將原有的 ALL_EMPLOYEES 更新為包含級距的結構
     const ALL_EMPLOYEES = [
       { name: '俐嬅', joinDate: '2021-03-01', gradeTier: 'C' },
       { name: '小郭', joinDate: '2022-06-15', gradeTier: 'C' },
@@ -319,7 +311,7 @@
         ]
       },
       {
-        id: 'kitchen', name: '廚房', icon: 'chef-hat', color: 'text-stone-600',
+        id: 'kitchen', name: '廚房', icon: 'chef-hat', color: 'text-[#4F6354]',
         criteria: [
           { id: 'efficiency', name: '烹製效率', desc: '食品烹製效率、物料是否先進先出', weight: 0.25 },
           { id: 'detail',     name: '料理細節', desc: '番茄的刀工、茶類奶精是否泡散、綠豆是否煮至柔軟', weight: 0.30 },
@@ -353,13 +345,8 @@
       '到職5~8年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
     };
 
-    // 新增這段：定義等級對應的實質分數，用於計算最後總分
     const GRADE_SCORES = {
-      'O': 100,
-      'A': 90,
-      'B': 80,
-      'C': 70,
-      'D': 60
+      'O': 100, 'A': 90, 'B': 80, 'C': 70, 'D': 60
     };
 
     let currentEvalData = {};
@@ -381,79 +368,67 @@
     }
 
     async function fetchTodayShift() {
-  const today = new Date();
-  const year = parseInt(today.getFullYear());
-  const month = parseInt(today.getMonth() + 1);
-  const day = parseInt(today.getDate());
+      const today = new Date();
+      const year = parseInt(today.getFullYear());
+      const month = parseInt(today.getMonth() + 1);
+      const day = parseInt(today.getDate());
 
-  try {
-    // 修正：只選取 open 與 shift 兩個欄位
-    const { data, error } = await supabase
-      .from('shift_schedules')
-      .select('open, shift') 
-      .eq('year', year)
-      .eq('month', month)
-      .eq('day', day)
-      .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('shift_schedules')
+          .select('open, shift') 
+          .eq('year', year)
+          .eq('month', month)
+          .eq('day', day)
+          .maybeSingle();
 
-    if (error) {
-      console.error("Supabase 查詢錯誤:", error);
-      return;
-    }
-
-    if (data) {
-      console.log("成功撈取資料:", data);
-      
-      let allShiftPeople = [];
-      // 只將 open 與 shift 的人員放入名單
-      if (data.open)  allShiftPeople.push(...data.open.split('、').map(n => n.trim()));
-      if (data.shift) allShiftPeople.push(...data.shift.split('、').map(n => n.trim()));
-
-      // 過濾掉無效字元
-      const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''&& n !== '可柔'))];
-      
-      // 更新 EMPLOYEES
-      EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
-      
-      // 如果資料庫出現了不在 ALL_EMPLOYEES 的名字，手動加入
-      uniqueNames.forEach(name => {
-        if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
-          EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+        if (error) {
+          console.error("Supabase 查詢錯誤:", error);
+          return;
         }
-      });
 
-      renderEmployeeList(); // 渲染名單
-    } else {
-      console.warn("今日查無資料");
+        if (data) {
+          let allShiftPeople = [];
+          if (data.open)  allShiftPeople.push(...data.open.split('、').map(n => n.trim()));
+          if (data.shift) allShiftPeople.push(...data.shift.split('、').map(n => n.trim()));
+
+          const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''&& n !== '可柔'))];
+          EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
+          
+          uniqueNames.forEach(name => {
+            if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
+              EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
+            }
+          });
+          renderEmployeeList(); 
+        }
+      } catch (err) {
+        console.error('取得班表失敗:', err);
+      }
     }
-  } catch (err) {
-    console.error('取得班表失敗:', err);
-  }
-}
 
     async function initApp() {
       await fetchTodayShift();
 
       if (EMPLOYEES.length === 0) {
-        document.getElementById('employee-list').innerHTML = '<p class="text-stone-400 text-sm p-4 text-center border-2 border-dashed border-stone-200 rounded-2xl">今日查無班表</p>';
-        document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-stone-400">目前沒有人員可以評分</div>';
+        document.getElementById('employee-list').innerHTML = '<p class="text-[#8FA192] text-sm p-4 text-center border-2 border-dashed border-[#D4DCD5] rounded-2xl">今日查無班表</p>';
+        document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-[#8FA192]">目前沒有人員可以評分</div>';
         return;
       }
 
       currentSelectedEmp = EMPLOYEES[0].name;
-
       loadDataFromStorage();
       renderEmployeeList();
       selectEmployee(currentSelectedEmp);
       renderStationSelector();
       renderCleaningModule();
       lucide.createIcons();
-      // --- 請加入下面這段 (等待圖示畫完後，觸發一次校正) ---
+      
+      // 給予 150ms 充足時間讓 Tailwind CDN 處理完 DOM 排版，再進行首次完美對齊切換
       setTimeout(() => {
         const isCleaningHidden = document.getElementById('section-cleaning').classList.contains('hidden');
         switchTab(isCleaningHidden ? 'evaluate' : 'cleaning');
-      }, 50);
-      // --------------------------------------------
+      }, 150);
     }
 
     function generateDefaultEval(defaultScore = 5) {
@@ -476,7 +451,6 @@
 
     function loadDataFromStorage() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
-      
       if (!storage) {
         storage = {
           lastDate: todayString,
@@ -496,8 +470,6 @@
       if(!storage.current) storage.current = {};
       if(!storage.currentCleaning) storage.currentCleaning = {};
       
-      // 將原本寫在一起的迴圈拆開
-      // 1. 績效評分：只針對今天有上班的人 (EMPLOYEES)
       EMPLOYEES.forEach(emp => {
         if(!storage.current[emp.name]) {
           storage.current[emp.name] = { station: STATIONS[0].id, grade: '' };
@@ -508,7 +480,6 @@
         }
       });
 
-      // 2. 清潔評分：針對店內所有人 (ALL_EMPLOYEES)
       ALL_EMPLOYEES.forEach(emp => {
         if(!storage.currentCleaning[emp.name]) {
           storage.currentCleaning[emp.name] = { selected: false, stars: 0 };
@@ -520,32 +491,16 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
     }
 
-    function getSeniorityMonths(joinDate) {
-      const join = new Date(joinDate);
-      const now = new Date();
-      return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
-    }
-    
-    // 改為根據 gradeTier 進行對應
     function getGradeTableKey(tier) {
-      const map = {
-        'A': '到職1年以內',
-        'B': '到職1~3年',
-        'C': '到職3~5年',
-        'D': '到職5~8年'
-      };
+      const map = { 'A': '到職1年以內', 'B': '到職1~3年', 'C': '到職3~5年', 'D': '到職5~8年' };
       return map[tier] || '到職1年以內';
     }
 
-    // 在 getSuggestedGrade 中使用新邏輯
     function getSuggestedGrade(empName, score) {
       const emp = EMPLOYEES.find(e => e.name === empName);
       if (!emp) return null;
-      
-      // 直接獲取該員工的級距，再查表
       const label = getGradeTableKey(emp.gradeTier);
       const table = GRADE_TABLE[label];
-      
       let grade;
       const s = parseFloat(score);
       if (s >= 90) grade = table.over90;
@@ -553,7 +508,6 @@
       else if (s >= 70) grade = table.over70;
       else if (s >= 60) grade = table.over60;
       else grade = table.under60;
-      
       return { grade, seniorityLabel: label };
     }
 
@@ -605,14 +559,14 @@
         let iconBgClass = "w-8 h-8 rounded-full flex items-center justify-center transition-colors ";
         
         if (emp.name === currentSelectedEmp) {
-          btnClass += "bg-stone-800 text-white border-stone-800 shadow-lg shadow-stone-800/20";
-          iconBgClass += "emp-icon-bg bg-stone-700";
+          btnClass += "bg-[#6C8673] text-white border-[#6C8673] shadow-lg shadow-[#6C8673]/20";
+          iconBgClass += "emp-icon-bg bg-[#5A705F]";
         } else if (isCompleted) {
-          btnClass += "bg-emerald-50/70 text-emerald-800 border-emerald-100 hover:bg-emerald-50 hover:shadow-sm";
-          iconBgClass += "emp-icon-bg bg-emerald-100/60";
+          btnClass += "bg-[#EAF0EB] text-[#2D3A31] border-[#D4DCD5] hover:bg-[#DDE3DE] hover:shadow-sm";
+          iconBgClass += "emp-icon-bg bg-[#D4DCD5]/60";
         } else {
-          btnClass += "bg-white/70 text-stone-600 border-white hover:bg-white hover:shadow-sm";
-          iconBgClass += "emp-icon-bg bg-stone-100";
+          btnClass += "bg-white text-[#4F6354] border-[#D4DCD5] hover:bg-[#F8FAF8] hover:shadow-sm";
+          iconBgClass += "emp-icon-bg bg-[#F0F4F1]";
         }
 
         return `
@@ -649,31 +603,24 @@
       document.getElementById('criteria-form').innerHTML = station.criteria.map(c => {
         const d = empData[c.id] || { score: 5, note: '' };
         return `
-          <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-stone-50/50 border border-stone-100/50 hover:bg-white transition-colors">
+          <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6] hover:bg-white transition-colors">
             <div class="lg:w-1/3">
               <div class="flex items-center space-x-2 mb-1">
-                <h3 class="text-base md:text-lg font-medium text-stone-800">${c.name}</h3>
-                <span class="px-2 py-0.5 rounded-full bg-stone-200/50 text-stone-600 text-[10px] font-medium">${Math.round(c.weight * 100)}%</span>
+                <h3 class="text-base md:text-lg font-medium text-[#2D3A31]">${c.name}</h3>
+                <span class="px-2 py-0.5 rounded-full bg-[#E5EBE6] text-[#687A6B] text-[10px] font-medium">${Math.round(c.weight * 100)}%</span>
               </div>
-              <p class="text-xs md:text-sm text-stone-500">${c.desc}</p>
+              <p class="text-xs md:text-sm text-[#687A6B]">${c.desc}</p>
             </div>
             <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
               <div class="flex items-center space-x-3 md:space-x-4">
-                <button onclick="adjustScore('${stationId}', '${c.id}', -1)" class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 hover:bg-stone-300 active:scale-95 transition-all">-</button>
-                
-                <input type="range" min="1" max="10" value="${d.score}" id="slider-${c.id}"
-                  oninput="updateScore('${stationId}', '${c.id}', this.value)"
-                  class="flex-1 h-2 bg-stone-200 rounded-lg cursor-pointer" />
-                  
-                <button onclick="adjustScore('${stationId}', '${c.id}', 1)" class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 hover:bg-stone-300 active:scale-95 transition-all">+</button>
-                
-                <div id="score-display-${c.id}" class="w-10 h-10 ml-2 flex-shrink-0 flex items-center justify-center bg-stone-800 text-white rounded-xl shadow-sm text-lg">${d.score}</div>
+                <button onclick="adjustScore('${stationId}', '${c.id}', -1)" class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">-</button>
+                <input type="range" min="1" max="10" value="${d.score}" id="slider-${c.id}" oninput="updateScore('${stationId}', '${c.id}', this.value)" class="flex-1 h-2 bg-[#D4DCD5] rounded-lg cursor-pointer" />
+                <button onclick="adjustScore('${stationId}', '${c.id}', 1)" class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">+</button>
+                <div id="score-display-${c.id}" class="w-10 h-10 ml-2 flex-shrink-0 flex items-center justify-center bg-[#6C8673] text-white rounded-xl shadow-sm text-lg">${d.score}</div>
               </div>
               <div class="relative">
-                <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-stone-400"></i>
-                <input type="text" placeholder="新增備註 (選填)..." value="${d.note}"
-                  onchange="updateNote('${stationId}', '${c.id}', this.value)"
-                  class="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-stone-400/20 focus:outline-none" />
+                <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-[#8FA192]"></i>
+                <input type="text" placeholder="新增備註 (選填)..." value="${d.note}" onchange="updateNote('${stationId}', '${c.id}', this.value)" class="w-full pl-9 pr-4 py-2 bg-white border border-[#D4DCD5] rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-[#8FA192]/30 focus:outline-none text-[#2D3A31]" />
               </div>
             </div>
           </div>
@@ -708,15 +655,14 @@
     function updateTotalAndSuggestion() {
       const score = calculateScore(currentEvalData, currentSelectedEmp);
       document.getElementById('current-total-score').innerText = score;
-
       const suggestion = getSuggestedGrade(currentSelectedEmp, score);
       const el = document.getElementById('seniority-suggestion');
       
       let html = `
-        <div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-stone-50 border border-stone-100">
+        <div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-semibold text-stone-500 uppercase tracking-widest">評定今日等級</span>
-            ${suggestion ? `<span class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full">該員工年資級距: ${suggestion.seniorityLabel}</span>` : ''}
+            <span class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">評定今日等級</span>
+            ${suggestion ? `<span class="text-[10px] bg-[#E5EBE6] text-[#687A6B] px-2 py-0.5 rounded-full">該員工年資級距: ${suggestion.seniorityLabel}</span>` : ''}
           </div>
           <div class="flex gap-2 sm:gap-3 flex-wrap">
       `;
@@ -724,17 +670,15 @@
       ['O', 'A', 'B', 'C', 'D'].forEach(g => {
         const gc = GRADE_COLORS[g];
         const isSelected = currentEvalData[currentSelectedEmp]?.grade === g;
-        
         html += `
           <button onclick="applyGrade('${g}')" 
             class="flex-1 min-w-[40px] h-10 sm:h-12 rounded-xl font-bold transition-all border-2 flex items-center justify-center text-sm sm:text-base
-            ${isSelected ? 'ring-2 ring-offset-2 ring-stone-400 scale-105 shadow-sm' : 'hover:scale-105 opacity-60 hover:opacity-100'}"
+            ${isSelected ? 'ring-2 ring-offset-2 ring-[#8FA192] scale-105 shadow-sm' : 'hover:scale-105 opacity-60 hover:opacity-100'}"
             style="background:${gc.bg}; color:${gc.text}; border-color:${isSelected ? gc.text : gc.border};">
             ${g}
           </button>
         `;
       });
-      
       html += `</div></div>`;
       el.innerHTML = html;
     }
@@ -747,92 +691,78 @@
     }
 
     async function saveData() {
-  let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
-  storage.current = currentEvalData;
-  localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
-  
-  let records = [];
-  EMPLOYEES.forEach(emp => {
-    const grade = currentEvalData[emp.name]?.grade;
-    if (grade) {
-      const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
-      const stationObj = STATIONS.find(s => s.id === stationId);
-      const stationName = stationObj?.name || stationId;
+      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
+      storage.current = currentEvalData;
+      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
-      const score = calculateScore(currentEvalData, emp.name); // 加權總分
-      const details = currentEvalData[emp.name][stationId] || {};
-      
-      // 1. 將細項與備註轉換為老闆好閱讀的中文格式
-      let detailsTextArr = [];
-      if (stationObj && stationObj.criteria) {
-        stationObj.criteria.forEach(c => {
-          if (details[c.id]) {
-            const cScore = details[c.id].score;
-            const cNote = details[c.id].note ? ` (備註: ${details[c.id].note})` : '';
-            // 格式範例：【速度】8分 (備註: 手腳很快)
-            detailsTextArr.push(`【${c.name}】${cScore}分${cNote}`);
+      let records = [];
+      EMPLOYEES.forEach(emp => {
+        const grade = currentEvalData[emp.name]?.grade;
+        if (grade) {
+          const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
+          const stationObj = STATIONS.find(s => s.id === stationId);
+          const stationName = stationObj?.name || stationId;
+          const score = calculateScore(currentEvalData, emp.name); 
+          const details = currentEvalData[emp.name][stationId] || {};
+          
+          let detailsTextArr = [];
+          if (stationObj && stationObj.criteria) {
+            stationObj.criteria.forEach(c => {
+              if (details[c.id]) {
+                const cScore = details[c.id].score;
+                const cNote = details[c.id].note ? ` (備註: ${details[c.id].note})` : '';
+                detailsTextArr.push(`【${c.name}】${cScore}分${cNote}`);
+              }
+            });
           }
-        });
-      }
-      // 使用換行符號連接，讓寫入 Google Sheets 時可以直接在同一個儲存格內換行顯示
-      const detailsString = detailsTextArr.join('\n');
+          const detailsString = detailsTextArr.join('\n');
+          const gradeScore = GRADE_SCORES[grade] || 0;
+          const weightedTotal = parseFloat(score);
+          const finalScore = (weightedTotal * 0.7 + gradeScore * 0.3).toFixed(1);
 
-      // 2. 計算最後總分 (加權總分 × 0.7 + 等級分數 × 0.3)
-      const gradeScore = GRADE_SCORES[grade] || 0;
-      const weightedTotal = parseFloat(score);
-      const finalScore = (weightedTotal * 0.7 + gradeScore * 0.3).toFixed(1);
-
-      records.push({
-        date: todayString,         // 日期 (對應 A 欄)
-        name: emp.name,            // 員工姓名 (對應 B 欄)
-        station: stationName,      // 崗位 (對應 C 欄)
-        score: weightedTotal,      // 加權總分 (對應 D 欄)
-        grade: grade,              // 等級 (對應 E 欄)
-        details: detailsString,    // 細項與備註 (對應 F 欄)
-        finalScore: parseFloat(finalScore) // 最後總分 (對應 G 欄)
+          records.push({
+            date: todayString, name: emp.name, station: stationName,      
+            score: weightedTotal, grade: grade, details: detailsString,    
+            finalScore: parseFloat(finalScore) 
+          });
+        }
       });
+
+      if (records.length === 0) {
+        showToast('尚未替任何員工設定等級，無資料可儲存');
+        return;
+      }
+
+      const payload = { type: 'evaluation', date: todayString, records: records };
+      const modal = document.getElementById('status-modal');
+      const loading = document.getElementById('modal-loading');
+      const success = document.getElementById('modal-success');
+      
+      modal.showModal();
+      loading.classList.remove('hidden');
+      success.classList.add('hidden');
+
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST', redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        loading.classList.add('hidden');
+        if (result.status === 'success') {
+          success.classList.remove('hidden');
+          lucide.createIcons();
+        } else {
+          modal.close();
+          showToast('雲端同步失敗，但已存在本機');
+        }
+      } catch (error) {
+        loading.classList.add('hidden');
+        modal.close();
+        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
+      }
     }
-  });
-
-  if (records.length === 0) {
-    showToast('尚未替任何員工設定等級，無資料可儲存');
-    return;
-  }
-
-  // 傳送資料到 GAS
-  const payload = { type: 'evaluation', date: todayString, records: records };
-
-  const modal = document.getElementById('status-modal');
-  const loading = document.getElementById('modal-loading');
-  const success = document.getElementById('modal-success');
-  
-  modal.showModal();
-  loading.classList.remove('hidden');
-  success.classList.add('hidden');
-
-  try {
-    const response = await fetch(GAS_API_URL, {
-      method: 'POST', redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    
-    const result = await response.json();
-    
-    loading.classList.add('hidden');
-    if (result.status === 'success') {
-      success.classList.remove('hidden');
-      lucide.createIcons();
-    } else {
-      modal.close();
-      showToast('雲端同步失敗，但已存在本機');
-    }
-  } catch (error) {
-    loading.classList.add('hidden');
-    modal.close();
-    showToast('網路錯誤：雲端同步失敗，已儲存於本機');
-  }
-}
 
     async function saveCleaningData() {
       let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
@@ -840,28 +770,21 @@
       localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
       
       let records = [];
-      // 針對所有人檢查是否有被選中
       ALL_EMPLOYEES.forEach(emp => {
         if (cleaningData[emp.name]?.selected) {
-          records.push({
-            name: emp.name,
-            stars: cleaningData[emp.name].stars || 0
-          });
+          records.push({ name: emp.name, stars: cleaningData[emp.name].stars || 0 });
         }
       });
 
-      // 如果都沒有人被選中，用黑色小提示(Toast)顯示即可，不用跳大視窗
       if (records.length === 0) {
         showToast('本機儲存成功 (無人參與清潔)');
         return;
       }
 
-      // 抓取 Modal 元素
       const modal = document.getElementById('status-modal');
       const loading = document.getElementById('modal-loading');
       const success = document.getElementById('modal-success');
       
-      // 開啟 Modal，顯示 Loading，隱藏 Success
       modal.showModal();
       loading.classList.remove('hidden');
       success.classList.add('hidden');
@@ -874,14 +797,9 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload) 
         });
-        
         const result = await response.json();
-        
-        // 資料回傳完畢，關閉轉圈圈
         loading.classList.add('hidden'); 
-        
         if (result.status === 'success') {
-          // 顯示綠色打勾成功畫面
           success.classList.remove('hidden');
           lucide.createIcons();
         } else {
@@ -889,7 +807,6 @@
           showToast('雲端同步失敗');
         }
       } catch (error) {
-        // 【微調點】：確保網路錯誤時，轉圈圈也會被正確隱藏
         loading.classList.add('hidden'); 
         modal.close();
         showToast('網路錯誤，請檢查連線');
@@ -898,14 +815,13 @@
 
     function renderCleaningModule() {
       const sel = document.getElementById('cleaning-emp-selector');
-      // 這裡改成 ALL_EMPLOYEES
       sel.innerHTML = ALL_EMPLOYEES.map(emp => {
         const isSelected = cleaningData[emp.name]?.selected;
         return `
           <button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
             class="px-3 py-1.5 rounded-full text-sm border transition-all ${isSelected
-              ? 'bg-stone-800 text-white border-stone-800'
-              : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'}">
+              ? 'bg-[#6C8673] text-white border-[#6C8673]'
+              : 'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">
             ${emp.name}
           </button>
         `;
@@ -923,24 +839,24 @@
       const selectedEmps = ALL_EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
       const container = document.getElementById('cleaning-selected-list');
       if (selectedEmps.length === 0) {
-        container.innerHTML = `<p class="text-center text-stone-400 text-sm py-8">請從上方選擇今日例行清潔人員</p>`;
+        container.innerHTML = `<p class="text-center text-[#8FA192] text-sm py-8">請從上方選擇今日例行清潔人員</p>`;
         return;
       }
       container.innerHTML = selectedEmps.map(emp => {
         const stars = cleaningData[emp.name].stars || 0;
         return `
-          <div class="flex items-center justify-between p-4 rounded-2xl bg-stone-50/50 border border-stone-100">
+          <div class="flex items-center justify-between p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-stone-200 flex items-center justify-center text-stone-700 font-medium text-sm">
+              <div class="w-9 h-9 rounded-full bg-[#E5EBE6] flex items-center justify-center text-[#3F5144] font-medium text-sm">
                 ${emp.name.charAt(0)}
               </div>
-              <span class="font-medium text-stone-800">${emp.name}</span>
+              <span class="font-medium text-[#2D3A31]">${emp.name}</span>
             </div>
             <div class="star-rating" id="stars-${emp.name}">
               ${[1,2,3,4,5].map(n => `
-                <button class="star-btn ${n <= stars ? 'active' : ''}"
-                  onclick="setStars('${emp.name}', ${n})"
-                  title="${n}星"><i data-lucide="star" class="w-6 h-6 ${n <= stars ? 'fill-current' : ''}"></i></button>
+                <button class="star-btn ${n <= stars ? 'active' : ''}" onclick="setStars('${emp.name}', ${n})" title="${n}星">
+                  <i data-lucide="star" class="w-6 h-6 ${n <= stars ? 'fill-current' : ''}"></i>
+                </button>
               `).join('')}
             </div>
           </div>
@@ -968,81 +884,84 @@
       document.getElementById('global-nav-menu').classList.toggle('hidden');
     }
 
-    function switchTab(tab) {
+    // 更新底線寬度與位置的統一函式
+    function updateTabIndicator() {
       const evaluateBtn = document.getElementById('tab-evaluate');
       const cleaningBtn = document.getElementById('tab-cleaning');
       const indicator = document.getElementById('tab-indicator');
+      const sectionCleaning = document.getElementById('section-cleaning');
+      
+      if (!indicator || !evaluateBtn || !cleaningBtn || !sectionCleaning) return;
+
+      const isEvaluate = sectionCleaning.classList.contains('hidden');
+      const activeBtn = isEvaluate ? evaluateBtn : cleaningBtn;
+
+      // 💡 優化點：如果寬度尚未被彈性排版撐開（為 0），先不要更新寬度，有效防止抓到初始 block 的錯誤大寬度
+      if (activeBtn.offsetWidth === 0) return;
+
+      indicator.style.width = `${activeBtn.offsetWidth}px`;
+      indicator.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    }
+
+    // 💡 優化點：只保留視窗縮放的即時對齊，徹底移除 window.load，改由 initApp 進行最終定型
+    window.addEventListener('resize', updateTabIndicator);
+
+    function switchTab(tab) {
+      const evaluateBtn = document.getElementById('tab-evaluate');
+      const cleaningBtn = document.getElementById('tab-cleaning');
       const sectionEvaluate = document.getElementById('section-evaluate');
       const sectionCleaning = document.getElementById('section-cleaning');
+      const indicator = document.getElementById('tab-indicator');
 
       if (tab === 'evaluate') {
         sectionEvaluate.classList.remove('hidden');
         sectionCleaning.classList.add('hidden');
-        
-        // 柔和切換文字顏色
-        evaluateBtn.classList.remove('text-stone-400', 'hover:text-stone-600');
-        evaluateBtn.classList.add('text-stone-800');
-        cleaningBtn.classList.remove('text-stone-800');
-        cleaningBtn.classList.add('text-stone-400', 'hover:text-stone-600');
-
-        indicator.style.width = `${evaluateBtn.offsetWidth}px`;
-        indicator.style.transform = `translateX(${evaluateBtn.offsetLeft}px)`;
-
+        evaluateBtn.classList.remove('text-[#8FA192]', 'hover:text-[#4F6354]');
+        evaluateBtn.classList.add('text-[#2D3A31]');
+        cleaningBtn.classList.remove('text-[#2D3A31]');
+        cleaningBtn.classList.add('text-[#8FA192]', 'hover:text-[#4F6354]');
       } else {
         sectionEvaluate.classList.add('hidden');
         sectionCleaning.classList.remove('hidden');
-        
-        // 柔和切換文字顏色
-        cleaningBtn.classList.remove('text-stone-400', 'hover:text-stone-600');
-        cleaningBtn.classList.add('text-stone-800');
-        evaluateBtn.classList.remove('text-stone-800');
-        evaluateBtn.classList.add('text-stone-400', 'hover:text-stone-600');
-
-        indicator.style.width = `${cleaningBtn.offsetWidth}px`;
-        indicator.style.transform = `translateX(${cleaningBtn.offsetLeft}px)`;
-        
+        cleaningBtn.classList.remove('text-[#8FA192]', 'hover:text-[#4F6354]');
+        cleaningBtn.classList.add('text-[#2D3A31]');
+        evaluateBtn.classList.remove('text-[#2D3A31]');
+        evaluateBtn.classList.add('text-[#8FA192]', 'hover:text-[#4F6354]');
         renderCleaningModule();
       }
+      
+      // 計算並移動到底部標籤正確位置
+      updateTabIndicator();
+      
+      // 💡 優化點：如果底線還是透明狀態（代表初次進入網頁且排版已完成），給予 50ms 小緩衝確保寬度已精準寫入樣式，再淡入顯示
+      if (indicator && indicator.classList.contains('opacity-0')) {
+        setTimeout(() => {
+          indicator.classList.remove('opacity-0');
+        }, 50);
+      }
     }
-
-    // 頁面載入時，自動校正一次橘色底線的位置與寬度
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        // 抓取當前應顯示的 Tab 來初始化底線
-        const isCleaningHidden = document.getElementById('section-cleaning').classList.contains('hidden');
-        switchTab(isCleaningHidden ? 'evaluate' : 'cleaning');
-      }, 50); // 稍微延遲讓瀏覽器畫完字體，抓到的寬度才會精準
-    });
 
     function showToast(msg, isWarning = false) {
       document.getElementById('toast-msg').innerText = msg;
       const toast = document.getElementById('toast');
-      
-      // 如果標記為警告，就把背景變成橘色；否則維持原本的深石灰色
       if (isWarning) {
-        toast.classList.remove('bg-stone-800/95');
+        toast.classList.remove('bg-[#3F5144]/95');
         toast.classList.add('bg-orange-500/95');
       } else {
-        toast.classList.add('bg-stone-800/95');
+        toast.classList.add('bg-[#3F5144]/95');
         toast.classList.remove('bg-orange-500/95');
       }
-
       toast.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
 
-    // 🚀 保護機制加強版的啟動流程
     window.onload = async () => {
       try {
-        // 1. LIFF 超時保護
         await Promise.race([
           initLiff(),
           new Promise(resolve => setTimeout(resolve, 3000))
         ]);
-
-        // 2. 直接啟動（不需要等 initSupabase 了）
         initApp();
-
       } catch (err) {
         console.error("嚴重錯誤:", err);
       }
