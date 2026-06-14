@@ -200,9 +200,9 @@
           <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-stone-100 overflow-hidden">
             {[
               { label: '值班系統', color: 'indigo', href: 'index.html' },
-              { label: '每週收銀結算', color: 'emerald', href: 'cash.html' },
-              { label: '庫存盤點系統', color: 'orange', href: 'inventory.html' },
-              { label: '清潔與排班管理系統', color: 'green', href: 'clean.html' },
+              { label: '每週金庫結算', color: 'emerald', href: 'cash.html' },
+              { label: '庫存盤點', color: 'orange', href: 'inventory.html' },
+              { label: '清潔與值班管理', color: 'green', href: 'clean.html' },
               { label: '績效評估系統', color: 'purple', href: 'performance.html' }
             ].map(({ label, color, href }) => (
               <a key={label} href={href} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-stone-50 last:border-0 transition-colors`}>{label}</a>
