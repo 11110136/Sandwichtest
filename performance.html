@@ -28,10 +28,32 @@
     }
 
     body {
-      background-color: #F6F7F2; 
+      background-color: var(--cream); 
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
+    /* ── TOP NAV (從 index.html 移植) ── */
+    .topbar {
+        background: var(--sage);
+        color: #fff;
+        padding: 0 16px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 8px; }
+    .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px;}
+    
+    .nav-btn {
+        display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+        background: transparent; border: none; outline: none;
+        cursor: pointer; color: white; transition: all 0.2s;
+    }
+    .nav-btn:hover { color: rgba(255, 255, 255, 0.8); transform: scale(1.05); }
+    .nav-btn:active { transform: scale(0.95); }
+
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
@@ -109,19 +131,18 @@
 <body class="min-h-screen text-[#2D3A31] selection:bg-[#D4DCD5]">
 
   <nav class="sticky top-0 z-50 flex flex-col shadow-sm">
-    <div class="bg-[#6C8673]">
-      <div class="max-w-6xl mx-auto px-4 md:px-6 py-4">
-        <div class="flex items-center justify-between">
-          
-          <div class="flex items-center space-x-4 md:space-x-5">
-            <div class="relative flex items-center">
-              <button onclick="toggleGlobalMenu()" class="flex items-center justify-center p-1 text-white hover:text-white/80 transition-all focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
-                </svg>
-              </button>
-              
-              <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
+    
+    <div class="topbar no-print">
+        <div class="topbar-left relative">
+            <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
+                <i data-lucide="menu" class="w-6 h-6 stroke-[2.5]"></i>
+            </button>
+            <div class="flex items-center space-x-2 select-none ml-1">
+                <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+                <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
+            </div>
+            
+            <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
                 <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
                     <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
                 </a>
@@ -137,21 +158,11 @@
                 <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
                     <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
                 </a>
-              </div>
             </div>
-            
-            <div class="flex items-center space-x-2.5 md:space-x-3 select-none">
-              <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
-              <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
-            </div>
-          </div>
-
-          <div class="hidden md:flex items-center gap-2 text-xs text-white opacity-90">
-            <i data-lucide="cloud" class="w-4 h-4"></i><span id="statusText">System Ready</span>
-          </div>
-
         </div>
-      </div>
+        <div class="hidden md:flex items-center gap-2 text-xs opacity-90">
+            <i data-lucide="cloud" class="w-4 h-4"></i><span id="statusText">System Ready</span>
+        </div>
     </div>
 
     <div class="bg-white border-b border-[#D4DCD5]">
@@ -986,6 +997,64 @@
       toast.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
       setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
     }
+
+     async function fetchTodayHistory() {
+      try {
+        const response = await fetch(`${GAS_API_URL}?action=getHistory`);
+        const result = await response.json();
+        if (result.status !== 'success') return;
+
+        const todayEval = result.data.history?.[todayString] || {};
+        const todayCleaning = result.data.historyCleaning?.[todayString] || {};
+
+        // 合併績效評分
+        Object.keys(todayEval).forEach(name => {
+          if (!currentEvalData[name]) return;
+          const rec = todayEval[name];
+          const stationId = rec.station;
+          const station = STATIONS.find(s => s.id === stationId);
+          if (!station) return;
+
+          currentEvalData[name].station = stationId;
+          currentEvalData[name].grade = rec.grade;
+          currentEvalData[name].precalculatedScore = rec.precalculatedScore;
+
+          if (!currentEvalData[name][stationId]) currentEvalData[name][stationId] = {};
+
+          if (rec.detailsText) {
+            station.criteria.forEach(c => {
+              const regex = new RegExp(`【${c.name}】(\\d+)分(?:\\s*\\(備註:\\s*([^)]*)\\))?`);
+              const m = rec.detailsText.match(regex);
+              if (m) {
+                currentEvalData[name][stationId][c.id] = {
+                  score: parseInt(m[1], 10),
+                  note: m[2] || ''
+                };
+              }
+            });
+          }
+        });
+
+      // 合併清潔評分
+      Object.keys(todayCleaning).forEach(name => {
+        if (!cleaningData[name]) return;
+        cleaningData[name].selected = todayCleaning[name].selected;
+        cleaningData[name].stars = todayCleaning[name].stars;
+      });
+
+    } catch (err) {
+      console.error('讀取今日雲端紀錄失敗:', err);
+    }
+  }
+
+    // 點擊空白處關閉選單
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('global-nav-menu');
+        const btn = document.querySelector('button[onclick="toggleGlobalMenu()"]');
+        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 
     window.onload = async () => {
       try {
