@@ -4,27 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>清潔與排班管理系統</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
-    --sage: #7a9e7e;
-    --sage-light: #c8dcc9;
-    --sage-pale: #eaf2eb;
-    --olive: #5c7a5e;
-    --cream: #faf8f3;
-    --warm-white: #ffffff;
-    --ink: #1a1a1a;
-    --ink-soft: #3d3d3d;
-    --ink-muted: #777;
-    --accent-red: #c0392b;
-    --accent-blue: #2980b9;
-    --accent-purple: #8e44ad;
-    --accent-orange: #e67e22;
-    --border: #d4dfd4;
-    --shadow: 0 2px 12px rgba(90,120,90,0.10);
-    --radius: 10px;
+    /* 系統共用的質感莫蘭迪配色 */
+    --sage: #6C8673;        
+    --sage-light: #8FA192;  
+    --sage-pale: #F0F4F1;   
+    --olive: #5A705F;       
+    --cream: #F6F7F2;       
+    --warm-white: #ffffff;  
+    --ink: #2D3A31;         
+    --ink-soft: #4F6354;    
+    --ink-muted: #8FA192;   
+    --accent-red: #c0392b;  
+    --border: #E5EBE6;      
+    --border-dark: #D4DCD5; 
+    --shadow: 0 4px 20px rgba(108, 134, 115, 0.08); 
+    --radius: 12px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,179 +38,169 @@
     transition: font-size 0.2s ease;
   }
 
-  /* ── GLOBAL NAV ── */
-  .global-nav { position: fixed; top: 6px; left: 16px; z-index: 990; }
-  .nav-btn {
-    display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
-    background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border: 1px solid var(--border);
-    border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; color: #475569; transition: all 0.2s;
+  /* 隱藏原生捲軸但保留功能 */
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* ── TOP NAV (全系統通用) ── */
+  .topbar {
+      background: var(--sage);
+      color: #fff;
+      padding: 0 16px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 990;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
   }
-  .nav-btn:hover { background: #fff; transform: scale(1.05); }
-  .nav-btn:active { transform: scale(0.95); }
+  .topbar-left { display: flex; align-items: center; gap: 8px; }
+  .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px;}
   
-  .nav-menu {
-    position: absolute; top: 100%; left: 0; margin-top: 8px; width: 192px; background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    border: 1px solid var(--border); overflow: hidden; transform-origin: top left; transition: all 0.2s ease;
-    opacity: 1; visibility: visible; transform: scale(1);
+  .nav-btn {
+      display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+      background: transparent; border: none; outline: none;
+      cursor: pointer; color: white; transition: all 0.2s;
   }
-  .nav-menu.hidden { opacity: 0; visibility: hidden; transform: scale(0.95); pointer-events: none; }
-  .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; font-size: 14px; font-weight: 700; color: #334155; text-decoration: none; transition: background 0.15s, color 0.15s; }
-  .nav-item svg { width: 18px; height: 18px; opacity: 0.7; }
-  .nav-purple:hover { background: #f3e8ff; color: #9333ea; }
-  .nav-indigo:hover { background: #e0e7ff; color: #4f46e5; }
-  .nav-emerald:hover { background: #d1fae5; color: #059669; }
-  .nav-blue:hover { background: #dbeafe; color: #2563eb; }
+  .nav-btn:hover { color: rgba(255, 255, 255, 0.8); transform: scale(1.05); }
+  .nav-btn:active { transform: scale(0.95); }
 
-  /* ── TOP NAV ── */
-  .topbar { background: var(--olive); color: #fff; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
-  .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin-left: 54px; }
-  .topbar-actions { display: flex; gap: 10px; }
-  .btn { padding: 7px 18px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; transition: all .18s; }
-  .btn-white { background: #fff; color: var(--olive); }
-  .btn-white:hover { background: var(--sage-pale); }
-  .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.6); }
-  .btn-outline:hover { background: rgba(255,255,255,.15); }
-  .btn-sage { background: var(--sage); color: #fff; }
-  .btn-sage:hover { background: var(--olive); }
-
-  /* ── TABS & MAIN ── */
-  .tabs { display: flex; background: var(--warm-white); border-bottom: 2px solid var(--border); padding: 0 32px; }
-  .tab { padding: 14px 28px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--ink-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .18s; letter-spacing: .5px; }
-  .tab.active { color: var(--olive); border-bottom-color: var(--olive); }
-  .tab:hover:not(.active) { color: var(--sage); }
-  .main { padding: 28px 32px; }
+  /* ── MAIN ── */
+  .main { padding: 24px; max-width: 1400px; margin: 0 auto; width: 100%; }
   .panel { display: none; }
   .panel.active { display: block; }
-  .tip { margin-bottom: 15px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
+  .tip { margin-bottom: 16px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
 
   /* ── TOOLBAR & STATS ── */
-  .month-tool-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
-  .stats-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; background: #fff; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); }
-  .stat-card { background: var(--sage-pale); padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: 700; color: var(--olive); border: 1px solid var(--sage-light); }
+  .month-tool-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .stats-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; background: #fff; padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .stat-card { background: var(--sage-pale); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--sage); border: 1px solid var(--sage-light); }
 
   /* ── SECTION HEADER ── */
-  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
-  .section-header h2 { font-family: 'Noto Serif TC', serif; font-size: 22px; color: var(--olive); font-weight: 700; }
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .section-header h2 { font-family: 'Noto Serif TC', serif; font-size: 22px; color: var(--ink); font-weight: 700; }
   .month-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-  .month-nav button { background: var(--sage-pale); border: 1px solid var(--border); border-radius: 5px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; color: var(--olive); font-weight: 700; line-height: 1; }
+  .month-nav button { background: var(--sage-pale); border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--sage); font-weight: 700; line-height: 1; transition: all 0.2s; }
+  .month-nav button:hover { background: var(--sage-light); color: #fff; }
   .month-nav span { font-size: 15px; font-weight: 700; color: var(--ink); min-width: 90px; text-align: center; }
+
+  /* ── BUTTONS ── */
+  .btn-custom { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-dark); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; background: #fff; color: var(--ink-soft); }
+  .btn-custom:hover { background: var(--sage-pale); border-color: var(--sage-light); color: var(--sage); }
+  .btn-custom-sage { background: var(--sage); color: #fff; border-color: var(--sage); }
+  .btn-custom-sage:hover { background: var(--olive); border-color: var(--olive); color: #fff; }
 
   /* ── STAFF MANAGER ── */
   .staff-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-  .staff-tag { display: flex; align-items: center; gap: 6px; background: var(--sage-pale); border: 1.5px solid var(--sage-light); border-radius: 20px; padding: 6px 14px; font-size: 14px; font-weight: 500; }
+  .staff-tag { display: flex; align-items: center; gap: 6px; background: var(--sage-pale); border: 1.5px solid var(--sage-light); border-radius: 20px; padding: 6px 14px; font-size: 14px; font-weight: 600; color: var(--ink); }
   .staff-tag .del { background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 16px; line-height: 1; padding: 0 2px; }
   .add-staff-row { display: flex; gap: 8px; }
-  .add-staff-row input { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; width: 160px; transition: border .15s; }
+  .add-staff-row input { padding: 8px 14px; border: 1.5px solid var(--border-dark); border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; width: 180px; transition: border .2s; }
   .add-staff-row input:focus { border-color: var(--sage); }
 
   /* ── CALENDAR GRIDS ── */
-  .calendars-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
-  .cal-section h3 { font-family: 'Noto Serif TC', serif; font-size: 20px; color: var(--sage); margin-bottom: 10px; font-weight: 700; letter-spacing: 1px; }
+  .calendars-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .cal-section h3 { font-family: 'Noto Serif TC', serif; font-size: 18px; color: var(--sage); margin-bottom: 12px; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px;}
   .calendar { background: var(--warm-white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
-  .cal-weekday .cal-header { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; }
+  .cal-weekday .cal-header, .cal-full .cal-header { background: var(--sage); color: #fff; font-size: 15px; font-weight: 700; display: grid; }
+  .cal-weekday .cal-header { grid-template-columns: repeat(5, 1fr); }
+  .cal-full .cal-header { grid-template-columns: repeat(7, 1fr); }
   .cal-weekday .cal-body { display: grid; grid-template-columns: repeat(5, 1fr); }
-  .cal-full .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; }
   .cal-full .cal-body { display: grid; grid-template-columns: repeat(7, 1fr); }
-  .cal-header div { text-align: center; padding: 8px 4px; letter-spacing: .5px; }
-  .cal-cell { min-height: 120px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px; font-size: 15px; position: relative; transition: background .15s; display: flex; flex-direction: column; align-items: center; }
+  .cal-header div { text-align: center; padding: 10px 4px; letter-spacing: 1px; }
+  .cal-cell { min-height: 120px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; font-size: 14px; position: relative; transition: background .15s; display: flex; flex-direction: column; align-items: center; }
   .cal-cell:last-child { border-right: none; }
   .cal-weekday .cal-cell:nth-child(5n) { border-right: none; }
   .cal-full .cal-cell:nth-child(7n) { border-right: none; }
-  .cal-cell.other-month { background: #f7f7f5; }
-  .cal-cell.today { background: #fffbea; }
-  .cal-cell.weekend { background: #faf5f5; }
+  .cal-cell.other-month { background: #fbfbfc; }
+  .cal-cell.today { background: var(--highlight-bg); border-bottom: 2px solid var(--sage); }
+  .cal-cell.weekend { background: var(--weekend-bg); }
   .cal-cell.highlighted { background: var(--sage-pale); }
-  .cal-cell .date-num { font-size: 17px; font-weight: 700; color: var(--ink-soft); margin-bottom: 4px; text-align: center; }
+  .cal-cell .date-num { font-size: 16px; font-weight: 700; color: var(--ink-soft); margin-bottom: 6px; text-align: center; }
   .cal-cell.other-month .date-num { color: #bbb; }
 
   /* ── INLINE EDIT BOX ── */
-  .inline-edit { flex: 1; width: 100%; outline: none; font-size: 15px; font-weight: 700; color: var(--olive); text-align: center; white-space: pre-wrap; word-break: break-word; padding: 4px; border-radius: 6px; transition: background 0.2s, box-shadow 0.2s; line-height: 1.5; }
-  .inline-edit:empty:before { content: attr(data-placeholder); color: #bbb; pointer-events: none; font-weight: normal; }
-  .inline-edit:focus { background: #fff; box-shadow: inset 0 0 0 1.5px var(--sage-light); }
-  .dish-edit.closed-label { color: var(--accent-red); font-size: 16px; }
+  .inline-edit { flex: 1; width: 100%; outline: none; font-size: 14px; font-weight: 700; color: var(--ink); text-align: center; white-space: pre-wrap; word-break: break-word; padding: 6px; border-radius: 6px; transition: background 0.2s, box-shadow 0.2s; line-height: 1.5; border: 1px solid transparent; }
+  .inline-edit:empty:before { content: attr(data-placeholder); color: #a1a1aa; pointer-events: none; font-weight: normal; }
+  .inline-edit:focus { background: #fff; border-color: var(--sage-light); box-shadow: inset 0 0 0 1px var(--sage-pale); }
+  .dish-edit.closed-label { color: var(--accent-red); font-size: 15px; }
 
   /* ── SHIFT TABLE ── */
-  .shift-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); box-shadow: var(--shadow); }
-  .shift-table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 15px; background: var(--warm-white); }
-  .shift-table th, .shift-table td { border: 1px solid var(--border); padding: 9px 12px; text-align: center; vertical-align: middle; }
-  .shift-table thead tr:first-child th { background: #3b6cbf; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 2px; border: none; }
-  .shift-table thead tr:nth-child(2) th { background: #e8f0fe; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+  .shift-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .shift-table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 14px; background: var(--warm-white); }
+  .shift-table th, .shift-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: center; vertical-align: middle; }
+  .shift-table thead tr:first-child th { background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 2px; border: none; }
+  .shift-table thead tr:nth-child(2) th { background: var(--sage-pale); color: var(--ink-soft); font-weight: 700; font-size: 14px; border-top: 1px solid var(--border); }
   .shift-table td.closed-cell { color: var(--accent-red); font-weight: 700; font-size: 15px; }
   .shift-table td.open-cell { min-width: 120px; }
   
   .shift-table td input, 
   .shift-input-div { 
-    font-family: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; padding: 5px 6px; width: 100%; min-height: 30px; outline: none; background: var(--cream); transition: border .15s; text-align: center; word-break: break-word; line-height: 1.4;
+    font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); border: 1px solid var(--border-dark); border-radius: 6px; padding: 6px 8px; width: 100%; min-height: 32px; outline: none; background: var(--cream); transition: border .2s; text-align: center; word-break: break-word; line-height: 1.4;
   }
   .shift-table td input:focus, 
-  .shift-input-div:focus { border-color: var(--sage); background: #fff; }
-  .shift-input-div:empty:before { content: attr(data-placeholder); color: #999; pointer-events: none; }
+  .shift-input-div:focus { border-color: var(--sage); background: #fff; box-shadow: inset 0 0 0 1px var(--sage-pale); }
+  .shift-input-div:empty:before { content: attr(data-placeholder); color: #a1a1aa; pointer-events: none; font-weight: normal; }
   
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
 
-  .opener-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s;}
-  .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sage-light); }
+  .opener-badge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s;}
+  .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--sage-light); }
 
   /* ── 快速輸入面板 ── */
   #quick-input-panel {
     position: absolute; z-index: 2000; background: rgba(255, 255, 255, 0.98);
     border: 1px solid var(--border); border-radius: 12px; padding: 14px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15); width: 260px; pointer-events: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12); width: 280px; pointer-events: auto;
     transition: all 0.2s ease; transform-origin: top left;
   }
   #quick-input-panel.hidden { opacity: 0; visibility: hidden; transform: scale(0.95); pointer-events: none; }
   .quick-section { margin-bottom: 12px; }
   .quick-section:last-child { margin-bottom: 0; }
-  .quick-title { font-size: 13px; font-weight: 700; color: var(--ink-muted); margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+  .quick-title { font-size: 13px; font-weight: 700; color: var(--ink-muted); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; display: flex; align-items: center; gap: 4px; }
   .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; }
   .quick-btn {
-    padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 600;
-    cursor: pointer; border: none; background: var(--cream);
+    padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--cream);
     color: var(--ink-soft); transition: all 0.15s; font-family: inherit;
   }
-  .quick-btn.task-btn { background: #f0fdf4; color: #166534; }
+  .quick-btn:hover { background: var(--sage-pale); border-color: var(--sage-light); color: var(--sage); }
+  .quick-btn.task-btn { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
   .quick-btn.task-btn:hover { background: #dcfce7; }
   
   /* ── 大字體模式 ── */
-  body.large-font .inline-edit { font-size: 20px; line-height: 1.6; }
+  body.large-font .inline-edit { font-size: 18px; line-height: 1.6; }
   body.large-font .shift-table td input, 
-  body.large-font .shift-input-div { font-size: 18px; padding: 8px; }
-  body.large-font .shift-table th, body.large-font .shift-table td { font-size: 17px; }
-  body.large-font .opener-badge { font-size: 16px; padding: 6px 14px; }
-  body.large-font .cal-cell .date-num { font-size: 20px; }
+  body.large-font .shift-input-div { font-size: 16px; padding: 8px; }
+  body.large-font .shift-table th, body.large-font .shift-table td { font-size: 16px; }
+  body.large-font .opener-badge { font-size: 15px; padding: 8px 14px; }
+  body.large-font .cal-cell .date-num { font-size: 18px; }
 
   /* ── MOBILE STYLES ── */
   @media (max-width: 900px) {
-    .calendars-wrap { grid-template-columns: 1fr; }
-    .main { padding: 12px; }
-    .topbar { height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
-    .topbar h1 { font-size: 16px; margin-left: 45px; width: 100%; letter-spacing: 1px; margin-bottom: 4px; }
-    .topbar-actions { width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-    .topbar-actions::-webkit-scrollbar { display: none; } 
-    .topbar-actions .btn { padding: 6px 12px; font-size: 13px; flex-shrink: 0; }
-    .tabs { padding: 0 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab { padding: 10px 16px; font-size: 13px; }
+    .calendars-wrap { grid-template-columns: 1fr; gap: 20px; }
+    .main { padding: 16px 12px; }
     .section-header h2 { font-size: 18px; }
-    .month-nav button { width: 28px; height: 28px; font-size: 14px; }
-    .month-nav span { font-size: 14px; min-width: 80px; }
-    .cal-section h3 { font-size: 18px; }
-    .cal-cell { min-height: 80px; padding: 4px; }
-    .cal-cell .date-num { font-size: 14px; margin-bottom: 2px; }
-    .inline-edit { font-size: 13px; line-height: 1.3; }
+    .month-nav button { width: 30px; height: 30px; font-size: 16px; }
+    .month-nav span { font-size: 15px; min-width: 85px; }
+    .cal-section h3 { font-size: 16px; }
+    .cal-cell { min-height: 90px; padding: 6px; }
+    .cal-cell .date-num { font-size: 15px; margin-bottom: 4px; }
+    .inline-edit { font-size: 13px; line-height: 1.4; padding: 4px; }
     .dish-edit.closed-label { font-size: 14px; }
-    .shift-table th, .shift-table td { padding: 6px 4px; font-size: 13px; }
-    .opener-badge { font-size: 12px; padding: 3px 8px; }
-    .shift-input-div { font-size: 13px; min-height: 26px; padding: 4px; }
+    .shift-table th, .shift-table td { padding: 8px 6px; font-size: 13px; }
+    .opener-badge { font-size: 12px; padding: 4px 8px; }
+    .shift-input-div { font-size: 13px; min-height: 28px; padding: 4px; }
   }
 
   @media (max-width: 400px) {
-    .cal-full .cal-header div { font-size: 13px; padding: 4px 0; }
-    .cal-full .cal-cell { padding: 2px; min-height: 70px; }
-    .cal-full .inline-edit { font-size: 12px; padding: 1px; }
-    .stat-card { font-size: 12px; padding: 4px 8px; }
-    .quick-btn { padding: 5px 10px; font-size: 13px; }
+    .cal-full .cal-header div { font-size: 13px; padding: 6px 0; }
+    .cal-full .cal-cell { padding: 4px 2px; min-height: 75px; }
+    .cal-full .inline-edit { font-size: 12px; padding: 2px; }
+    .stat-card { font-size: 12px; padding: 6px 10px; }
+    .quick-btn { padding: 6px 10px; font-size: 12px; }
   }
 
   /* ── PRINT STYLES ── */
@@ -218,10 +209,10 @@
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: #fff !important; margin: 0; padding: 0; }
     
-    .topbar, .tabs, .section-header .month-nav, .btn, .add-staff-row, .tip,
-    #staffPanel, #leavePanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats, #toast { display: none !important; } 
+    .topbar, .section-header .month-nav, .btn-custom, .add-staff-row, .tip,
+    #staffPanel, .global-nav, #quick-input-panel, .month-tool-bar , #shiftStats, #cleanStats, #toast, #tab-bar-container { display: none !important; } 
     
-    .main { padding: 0 !important; margin: 0 !important; }
+    .main { padding: 0 !important; margin: 0 !important; max-width: none !important; }
     .panel { display: none !important; }
 
     #cleanPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-after: always !important; break-after: page !important; }
@@ -233,7 +224,7 @@
     
     #cleanPanel .calendars-wrap { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; flex: 1 !important; align-items: stretch !important; }
     #cleanPanel .cal-section { display: flex !important; flex-direction: column !important; height: 100% !important; }
-    #cleanPanel .cal-section h3 { font-size: 17px !important; margin-bottom: 4px !important; text-align: center !important; }
+    #cleanPanel .cal-section h3 { font-size: 17px !important; margin-bottom: 4px !important; justify-content: center !important; }
     #cleanPanel .calendar { flex: 1 !important; display: flex !important; flex-direction: column !important; border-radius: 4px !important; box-shadow: none !important; }
     #cleanPanel .cal-header div { padding: 6px 2px !important; font-size: 16px !important; }
     #cleanPanel .cal-body { flex: 1 !important; align-content: stretch !important; }
@@ -243,15 +234,17 @@
     #cleanPanel .cal-cell { min-height: unset !important; height: auto !important; padding: 4px 3px !important; display: flex !important; flex-direction: column !important; align-items: center !important; border-right: 1px solid #ccc !important; border-bottom: 1px solid #ccc !important; }
     #cleanPanel .cal-cell .date-num { font-size: 15px !important; margin-bottom: 3px !important; font-weight: 700 !important; line-height: 1.1 !important; }
     
-    .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 18px !important; }
-    .dish-edit.closed-label { font-size: 20px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
+    .inline-edit { box-shadow: none !important; background: transparent !important; border: none !important; font-size: 16px !important; }
+    .dish-edit.closed-label { font-size: 18px !important; font-weight: 700 !important; color: var(--accent-red) !important; }
 
-    .shift-wrap { flex: 1 !important; display: block !important; height: 100% !important; width: 100% !important; }
+    .shift-wrap { flex: 1 !important; display: block !important; height: 100% !important; width: 100% !important; border: none !important;}
     .shift-table { min-width: auto !important; width: 100% !important; height: auto !important; }
-    .shift-table th, .shift-table td { padding: 3px 2px !important; font-size: 13px !important; word-break: break-word !important; white-space: normal !important; }
+    .shift-table th, .shift-table td { padding: 4px 3px !important; font-size: 13px !important; word-break: break-word !important; white-space: normal !important; }
 
     .shift-table td input, .shift-input-div { padding: 1px !important; font-size: 13px !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; border: none !important; background: transparent !important; text-align: center !important; }
+    
     .opener-badge { padding: 2px 4px !important; font-size: 12px !important; white-space: nowrap !important; }
+    
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
 
     .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 85px !important; max-width: 85px !important; white-space: normal !important; word-break: break-all !important; }
@@ -260,59 +253,81 @@
 
   /* ── Toast 通知 ── */
   #toast {
-    position: fixed; 
-    top: 24px; 
-    left: 50%; 
-    transform: translateX(-50%) translateY(-100px);
-    background: rgba(44, 62, 80, 0.95); 
-    color: white;
-    padding: 10px 24px; 
-    border-radius: 50px;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    opacity: 0; 
-    font-size: 15px; 
-    font-weight: 500; 
-    z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    pointer-events: none;
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px);
+      background: rgba(45, 58, 49, 0.95); color: white; padding: 10px 24px; border-radius: 50px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; font-size: 14px; font-weight: 500;
+      z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none;
   }
-  #toast.show { 
-    transform: translateX(-50%) translateY(0); 
-    opacity: 1; 
-  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
-<div class="global-nav no-print">
-  <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
-    </svg>
-  </button>
-  <div id="global-nav-menu" class="nav-menu hidden">
-    <a href="index.html" class="nav-item nav-indigo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> 值班系統 </a>
-    <a href="cash.html" class="nav-item nav-emerald"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17" y1="5" x2="9.5" y2="5" rx="3.5" ry="3.5"></path></svg> 每週金庫結算 </a>
-    <a href="inventory.html" class="nav-item nav-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> 庫存盤點 </a>
-    <a href="clean.html" class="nav-item nav-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 清潔與值班管理 </a>
-    <a href="performance.html" class="nav-item nav-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg> 績效評估系統 </a>
-  </div>
+
+<div class="topbar no-print">
+    <div class="topbar-left relative">
+        <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
+            <i data-lucide="menu" class="w-6 h-6 stroke-[2.5]"></i>
+        </button>
+        <div class="flex items-center space-x-2 select-none ml-1">
+            <i data-lucide="sparkles" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+            <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">清潔與排班系統</h1>
+        </div>
+        
+        <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
+            <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
+            </a>
+            <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算
+            </a>
+            <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
+            </a>
+            <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
+            </a>
+            <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
+                <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
+            </a>
+        </div>
+    </div>
+    
+    <div class="hidden md:flex items-center gap-2 text-xs">
+        <button onclick="toggleFontSize()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all">
+            <i data-lucide="a-large-small" class="w-4 h-4"></i>字體大小
+        </button>
+        <button onclick="switchTab('staffPanel')" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all">
+            <i data-lucide="users" class="w-4 h-4"></i>管理人員
+        </button>
+        <button onclick="printSchedule()" class="flex items-center gap-1.5 bg-white text-[var(--sage)] hover:bg-[var(--sage-pale)] font-bold px-3 py-1.5 rounded-lg transition-all">
+            <i data-lucide="printer" class="w-4 h-4"></i>列印排班表
+        </button>
+    </div>
 </div>
 
-<div class="topbar">
-  <h1>📋 清潔與排班管理系統</h1>
-  <div class="topbar-actions">
-    <button class="btn btn-outline" onclick="switchTab('leavePanel')">🏖️ 排定休假</button>
-    <button class="btn btn-outline" onclick="toggleFontSize()">🔠 字體大小</button>
-    <button class="btn btn-outline" onclick="switchTab('staffPanel')">👥 管理人員</button>
-    <button class="btn btn-white" onclick="printSchedule()">🖨️ 列印排班表</button>
-  </div>
-</div>
+<div id="tab-bar-container" class="bg-white border-b border-[var(--border-dark)] no-print">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-6 relative flex">
+    <div class="relative flex overflow-x-auto hide-scrollbar flex-1" id="tab-container">
+      <button id="tab-cleanPanel" onclick="switchTab('cleanPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink)]">
+        <i data-lucide="sparkles" class="w-4 h-4 opacity-80"></i> 清潔與洗餐具
+      </button>
+      
+      <button id="tab-shiftPanel" onclick="switchTab('shiftPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]">
+        <i data-lucide="store" class="w-4 h-4 opacity-80"></i> 開店關帳排班
+      </button>
 
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('cleanPanel')">🧹 清潔與洗餐具</div>
-  <div class="tab" onclick="switchTab('shiftPanel')">🏪 開店關帳排班</div>
-  <div class="tab" onclick="switchTab('leavePanel')">🏖️ 休假排定</div>
-  <div class="tab" id="staffTabBtn" onclick="switchTab('staffPanel')" style="display:none;">👥 人員管理</div>
+      <button id="tab-staffPanel" onclick="switchTab('staffPanel')" class="hidden whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]">
+        <i data-lucide="users" class="w-4 h-4 opacity-80"></i> 人員管理
+      </button>
+
+      <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[var(--sage)] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width: 0; transform: translateX(0);"></div>
+    </div>
+    
+    <div class="md:hidden flex items-center gap-1 ml-auto pl-2">
+        <button onclick="toggleFontSize()" class="p-2 text-[var(--ink-muted)] hover:bg-[var(--sage-pale)] rounded-lg transition-colors"><i data-lucide="a-large-small" class="w-4 h-4"></i></button>
+        <button onclick="printSchedule()" class="p-2 text-[var(--ink-muted)] hover:bg-[var(--sage-pale)] rounded-lg transition-colors"><i data-lucide="printer" class="w-4 h-4"></i></button>
+    </div>
+  </div>
 </div>
 
 <div class="main">
@@ -320,26 +335,26 @@
     <div class="section-header">
       <h2 id="cleanTitle"></h2>
       <div class="month-nav">
-        <button onclick="changeMonth(-1)">‹</button>
+        <button onclick="changeMonth(-1)"><i data-lucide="chevron-left" class="w-5 h-5 mx-auto"></i></button>
         <span id="monthLabel"></span>
-        <button onclick="changeMonth(1)">›</button>
+        <button onclick="changeMonth(1)"><i data-lucide="chevron-right" class="w-5 h-5 mx-auto"></i></button>
       </div>
     </div>
     <div class="month-tool-bar no-print">
-      <button class="btn btn-outline" style="color:var(--olive); border-color:var(--olive)" onclick="autoFillPeriodicClean()">🔄 設定週期清潔預填</button>
+      <button class="btn-custom" onclick="autoFillPeriodicClean()"><i data-lucide="refresh-cw" class="w-4 h-4"></i> 設定週期清潔預填</button>
     </div>
     <div id="cleanStats" class="stats-container"></div>
     <p class="tip">點擊下方日曆空白處即可輸入，或利用跳出的「快速面板」直接點選名字與事項。</p>
     <div class="calendars-wrap">
       <div class="cal-section">
-        <h3>清潔</h3>
+        <h3><i data-lucide="spray-can" class="w-5 h-5"></i>清潔</h3>
         <div class="calendar cal-weekday" id="cleanCal">
           <div class="cal-header"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div></div>
           <div class="cal-body" id="cleanCalBody"></div>
         </div>
       </div>
       <div class="cal-section">
-        <h3>洗餐具</h3>
+        <h3><i data-lucide="droplets" class="w-5 h-5"></i>洗餐具</h3>
         <div class="calendar cal-full" id="dishCal">
           <div class="cal-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
           <div class="cal-body" id="dishCalBody"></div>
@@ -352,19 +367,15 @@
     <div class="section-header">
       <h2>開店關帳人員排班表</h2>
       <div class="month-nav">
-        <button onclick="changeShiftMonth(-1)">‹</button>
+        <button onclick="changeShiftMonth(-1)"><i data-lucide="chevron-left" class="w-5 h-5 mx-auto"></i></button>
         <span id="shiftMonthLabel"></span>
-        <button onclick="changeShiftMonth(1)">›</button>
+        <button onclick="changeShiftMonth(1)"><i data-lucide="chevron-right" class="w-5 h-5 mx-auto"></i></button>
       </div>
-    </div>
-    
-    <div class="month-tool-bar no-print">
-      <button class="btn btn-sage" onclick="copyLastMonthShift()">📋 複製上月排班框架</button>
     </div>
 
     <div id="shiftStats" class="stats-container"></div>
     
-    <p class="tip">提示：紅底表示尚未填寫開店人員。排班時若選到已排定休假的人員，系統會自動發出警告。</p>
+    <p class="tip">提示：紅底表示尚未填寫開店人員。</p>
     
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
@@ -372,32 +383,12 @@
           <tr><th colspan="13" id="shiftTableTitle"></th></tr>
           <tr>
             <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
-            <th style="width:8px;background:#e8e8e8; border-top:none; border-bottom:none;"></th>
+            <th style="width:8px;background:var(--cream); border-top:none; border-bottom:none;"></th>
             <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
           </tr>
         </thead>
         <tbody id="shiftBody"></tbody>
       </table>
-    </div>
-  </div>
-
-  <div class="panel" id="leavePanel">
-    <div class="section-header">
-      <h2>整月休假排定</h2>
-      <div class="month-nav">
-        <button onclick="changeLeaveMonth(-1)">‹</button>
-        <span id="leaveMonthLabel"></span>
-        <button onclick="changeLeaveMonth(1)">›</button>
-      </div>
-    </div>
-    <p class="tip">直接在日曆上點擊日期，並使用快速面板選取當日休假人員。這些資料將自動與值班表、洗餐具表連動！</p>
-    <div class="calendars-wrap" style="grid-template-columns: 1fr;">
-      <div class="cal-section">
-        <div class="calendar cal-full" id="leaveCal">
-          <div class="cal-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
-          <div class="cal-body" id="leaveCalBody"></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -407,28 +398,28 @@
     <div class="staff-grid" id="staffGrid"></div>
     <div class="add-staff-row">
       <input type="text" id="newStaffInput" placeholder="輸入姓名" maxlength="10" onkeydown="if(event.key==='Enter')addStaff()">
-      <button class="btn btn-sage" onclick="addStaff()">＋ 新增</button>
+      <button class="btn-custom btn-custom-sage" onclick="addStaff()">＋ 新增</button>
     </div>
   </div>
 </div>
 
 <div id="quick-input-panel" class="hidden">
   <div class="quick-section" id="quick-color-section" style="display:none;">
-    <div class="quick-title">🎨 標記顏色 (請先反白選取文字)</div>
+    <div class="quick-title"><i data-lucide="palette" class="w-4 h-4 text-[var(--sage)]"></i> 標記顏色 (請先反白選取文字)</div>
     <div id="quick-colors-container" class="quick-btns">
-      <button class="quick-btn color-btn" style="color:#e11d48; background:#ffe4e6;" data-color="#e11d48">紅</button>
-      <button class="quick-btn color-btn" style="color:#2563eb; background:#dbeafe;" data-color="#2563eb">藍</button>
-      <button class="quick-btn color-btn" style="color:#059669; background:#d1fae5;" data-color="#059669">綠</button>
-      <button class="quick-btn color-btn" style="color:#9333ea; background:#f3e8ff;" data-color="#9333ea">紫</button>
-      <button class="quick-btn color-btn" style="color:#3d3d3d; background:#f1f5f9;" data-color="#3d3d3d">復原</button>
+      <button class="quick-btn color-btn" style="color:#e11d48; background:#ffe4e6; border-color:#fecdd3;" data-color="#e11d48">紅</button>
+      <button class="quick-btn color-btn" style="color:#2563eb; background:#dbeafe; border-color:#bfdbfe;" data-color="#2563eb">藍</button>
+      <button class="quick-btn color-btn" style="color:#059669; background:#d1fae5; border-color:#a7f3d0;" data-color="#059669">綠</button>
+      <button class="quick-btn color-btn" style="color:#9333ea; background:#f3e8ff; border-color:#e9d5ff;" data-color="#9333ea">紫</button>
+      <button class="quick-btn color-btn" style="color:#3d3d3d; background:#f1f5f9; border-color:#e2e8f0;" data-color="#3d3d3d">復原</button>
     </div>
   </div>
   <div class="quick-section">
-    <div class="quick-title">👥 快速人員</div>
+    <div class="quick-title"><i data-lucide="users" class="w-4 h-4 text-[var(--sage)]"></i> 快速人員</div>
     <div id="quick-names-container" class="quick-btns"></div>
   </div>
   <div class="quick-section">
-    <div class="quick-title">🧹 快速事項</div>
+    <div class="quick-title"><i data-lucide="check-circle" class="w-4 h-4 text-[var(--sage)]"></i> 快速事項</div>
     <div id="quick-tasks-container" class="quick-btns"></div>
   </div>
 </div>
@@ -495,10 +486,7 @@ let cleanData = {};
 let dishData = {};
 let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth(); 
 let shiftData = {};
-let leaveYear = new Date().getFullYear(), leaveMonth = new Date().getMonth(); 
-let leaveData = {}; // 🏖️ 存放休假資料
 let isLargeFont = false;
-let isAlerting = false; // 避免警告視窗無限循環
 
 const STAFF_COLORS = [
   { bg: '#ffe0b2', text: '#b26a00' }, // 橘
@@ -516,36 +504,17 @@ const STAFF_COLORS = [
 ];
 
 function getStaffStyle(name, isUnified = false) {
-  if (!name || name === '未填') return 'background-color: #e2e8f0; color: #475569; border: none;';
+  if (!name || name === '未填') return 'background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;';
   if (isUnified) {
-    if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
+    if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;';
     return 'background-color: var(--sage-pale); color: var(--olive); border: 1px solid var(--sage-light);';
   }
-  if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: none;';
+  if (name === '店休') return 'background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;';
   const firstName = name.split('、')[0];
   const index = staff.indexOf(firstName);
-  if (index === -1) return 'background-color: #e2e8f0; color: #475569; border: none;'; 
+  if (index === -1) return 'background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;'; 
   const color = STAFF_COLORS[index % STAFF_COLORS.length]; 
-  return `background-color: ${color.bg}; color: ${color.text}; border: none;`;
-}
-
-// ══════════════════════════════════════════
-//  休假防呆警告機制
-// ══════════════════════════════════════════
-function checkLeaveWarning(key, text) {
-  if (isAlerting || !leaveData[key] || !text) return;
-  // 找出有被排班，但在當天請假的人
-  const onLeave = leaveData[key].filter(name => text.includes(name));
-  
-  if (onLeave.length > 0) {
-    isAlerting = true;
-    const [y, m, d] = key.split('-');
-    // 使用 setTimeout 讓 UI 先處理完 focus/blur，避免視窗無限循環
-    setTimeout(() => {
-      alert(`⚠️ 警告：【 ${onLeave.join('、')} 】在 ${y}/${parseInt(m)+1}/${d} 已經排定休假！`);
-      isAlerting = false;
-    }, 10);
-  }
+  return `background-color: ${color.bg}; color: ${color.text}; border: 1px solid rgba(0,0,0,0.05);`;
 }
 
 // ══════════════════════════════════════════
@@ -554,6 +523,8 @@ function checkLeaveWarning(key, text) {
 function toggleFontSize() {
   isLargeFont = !isLargeFont;
   document.body.classList.toggle('large-font', isLargeFont);
+  // 字體放大縮小可能會影響 Tab 寬度，故重新計算底線
+  setTimeout(updateTabLine, 50);
 }
 
 // ══════════════════════════════════════════
@@ -561,18 +532,50 @@ function toggleFontSize() {
 // ══════════════════════════════════════════
 function switchTab(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const idx = ['cleanPanel','shiftPanel','leavePanel','staffPanel'].indexOf(id);
-  document.querySelectorAll('.tab')[idx]?.classList.add('active');
-  
-  if(id==='staffPanel') renderStaff();
-  if(id==='leavePanel') renderLeaveCal();
+
+  if (id === 'staffPanel') {
+    document.getElementById('tab-staffPanel').classList.remove('hidden');
+    renderStaff();
+  }
+
+  ['cleanPanel', 'shiftPanel', 'staffPanel'].forEach(tabId => {
+    const btn = document.getElementById('tab-' + tabId);
+    if (!btn) return;
+    if (tabId === id) {
+      btn.classList.add('text-[var(--ink)]');
+      btn.classList.remove('text-[var(--ink-muted)]', 'hover:text-[var(--ink-soft)]');
+    } else {
+      btn.classList.remove('text-[var(--ink)]');
+      btn.classList.add('text-[var(--ink-muted)]', 'hover:text-[var(--ink-soft)]');
+    }
+  });
+
+  updateTabLine();
 }
+
+function updateTabLine() {
+  const activePanel = document.querySelector('.panel.active');
+  if(!activePanel) return;
+  const id = activePanel.id;
+  const btn = document.getElementById('tab-' + id);
+  const line = document.getElementById('tab-line');
+  if (!btn || !line) return;
+
+  if (btn.offsetWidth === 0) return;
+
+  line.style.width = btn.offsetWidth + 'px';
+  line.style.transform = `translateX(${btn.offsetLeft}px)`;
+  if(line.classList.contains('opacity-0')) {
+     setTimeout(() => line.classList.remove('opacity-0'), 50);
+  }
+}
+
+window.addEventListener('resize', updateTabLine);
 
 function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
 document.addEventListener('click', function(e) {
-  const nav = document.querySelector('.global-nav');
+  const nav = document.querySelector('.topbar-left');
   const menu = document.getElementById('global-nav-menu');
   if (nav && !nav.contains(e.target) && !menu.classList.contains('hidden')) menu.classList.add('hidden');
 });
@@ -598,63 +601,6 @@ function addStaff() {
 }
 function removeStaff(i) { 
   staff.splice(i,1); renderStaff(); saveToSupabase('staff', 'all', staff); 
-}
-
-// ══════════════════════════════════════════
-//  休假日曆面板 (LEAVE CALENDAR)
-// ══════════════════════════════════════════
-function changeLeaveMonth(d) {
-  leaveMonth += d;
-  if(leaveMonth > 11) { leaveMonth=0; leaveYear++; }
-  if(leaveMonth < 0) { leaveMonth=11; leaveYear--; }
-  updateLeaveLabels(); renderLeaveCal();
-}
-
-function updateLeaveLabels() {
-  document.getElementById('leaveMonthLabel').textContent = `${leaveYear} 年 ${leaveMonth+1} 月`;
-}
-
-function renderLeaveCal() {
-  const body = document.getElementById('leaveCalBody');
-  if(!body) return;
-  const firstDay = new Date(leaveYear, leaveMonth, 1).getDay();
-  const daysInMonth = new Date(leaveYear, leaveMonth+1, 0).getDate();
-  const prevDays = new Date(leaveYear, leaveMonth, 0).getDate();
-  const today = new Date();
-  let html = '';
-  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-
-  for(let i=0; i<totalCells; i++) {
-    const weekRow = Math.floor(i/7);
-    const hl = (weekRow%2===1);
-    if(i < firstDay || i >= firstDay + daysInMonth) {
-      const d = i < firstDay ? prevDays - firstDay + i + 1 : i - firstDay - daysInMonth + 1;
-      html += `<div class="cal-cell other-month ${hl?'highlighted':''}"><span class="date-num">${d}</span></div>`;
-    } else {
-      const day = i - firstDay + 1;
-      const dow = i % 7;
-      const isToday = (leaveYear===today.getFullYear() && leaveMonth===today.getMonth() && day===today.getDate());
-      const isWeekend = dow===0||dow===6;
-      const key = `${leaveYear}-${leaveMonth}-${day}`;
-      let cls = '';
-      if(isToday) cls='today'; else if(hl) cls='highlighted'; else if(isWeekend) cls='weekend';
-
-      let names = leaveData[key] ? leaveData[key].join('、') : '';
-      html += `<div class="cal-cell ${cls}">
-        <span class="date-num">${day}</span>
-        <div class="inline-edit editable-cell" style="color:var(--accent-red);" contenteditable="true" data-key="${key}" data-field="leave" onblur="saveLeaveData('${key}', this)" data-placeholder="輸入休假人員">${names}</div>
-      </div>`;
-    }
-  }
-  body.innerHTML = html;
-}
-
-function saveLeaveData(key, el) {
-  const text = el.innerText.trim();
-  // 將輸入的字串用 '、' 或 ',' 或空白切開，過濾掉空字串
-  const namesArray = text.split(/、|,|\s+/).filter(n => n);
-  leaveData[key] = namesArray;
-  saveToSupabase('leave', key, leaveData[key]);
 }
 
 // ══════════════════════════════════════════
@@ -778,7 +724,6 @@ function saveDishData(key, el) {
   if (text === '店休') el.classList.add('closed-label');
   else el.classList.remove('closed-label');
   updateCleanStats();
-  checkLeaveWarning(key, text); // 觸發休假警告
 }
 
 // ══════════════════════════════════════════
@@ -822,7 +767,6 @@ function changeShiftMonth(d) {
 
 function updateShiftLabels() {
   document.getElementById('shiftMonthLabel').textContent=`${shiftYear} 年 ${shiftMonth+1} 月`;
-  document.getElementById('shiftTableTitle').textContent=`${shiftYear}年${shiftMonth+1}月份`;
 }
 
 function updateShiftStats() {
@@ -847,33 +791,7 @@ function updateShiftStats() {
           if (counts.at20 > 0) details.push(`20:00: ${counts.at20}`);
           return `<div class="stat-card">${name} (${details.join(' | ')})</div>`;
       }).join('');
-  document.getElementById('shiftStats').innerHTML = statsHtml || '<span style="color:#999">本月尚無排班統計資料</span>';
-}
-
-async function copyLastMonthShift() {
-  if (!confirm('確定要複製上個月的「開店」與「關帳」人員配置嗎？(這將覆蓋本月對應欄位)')) return;
-
-  let prevMonth = shiftMonth - 1;
-  let prevYear = shiftYear;
-  if (prevMonth < 0) { prevMonth = 11; prevYear--; }
-
-  const daysInMonth = new Date(shiftYear, shiftMonth + 1, 0).getDate();
-  
-  for (let d = 1; d <= daysInMonth; d++) {
-      const prevKey = `${prevYear}-${prevMonth}-${d}`;
-      const currentKey = `${shiftYear}-${shiftMonth}-${d}`;
-      
-      const { data, error } = await supabaseClient.from('schedule_data').select('*').eq('id', `shift_${prevKey}`).single();
-      
-      if (data && data.data) {
-          if (!shiftData[currentKey]) shiftData[currentKey] = {};
-          shiftData[currentKey].opener = data.data.opener || '';
-          shiftData[currentKey].close = data.data.close || '';
-          await saveToSupabase('shift', currentKey, shiftData[currentKey]);
-      }
-  }
-  alert('上月人員框架複製完成！');
-  renderShiftTable();
+  document.getElementById('shiftStats').innerHTML = statsHtml || '<span style="color:var(--ink-muted)">本月尚無排班統計資料</span>';
 }
 
 function renderShiftTable() {
@@ -892,7 +810,7 @@ function renderShiftTable() {
   for(let i=0;i<Math.max(left.length, right.length);i++) {
     html += `<tr>`;
     html += left[i] ? buildShiftCells(left[i]) : `<td colspan="6"></td>`;
-    html += `<td style="width:8px;background:#e8e8e8;"></td>`;
+    html += `<td style="width:8px;background:var(--cream); border-top:none; border-bottom:none;"></td>`;
     html += right[i] ? buildShiftCells(right[i]) : `<td colspan="6"></td>`;
     html += `</tr>`;
   }
@@ -908,7 +826,7 @@ function buildShiftCells(row) {
   const closerStyle = getStaffStyle(row.close);
 
   return `
-    <td><b>${row.d}.</b></td><td>(${row.weekName})</td>
+    <td><b>${row.d}.</b></td><td style="color:var(--ink-muted)">(${row.weekName})</td>
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
     <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerHTML); updateShiftStats();">${row.duty||''}</div></td>
     <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML); updateShiftStats();">${row.at20||''}</div></td>
@@ -919,7 +837,6 @@ function saveShiftField(key, field, value) {
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
   saveToSupabase('shift', key, shiftData[key]);
-  checkLeaveWarning(key, value); // 觸發休假警告
 }
 
 // ══════════════════════════════════════════
@@ -963,7 +880,7 @@ function updateCleanStats() {
       }).join('');
   
   const container = document.getElementById('cleanStats');
-  if (container) container.innerHTML = statsHtml || '<span style="color:#999">本月尚無清潔與洗餐具統計資料</span>';
+  if (container) container.innerHTML = statsHtml || '<span style="color:var(--ink-muted)">本月尚無清潔與洗餐具統計資料</span>';
 }
 
 // ══════════════════════════════════════════
@@ -1005,7 +922,7 @@ function initQuickInput() {
 
       if (color === '#3d3d3d') {
         document.execCommand('removeFormat', false, null); 
-        document.execCommand('foreColor', false, '#3d3d3d');
+        document.execCommand('foreColor', false, '#2D3A31');
       } else {
         document.execCommand('styleWithCSS', false, true); 
         document.execCommand('foreColor', false, color);
@@ -1066,16 +983,16 @@ function updateQuickNamesPanel() {
   
   const clearBtn = document.createElement('button');
   clearBtn.className = 'quick-btn name-btn';
-  clearBtn.style.cssText = 'background-color: #f1f5f9; color: #64748b; border: none;';
+  clearBtn.style.cssText = 'background-color: var(--cream); color: var(--ink-soft); border: 1px solid var(--border-dark);';
   clearBtn.innerText = '✖ 清除';
   bindQuickButton(clearBtn, '', 'clear'); 
   namesContainer.appendChild(clearBtn);
 
   const templateBtn = document.createElement('button');
   templateBtn.className = 'quick-btn task-btn';
-  templateBtn.style.background = '#e0f2fe';
-  templateBtn.style.color = '#0369a1';
-  templateBtn.style.border = 'none';
+  templateBtn.style.background = 'var(--sage-pale)';
+  templateBtn.style.color = 'var(--sage)';
+  templateBtn.style.border = '1px solid var(--sage-light)';
   templateBtn.innerText = '📋 全套範本';
   bindQuickButton(templateBtn, "玻璃：\n刷地：\n廁所：", 'template');
   namesContainer.appendChild(templateBtn);
@@ -1188,7 +1105,6 @@ function insertTextToCell(text, type) {
     activeCell.innerText = newVal;
     if (key) {
       if (activeCell.classList.contains('dish-edit')) saveDishData(key, activeCell);
-      else if (field === 'leave') saveLeaveData(key, activeCell); // 休假資料獨立儲存
       else saveCleanData(key, activeCell);
     }
   }
@@ -1204,7 +1120,6 @@ function printSchedule() { window.print(); }
 async function initApp() {
   updateCleanLabels(); 
   updateShiftLabels();
-  updateLeaveLabels(); // 🏖️ 載入休假標籤
   initQuickInput(); 
   
   const { data, error } = await supabaseClient.from('schedule_data').select('*');
@@ -1214,19 +1129,20 @@ async function initApp() {
       if (row.type === 'clean') cleanData[row.date_key] = row.data;
       if (row.type === 'dish') dishData[row.date_key] = row.data;
       if (row.type === 'shift') shiftData[row.date_key] = row.data;
-      if (row.type === 'leave') leaveData[row.date_key] = row.data; // 🏖️ 載入休假資料
     });
   }
   
+  switchTab('cleanPanel');
+  setTimeout(() => updateTabLine(), 100);
+
   renderStaff(); 
   renderCleanCal(); 
   renderDishCal(); 
   renderShiftTable();
-  renderLeaveCal(); // 🏖️ 載入休假日曆
   updateCleanStats();
+  lucide.createIcons();
 }
 
-// 修改啟動流程：先等待 LIFF 初始化，再執行系統初始化
 async function startApp() {
   await initLiff();
   initApp();

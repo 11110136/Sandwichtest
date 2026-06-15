@@ -5,9 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>庫存盤點</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { background: #F6F7F2; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    :root {
+      /* 系統共用的質感莫蘭迪配色 */
+      --sage: #6C8673;        
+      --sage-light: #8FA192;  
+      --sage-pale: #F0F4F1;   
+      --olive: #5A705F;       
+      --cream: #F6F7F2;       
+      --warm-white: #ffffff;  
+      --ink: #2D3A31;         
+      --ink-soft: #4F6354;    
+      --ink-muted: #8FA192;   
+      --accent-red: #c0392b;  
+      --border: #E5EBE6;      
+      --border-dark: #D4DCD5; 
+    }
+
+    body { background: var(--cream); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
     input[type=number] { -moz-appearance: textfield; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -16,138 +33,163 @@
     .fade-in { animation: fadeIn 0.2s ease forwards; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .slide-up { animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .card-border-ok   { border-left-color: #6C8673; }
+    
+    .card-border-ok   { border-left-color: var(--sage); }
     .card-border-warn { border-left-color: #ef4444; }
-    .card-border-new  { border-left-color: #D4DCD5; }
+    .card-border-new  { border-left-color: var(--border-dark); }
+    
     dialog { border: none; background: white; }
     dialog::backdrop { background: rgba(45,58,49,0.5); backdrop-filter: blur(4px); }
+
+    /* ── TOP NAV (全系統通用) ── */
+    .topbar {
+        background: var(--sage);
+        color: #fff;
+        padding: 0 16px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 8px; }
+    .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px;}
+    
+    .nav-btn {
+        display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+        background: transparent; border: none; outline: none;
+        cursor: pointer; color: white; transition: all 0.2s;
+    }
+    .nav-btn:hover { color: rgba(255, 255, 255, 0.8); transform: scale(1.05); }
+    .nav-btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body class="min-h-screen text-[#2D3A31]">
 
-<!-- ─── NAV ─── -->
-<nav class="sticky top-0 z-50 shadow-sm">
-  <div class="bg-[#6C8673]">
-    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-      <div class="relative">
-        <button onclick="toggleMenu()" class="text-white hover:text-white/80 transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+<nav class="sticky top-0 z-50 shadow-sm flex flex-col">
+  <div class="topbar no-print">
+    <div class="topbar-left relative">
+        <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
+            <i data-lucide="menu" class="w-6 h-6 stroke-[2.5]"></i>
         </button>
-        <div id="nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-2xl border border-[#E5EBE6] overflow-hidden z-[999]">
-          <a href="index.html"       class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">值班系統</a>
-          <a href="cash.html"        class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">每週金庫結算</a>
-          <a href="inventory.html"   class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">庫存盤點</a>
-          <a href="clean.html"       class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">清潔與值班管理</a>
-          <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1]">績效評估系統</a>
+        <div class="flex items-center space-x-2 select-none ml-1">
+            <i data-lucide="package" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+            <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">庫存盤點</h1>
         </div>
-      </div>
-      <div class="flex items-center gap-2.5">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
-        <h1 class="text-base font-bold tracking-widest text-white uppercase">庫存盤點</h1>
-      </div>
-      <div class="ml-auto flex gap-2">
-        <button onclick="openRestock()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
-          進貨
-        </button>
-        <button onclick="openOrderModal()" class="relative flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          叫貨
-          <span id="order-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-        </button>
-      </div>
+        
+        <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
+            <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
+            </a>
+            <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算
+            </a>
+            <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
+            </a>
+            <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
+            </a>
+            <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
+                <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
+            </a>
+        </div>
+    </div>
+    
+    <div class="ml-auto flex gap-2">
+      <button onclick="openRestock()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+        <i data-lucide="package-plus" class="w-4 h-4"></i>
+        進貨
+      </button>
+      <button onclick="openOrderModal()" class="relative flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        叫貨
+        <span id="order-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#6C8673]">0</span>
+      </button>
     </div>
   </div>
 
-  <!-- Tab bar -->
-  <div class="bg-white border-b border-[#D4DCD5]">
+  <div class="bg-white border-b border-[var(--border-dark)]">
     <div class="max-w-2xl mx-auto px-4 relative flex">
-      <button id="tab-count" onclick="switchTab('count')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#2D3A31]">
+      <button id="tab-count" onclick="switchTab('count')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[var(--ink)]">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
         今日盤點
       </button>
-      <button id="tab-history" onclick="switchTab('history')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#8FA192] hover:text-[#4F6354]">
+      <button id="tab-history" onclick="switchTab('history')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[var(--ink-muted)] hover:text-[var(--ink-soft)] transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
         歷史記錄
       </button>
-      <button id="tab-overview" onclick="switchTab('overview')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#8FA192] hover:text-[#4F6354]">
+      <button id="tab-overview" onclick="switchTab('overview')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[var(--ink-muted)] hover:text-[var(--ink-soft)] transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
         總覽
       </button>
-      <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[#6C8673] rounded-t-full transition-all duration-300 opacity-0" style="width:0"></div>
+      <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[var(--sage)] rounded-t-full transition-all duration-300 opacity-0" style="width:0"></div>
     </div>
   </div>
 
-  <!-- Progress bar (only on count tab) -->
-  <div id="progress-bar-wrap" class="bg-white border-b border-[#E5EBE6] hidden">
+  <div id="progress-bar-wrap" class="bg-white border-b border-[var(--border)] hidden">
     <div class="max-w-2xl mx-auto px-4 py-3">
       <div class="flex justify-between items-center mb-2">
-        <span class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase">今日盤點進度</span>
+        <span class="text-xs font-semibold text-[var(--ink-muted)] tracking-widest uppercase">今日盤點進度</span>
         <div class="flex items-center gap-3">
-          <label class="flex items-center gap-1.5 text-xs text-[#4F6354] font-medium cursor-pointer">
-            <input type="checkbox" id="hide-counted-chk" onchange="toggleHideCounted()" class="rounded accent-[#6C8673] w-3.5 h-3.5">
+          <label class="flex items-center gap-1.5 text-xs text-[var(--ink-soft)] font-medium cursor-pointer">
+            <input type="checkbox" id="hide-counted-chk" onchange="toggleHideCounted()" class="rounded accent-[var(--sage)] w-3.5 h-3.5">
             隱藏已盤
           </label>
-          <span id="progress-label" class="text-xs font-bold text-[#6C8673]">0 / 0</span>
+          <span id="progress-label" class="text-xs font-bold text-[var(--sage)]">0 / 0</span>
         </div>
       </div>
-      <div class="h-1.5 bg-[#D4DCD5] rounded-full overflow-hidden">
-        <div id="progress-fill" class="h-full bg-[#6C8673] rounded-full transition-all duration-500" style="width:0%"></div>
+      <div class="h-1.5 bg-[var(--border-dark)] rounded-full overflow-hidden">
+        <div id="progress-fill" class="h-full bg-[var(--sage)] rounded-full transition-all duration-500" style="width:0%"></div>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- ─── MAIN ─── -->
 <main class="max-w-2xl mx-auto px-4 py-6 pb-40">
 
-  <!-- ══ COUNT TAB ══ -->
   <div id="section-count">
-    <!-- Quick load buttons -->
     <div id="quick-load-wrap" class="mb-6">
-      <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">選擇今日盤點範圍</p>
+      <p class="text-xs font-semibold text-[var(--ink-muted)] tracking-widest uppercase mb-3">選擇今日盤點範圍</p>
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="quickLoad('每日')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[#E5EBE6] hover:border-[#6C8673] hover:shadow-md transition-all active:scale-95 shadow-sm">
+        <button onclick="quickLoad('每日')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[var(--border)] hover:border-[var(--sage)] hover:shadow-md transition-all active:scale-95 shadow-sm">
           <span class="text-lg">☀️</span>
-          <span class="font-bold text-[#2D3A31] text-sm">每日盤點</span>
-          <span class="text-[11px] text-[#8FA192]">食材、茶飲、常用品</span>
+          <span class="font-bold text-[var(--ink)] text-sm">每日盤點</span>
+          <span class="text-[11px] text-[var(--ink-muted)]">食材、茶飲、常用品</span>
         </button>
-        <button onclick="quickLoad('每周')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[#E5EBE6] hover:border-[#6C8673] hover:shadow-md transition-all active:scale-95 shadow-sm">
+        <button onclick="quickLoad('每周')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[var(--border)] hover:border-[var(--sage)] hover:shadow-md transition-all active:scale-95 shadow-sm">
           <span class="text-lg">📦</span>
-          <span class="font-bold text-[#2D3A31] text-sm">每周盤點</span>
-          <span class="text-[11px] text-[#8FA192]">調味、包材、備品</span>
+          <span class="font-bold text-[var(--ink)] text-sm">每周盤點</span>
+          <span class="text-[11px] text-[var(--ink-muted)]">調味、包材、備品</span>
         </button>
       </div>
     </div>
 
-    <!-- Item list -->
     <div id="item-list" class="space-y-2"></div>
   </div>
 
-  <!-- ══ HISTORY TAB ══ -->
   <div id="section-history" class="hidden">
-    <div id="calendar-wrap" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-5 mb-5"></div>
-    <div id="history-detail" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] overflow-hidden hidden fade-in">
-      <div class="flex justify-between items-center px-5 py-4 border-b border-[#E5EBE6]">
-        <h3 id="history-detail-title" class="font-bold text-[#2D3A31]"></h3>
-        <button onclick="document.getElementById('history-detail').classList.add('hidden')" class="text-[#8FA192] hover:text-[#4F6354]">
+    <div id="calendar-wrap" class="bg-white rounded-3xl shadow-sm border border-[var(--border)] p-5 mb-5"></div>
+    <div id="history-detail" class="bg-white rounded-3xl shadow-sm border border-[var(--border)] overflow-hidden hidden fade-in">
+      <div class="flex justify-between items-center px-5 py-4 border-b border-[var(--border)]">
+        <h3 id="history-detail-title" class="font-bold text-[var(--ink)]"></h3>
+        <button onclick="document.getElementById('history-detail').classList.add('hidden')" class="text-[var(--ink-muted)] hover:text-[var(--ink-soft)]">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
-      <div id="history-detail-body" class="divide-y divide-[#E5EBE6] max-h-[60vh] overflow-y-auto"></div>
+      <div id="history-detail-body" class="divide-y divide-[var(--border)] max-h-[60vh] overflow-y-auto"></div>
     </div>
   </div>
 
-  <!-- ══ OVERVIEW TAB ══ -->
   <div id="section-overview" class="hidden">
     <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
-      <button onclick="setOverviewFilter('counted')" id="ov-counted" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-[#6C8673] text-white border-[#6C8673]">今日已盤</button>
+      <button onclick="setOverviewFilter('counted')" id="ov-counted" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-[var(--sage)] text-white border-[var(--sage)]">今日已盤</button>
       <button onclick="setOverviewFilter('alert')" id="ov-alert" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-white text-red-600 border-red-200">⚠ 需叫貨</button>
-      <button onclick="setOverviewFilter('all')" id="ov-all" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-white text-[#4F6354] border-[#D4DCD5]">全部商品</button>
+      <button onclick="setOverviewFilter('all')" id="ov-all" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-white text-[var(--ink-soft)] border-[var(--border-dark)]">全部商品</button>
     </div>
-    <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-sm border border-[var(--border)] overflow-hidden">
       <table class="w-full text-sm">
-        <thead class="bg-[#F6F7F2] text-[#8FA192] text-xs font-semibold uppercase tracking-wide border-b border-[#E5EBE6]">
+        <thead class="bg-[var(--cream)] text-[var(--ink-muted)] text-xs font-semibold uppercase tracking-wide border-b border-[var(--border)]">
           <tr>
             <th class="px-4 py-3 text-left">品名</th>
             <th class="px-4 py-3 text-right">帳面</th>
@@ -156,16 +198,16 @@
             <th class="px-4 py-3 text-center">狀態</th>
           </tr>
         </thead>
-        <tbody id="overview-body" class="divide-y divide-[#F0F4F1]"></tbody>
+        <tbody id="overview-body" class="divide-y divide-[var(--sage-pale)]"></tbody>
       </table>
     </div>
 
     <div id="restock-log-section" class="mt-5 hidden">
-      <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3 pl-1">📦 今日進貨紀錄</p>
-      <div id="restock-log-list" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] divide-y divide-[#F0F4F1] overflow-hidden"></div>
+      <p class="text-xs font-semibold text-[var(--ink-muted)] tracking-widest uppercase mb-3 pl-1">📦 今日進貨紀錄</p>
+      <div id="restock-log-list" class="bg-white rounded-3xl shadow-sm border border-[var(--border)] divide-y divide-[var(--sage-pale)] overflow-hidden"></div>
     </div>
 
-    <button onclick="exportCSV()" class="mt-4 w-full py-3 bg-white border border-[#D4DCD5] rounded-2xl text-sm font-semibold text-[#4F6354] hover:bg-[#F0F4F1] transition-all flex items-center justify-center gap-2">
+    <button onclick="exportCSV()" class="mt-4 w-full py-3 bg-white border border-[var(--border-dark)] rounded-2xl text-sm font-semibold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-all flex items-center justify-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
       匯出 CSV 報表
     </button>
@@ -173,31 +215,26 @@
 
 </main>
 
-<!-- ─── Custom Keypad ─── -->
 <div id="keypad" class="fixed bottom-0 left-0 right-0 z-[90] slide-up hidden">
-  <div class="max-w-2xl mx-auto bg-[#E5EBE6] rounded-t-2xl shadow-2xl border-t border-[#C3D0C6] overflow-hidden">
-    <!-- top bar -->
-    <div class="bg-[#F6F7F2] flex items-center justify-between px-4 py-2.5 border-b border-[#D4DCD5]">
+  <div class="max-w-2xl mx-auto bg-[var(--border)] rounded-t-2xl shadow-2xl border-t border-[var(--sage-light)] overflow-hidden">
+    <div class="bg-[var(--cream)] flex items-center justify-between px-4 py-2.5 border-b border-[var(--border-dark)]">
       <div class="flex items-center gap-2">
-        <span id="keypad-unit-label" class="text-xs font-bold text-[#6C8673] bg-[#DCE8DE] px-2.5 py-1 rounded-full">輸入數量</span>
-        <span id="keypad-remaining" class="text-xs font-bold text-[#4F6354] bg-white border border-[#D4DCD5] px-2 py-0.5 rounded-full">剩 0 項</span>
+        <span id="keypad-unit-label" class="text-xs font-bold text-[var(--sage)] bg-[#DCE8DE] px-2.5 py-1 rounded-full">輸入數量</span>
+        <span id="keypad-remaining" class="text-xs font-bold text-[var(--ink-soft)] bg-white border border-[var(--border-dark)] px-2 py-0.5 rounded-full">剩 0 項</span>
         <button id="keypad-clear" class="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-lg hover:bg-red-100 transition-all">清空</button>
       </div>
       <div class="flex gap-2">
-        <button id="keypad-next" class="text-xs font-bold text-white bg-[#6C8673] px-3 py-1.5 rounded-lg hover:bg-[#5A705F] transition-all">下一項 ⏭</button>
-        <button id="keypad-close" class="text-xs font-bold text-[#4F6354] bg-white border border-[#D4DCD5] px-3 py-1.5 rounded-lg hover:bg-[#F0F4F1] transition-all">完成 ✓</button>
+        <button id="keypad-next" class="text-xs font-bold text-white bg-[var(--sage)] px-3 py-1.5 rounded-lg hover:bg-[var(--olive)] transition-all">下一項 ⏭</button>
+        <button id="keypad-close" class="text-xs font-bold text-[var(--ink-soft)] bg-white border border-[var(--border-dark)] px-3 py-1.5 rounded-lg hover:bg-[var(--sage-pale)] transition-all">完成 ✓</button>
       </div>
     </div>
     <div id="keypad-hint" class="hidden text-center text-[11px] text-amber-700 bg-amber-50 border-b border-amber-200 py-1.5 font-medium"></div>
-    <!-- keys -->
-    <div class="grid grid-cols-3 gap-1.5 p-2.5 bg-[#D4DCD5]">
-      <!-- generated by JS -->
-    </div>
+    <div class="grid grid-cols-3 gap-1.5 p-2.5 bg-[var(--border-dark)]">
+      </div>
   </div>
 </div>
 
-<!-- ─── ORDER MODAL ─── -->
-<dialog id="order-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[92%] max-w-sm p-0">
+<dialog id="order-modal" class="rounded-3xl shadow-2xl border border-[var(--border)] w-[92%] max-w-sm p-0">
   <div class="bg-red-500 text-white px-5 py-4 flex justify-between items-center">
     <h2 class="font-bold flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
@@ -207,9 +244,9 @@
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </div>
-  <div id="order-body" class="p-4 max-h-72 overflow-y-auto space-y-2"></div>
-  <div class="px-4 pb-4 flex gap-3">
-    <button onclick="document.getElementById('order-modal').close()" class="flex-1 py-3 bg-white border-2 border-[#D4DCD5] text-[#4F6354] rounded-xl font-semibold hover:bg-[#F0F4F1] transition-all">關閉</button>
+  <div id="order-body" class="p-4 max-h-72 overflow-y-auto space-y-2 bg-[var(--cream)]"></div>
+  <div class="px-4 pb-4 flex gap-3 bg-[var(--cream)]">
+    <button onclick="document.getElementById('order-modal').close()" class="flex-1 py-3 bg-white border-2 border-[var(--border-dark)] text-[var(--ink-soft)] rounded-xl font-semibold hover:bg-[var(--sage-pale)] transition-all">關閉</button>
     <button onclick="copyOrderList()" id="copy-order-btn" class="flex-[2] py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-all flex items-center justify-center gap-2 hidden">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
       複製並傳 LINE
@@ -217,52 +254,49 @@
   </div>
 </dialog>
 
-<!-- ─── RESTOCK MODAL ─── -->
-<dialog id="restock-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[92%] max-w-sm p-0">
-  <div class="bg-[#6C8673] text-white px-5 py-4 flex justify-between items-center">
+<dialog id="restock-modal" class="rounded-3xl shadow-2xl border border-[var(--border)] w-[92%] max-w-sm p-0">
+  <div class="bg-[var(--sage)] text-white px-5 py-4 flex justify-between items-center">
     <h2 class="font-bold flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/></svg>
       進貨 / 更新帳面
     </h2>
-    <button onclick="document.getElementById('restock-modal').close()" class="hover:bg-[#5A705F] p-1 rounded-full transition-all">
+    <button onclick="document.getElementById('restock-modal').close()" class="hover:bg-[var(--olive)] p-1 rounded-full transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </div>
   <div class="p-4 space-y-4">
-    <input id="restock-search" type="text" placeholder="搜尋品項名稱..." class="w-full px-4 py-2.5 border border-[#D4DCD5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8673]/30 bg-[#F6F7F2]" oninput="filterRestockItems()">
-    <div id="restock-list" class="max-h-52 overflow-y-auto space-y-1 rounded-xl border border-[#E5EBE6] bg-white"></div>
+    <input id="restock-search" type="text" placeholder="搜尋品項名稱..." class="w-full px-4 py-2.5 border border-[var(--border-dark)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--sage)] bg-[var(--cream)]" oninput="filterRestockItems()">
+    <div id="restock-list" class="max-h-52 overflow-y-auto space-y-1 rounded-xl border border-[var(--border)] bg-white"></div>
     <div id="restock-form" class="hidden space-y-3">
-      <div class="bg-[#F0F4F1] rounded-xl p-3 text-sm">
+      <div class="bg-[var(--sage-pale)] rounded-xl p-3 text-sm">
         <div class="flex justify-between"><span class="text-[#687A6B]">品名</span><span id="rs-name" class="font-bold"></span></div>
         <div class="flex justify-between mt-1"><span class="text-[#687A6B]">目前帳面</span><span id="rs-cur" class="font-bold"></span></div>
       </div>
       <div>
-        <label id="rs-qty-label" class="block text-xs font-bold text-[#8FA192] mb-1.5">本次進貨數量</label>
-        <input id="rs-qty" type="number" inputmode="decimal" placeholder="輸入數量..." class="w-full px-4 py-3 border border-[#D4DCD5] rounded-xl text-lg font-bold text-[#6C8673] text-center focus:outline-none focus:ring-2 focus:ring-[#6C8673]/30 bg-[#F0F4F1]" oninput="updateRsPreview()">
+        <label id="rs-qty-label" class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5">本次進貨數量</label>
+        <input id="rs-qty" type="number" inputmode="decimal" placeholder="輸入數量..." class="w-full px-4 py-3 border border-[var(--border-dark)] rounded-xl text-lg font-bold text-[var(--sage)] text-center focus:outline-none focus:ring-2 focus:ring-[var(--sage)] bg-[var(--sage-pale)]" oninput="updateRsPreview()">
       </div>
       <div id="rs-preview" class="hidden bg-[#DCE8DE] rounded-xl p-3 text-sm text-center text-[#3F5144] font-bold"></div>
-      <button onclick="toggleRsMode()" id="rs-mode-toggle" class="text-xs font-semibold text-[#8FA192] hover:text-[#6C8673] transition-colors">✎ 帳面數字不對？直接設定正確庫存</button>
+      <button onclick="toggleRsMode()" id="rs-mode-toggle" class="text-xs font-semibold text-[var(--ink-muted)] hover:text-[var(--sage)] transition-colors">✎ 帳面數字不對？直接設定正確庫存</button>
     </div>
   </div>
   <div class="px-4 pb-4 flex gap-3">
-    <button onclick="document.getElementById('restock-modal').close()" class="flex-1 py-3 bg-white border-2 border-[#D4DCD5] text-[#4F6354] rounded-xl font-semibold hover:bg-[#F0F4F1] transition-all">取消</button>
-    <button onclick="confirmRestock()" id="rs-confirm-btn" class="flex-[2] py-3 bg-[#6C8673] text-white rounded-xl font-semibold hover:bg-[#5A705F] transition-all disabled:opacity-40" disabled>確認更新</button>
+    <button onclick="document.getElementById('restock-modal').close()" class="flex-1 py-3 bg-white border-2 border-[var(--border-dark)] text-[var(--ink-soft)] rounded-xl font-semibold hover:bg-[var(--sage-pale)] transition-all">取消</button>
+    <button onclick="confirmRestock()" id="rs-confirm-btn" class="flex-[2] py-3 bg-[var(--sage)] text-white rounded-xl font-semibold hover:bg-[var(--olive)] transition-all disabled:opacity-40" disabled>確認更新</button>
   </div>
 </dialog>
 
-<!-- ─── RESTOCK SUCCESS MODAL ─── -->
-<dialog id="restock-success-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[88%] max-w-xs p-0">
+<dialog id="restock-success-modal" class="rounded-3xl shadow-2xl border border-[var(--border)] w-[88%] max-w-xs p-0">
   <div class="p-8 text-center">
     <div class="w-14 h-14 bg-[#DCE8DE] rounded-full flex items-center justify-center mx-auto mb-4">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#6C8673]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[var(--sage)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
     </div>
-    <h3 class="text-lg font-bold text-[#2D3A31] mb-1">更新成功</h3>
+    <h3 class="text-lg font-bold text-[var(--ink)] mb-1">更新成功</h3>
     <p id="restock-success-msg" class="text-sm text-[#687A6B] mb-5"></p>
-    <button onclick="document.getElementById('restock-success-modal').close()" class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-semibold hover:bg-[#5A705F] transition-all">確認</button>
+    <button onclick="document.getElementById('restock-success-modal').close()" class="w-full py-3 bg-[var(--sage)] text-white rounded-xl font-semibold hover:bg-[var(--olive)] transition-all">確認</button>
   </div>
 </dialog>
 
-<!-- ─── TOAST ─── -->
 <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-[#3F5144]/95 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-[1000]">
   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#A3B4A5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toast-msg"></span>
@@ -346,17 +380,16 @@ const ITEMS = [
 
 // ─── STATE ───
 const TODAY = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
-let todayCounts = {}; // id -> actualCount (number or '')
-let systemStockMap = {}; // id -> number
-let historyData = {};   // date -> [{id, actualCount}]
+let todayCounts = {}; 
+let systemStockMap = {}; 
+let historyData = {};   
 let activeInputId = null;
 let hideCounted = false;
 let currentTab = 'count';
 let loadedTags = new Set();
 let overviewFilter = 'counted';
-let todayRestockLogs = []; // [{item_name, mode, qty, before, after, unit, created_at}]
+let todayRestockLogs = []; 
 
-// Restock state
 let rsSelectedItem = null, rsMode = 'add';
 
 // ─── INIT ───
@@ -378,7 +411,6 @@ async function init() {
       });
     }
     if (logs) todayRestockLogs = logs;
-    // Figure out which tags already have items loaded today
     ITEMS.forEach(i => { if (todayCounts[i.id] !== undefined) loadedTags.add(i.tag); });
   } catch(e) { showToast('無法連線雲端資料庫', true); }
 
@@ -386,6 +418,7 @@ async function init() {
   switchTab('count');
   setTimeout(updateTabLine, 100);
   window.addEventListener('resize', updateTabLine);
+  lucide.createIcons();
 }
 
 // ─── TAB ───
@@ -395,11 +428,11 @@ function switchTab(tab) {
     document.getElementById(`section-${t}`).classList.toggle('hidden', t !== tab);
     const btn = document.getElementById(`tab-${t}`);
     if (t === tab) {
-      btn.classList.remove('text-[#8FA192]','hover:text-[#4F6354]');
-      btn.classList.add('text-[#2D3A31]');
+      btn.classList.remove('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]');
+      btn.classList.add('text-[var(--ink)]');
     } else {
-      btn.classList.add('text-[#8FA192]','hover:text-[#4F6354]');
-      btn.classList.remove('text-[#2D3A31]');
+      btn.classList.add('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]');
+      btn.classList.remove('text-[var(--ink)]');
     }
   });
   document.getElementById('progress-bar-wrap').classList.toggle('hidden', tab !== 'count' || loadedTags.size === 0);
@@ -440,7 +473,6 @@ async function quickLoad(tag) {
 
   newIds.forEach(id => { todayCounts[id] = ''; });
 
-  // upsert nulls so they appear in DB
   if (newIds.length > 0) {
     await sb.from('inventory_records').upsert(
       newIds.map(id => ({ record_date: TODAY, item_id: id, actual_count: null })),
@@ -479,13 +511,13 @@ function renderItemList() {
     if (items.length === 0) return;
     html += `<div class="mb-1">
       <div class="sticky top-[${tag==='每日'?'108':'108'}px] z-10 py-2">
-        <span class="inline-block px-3 py-1 bg-[#6C8673] text-white text-xs font-bold rounded-lg">📌 ${tag}</span>
+        <span class="inline-block px-3 py-1 bg-[var(--sage)] text-white text-xs font-bold rounded-lg shadow-sm">📌 ${tag}</span>
       </div>
       <div class="space-y-2">${items.map(item => renderCard(item)).join('')}</div>
     </div>`;
   });
 
-  container.innerHTML = html || `<div class="text-center py-12 text-[#8FA192]">🎉 全部品項盤點完成！</div>`;
+  container.innerHTML = html || `<div class="text-center py-12 text-[var(--ink-muted)]">🎉 全部品項盤點完成！</div>`;
 }
 
 function renderCard(item) {
@@ -496,13 +528,11 @@ function renderCard(item) {
   const isLow = hasCounted && !isNaN(count) && count < item.alert;
   const isActive = activeInputId === item.id;
 
-  // Display value (sub-unit mode)
   let displayVal = '';
   if (hasCounted && !isNaN(count)) {
     displayVal = item.conv ? String(Math.round(count * item.conv * 100)/100) : String(count);
   }
 
-  // Variance
   let varianceHtml = '';
   if (hasCounted && !isNaN(count)) {
     const v = count - sys;
@@ -516,26 +546,26 @@ function renderCard(item) {
   const borderClass = isLow ? 'card-border-warn' : hasCounted ? 'card-border-ok' : 'card-border-new';
 
   return `
-  <div id="card-${item.id}" class="bg-white rounded-2xl border-l-4 ${borderClass} border border-[#E5EBE6] p-4 transition-all ${isActive?'ring-2 ring-[#6C8673]/40 shadow-md':'shadow-sm'}">
+  <div id="card-${item.id}" class="bg-white rounded-2xl border-l-4 ${borderClass} border border-[var(--border)] p-4 transition-all ${isActive?'ring-2 ring-[var(--sage)]/40 shadow-md':'shadow-sm'}">
     <div class="flex items-start justify-between mb-3">
       <div>
-        <h3 class="font-semibold text-[#2D3A31] text-sm">${item.name}</h3>
-        <p class="text-[11px] text-[#8FA192] mt-0.5">${item.spec || '—'} · 安全 ${item.alert} ${item.unit}</p>
+        <h3 class="font-semibold text-[var(--ink)] text-sm">${item.name}</h3>
+        <p class="text-[11px] text-[var(--ink-muted)] mt-0.5">${item.spec || '—'} · 安全 ${item.alert} ${item.unit}</p>
       </div>
-      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${hasCounted ? isLow ? 'bg-red-100 text-red-600' : 'bg-[#DCE8DE] text-[#3F5144]' : 'bg-[#F0F4F1] text-[#8FA192]'}">
+      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${hasCounted ? isLow ? 'bg-red-100 text-red-600' : 'bg-[#DCE8DE] text-[var(--ink-soft)]' : 'bg-[var(--sage-pale)] text-[var(--ink-muted)]'}">
         ${hasCounted ? isLow ? '⚠ 需叫貨' : '✓ 已盤' : '待盤點'}
       </span>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="stepCard(${item.id},-1)" class="w-9 h-9 rounded-xl bg-[#F0F4F1] text-[#4F6354] font-bold text-lg flex items-center justify-center hover:bg-[#D4DCD5] active:scale-95 transition-all">−</button>
-      <div onclick="focusCard(${item.id})" class="flex-1 h-10 flex items-center justify-center border-2 rounded-xl cursor-pointer transition-all font-bold text-base ${isActive ? 'border-[#6C8673] bg-[#F0F4F1] text-[#3F5144]' : displayVal ? 'border-[#A3B4A5] text-[#2D3A31]' : 'border-[#D4DCD5] text-[#C3D0C6]'}" >
+      <button onclick="stepCard(${item.id},-1)" class="w-9 h-9 rounded-xl bg-[var(--sage-pale)] text-[var(--ink-soft)] font-bold text-lg flex items-center justify-center hover:bg-[var(--border-dark)] active:scale-95 transition-all">−</button>
+      <div onclick="focusCard(${item.id})" class="flex-1 h-10 flex items-center justify-center border-2 rounded-xl cursor-pointer transition-all font-bold text-base ${isActive ? 'border-[var(--sage)] bg-[var(--sage-pale)] text-[var(--ink-soft)]' : displayVal ? 'border-[#A3B4A5] text-[var(--ink)]' : 'border-[var(--border-dark)] text-[#C3D0C6]'}" >
         ${displayVal || '<span class="font-normal text-sm">點擊輸入</span>'}
-        ${displayVal ? `<span class="text-xs font-normal text-[#8FA192] ml-1">${item.conv ? item.subUnit : item.unit}</span>` : ''}
+        ${displayVal ? `<span class="text-xs font-normal text-[var(--ink-muted)] ml-1">${item.conv ? item.subUnit : item.unit}</span>` : ''}
       </div>
-      <button onclick="stepCard(${item.id},1)" class="w-9 h-9 rounded-xl bg-[#F0F4F1] text-[#4F6354] font-bold text-lg flex items-center justify-center hover:bg-[#D4DCD5] active:scale-95 transition-all">＋</button>
+      <button onclick="stepCard(${item.id},1)" class="w-9 h-9 rounded-xl bg-[var(--sage-pale)] text-[var(--ink-soft)] font-bold text-lg flex items-center justify-center hover:bg-[var(--border-dark)] active:scale-95 transition-all">＋</button>
     </div>
     <div class="flex justify-between items-center mt-2 text-[11px]">
-      <span class="text-[#8FA192]">帳面 ${sys} ${item.unit}${item.conv ? ` (${Math.round(sys*item.conv)}${item.subUnit})` : ''}</span>
+      <span class="text-[var(--ink-muted)]">帳面 ${sys} ${item.unit}${item.conv ? ` (${Math.round(sys*item.conv)}${item.subUnit})` : ''}</span>
       ${varianceHtml}
     </div>
     ${isLow ? `<div class="mt-2 text-xs text-red-600 font-medium flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>低於安全警戒，需叫貨</div>` : ''}
@@ -562,7 +592,6 @@ function stepCard(id, delta) {
 function focusCard(id) {
   activeInputId = id;
   const item = ITEMS.find(i => i.id === id);
-  // Update keypad label
   document.getElementById('keypad-unit-label').textContent = `輸入 ${item.conv ? item.subUnit : item.unit}`;
   if (item.conv) {
     document.getElementById('keypad-hint').textContent = `換算提示：輸入【${item.subUnit}】，系統自動換算為【${item.unit}】儲存`;
@@ -572,7 +601,6 @@ function focusCard(id) {
   }
   updateKeypadRemaining();
   document.getElementById('keypad').classList.remove('hidden');
-  // Scroll card into view
   setTimeout(() => {
     const card = document.getElementById(`card-${id}`);
     if (card) {
@@ -602,7 +630,7 @@ function buildKeypad() {
   const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
   const grid = document.querySelector('#keypad .grid');
   grid.innerHTML = keys.map(k => `
-    <button class="kp-key bg-white py-3 text-xl font-bold rounded-xl shadow-sm active:bg-[#F0F4F1] active:scale-95 transition-all text-[#2D3A31] flex items-center justify-center">${k}</button>
+    <button class="kp-key bg-white py-3 text-xl font-bold rounded-xl shadow-sm active:bg-[var(--sage-pale)] active:scale-95 transition-all text-[var(--ink)] flex items-center justify-center">${k}</button>
   `).join('');
   grid.querySelectorAll('.kp-key').forEach(btn => {
     btn.addEventListener('pointerdown', e => { e.preventDefault(); handleKey(btn.textContent.trim()); });
@@ -645,19 +673,16 @@ async function saveCount(id, val) {
   todayCounts[id] = val;
   updateProgress();
   updateKeypadRemaining();
-  // Re-render just this card
   const card = document.getElementById(`card-${id}`);
   if (card) {
     const item = ITEMS.find(i => i.id === id);
     card.outerHTML = renderCard(item);
     if (activeInputId === id) {
       const newCard = document.getElementById(`card-${id}`);
-      if (newCard) newCard.classList.add('ring-2','ring-[#6C8673]/40','shadow-md');
+      if (newCard) newCard.classList.add('ring-2','ring-[var(--sage)]/40','shadow-md');
     }
   }
-  // update order badge
   updateOrderBadge();
-  // DB save (debounce light)
   const count = val === '' ? null : parseFloat(val);
   await sb.from('inventory_records').upsert({ record_date: TODAY, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
 }
@@ -698,12 +723,12 @@ function openOrderModal() {
   });
   const body = document.getElementById('order-body');
   if (alertItems.length === 0) {
-    body.innerHTML = `<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="font-bold text-[#2D3A31]">庫存都很充足！</p><p class="text-sm text-[#8FA192] mt-1">已盤品項皆在安全量以上</p></div>`;
+    body.innerHTML = `<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="font-bold text-[var(--ink)]">庫存都很充足！</p><p class="text-sm text-[var(--ink-muted)] mt-1">已盤品項皆在安全量以上</p></div>`;
     document.getElementById('copy-order-btn').classList.add('hidden');
   } else {
     body.innerHTML = alertItems.map(i => `
-      <div class="flex items-center justify-between p-3 bg-[#F6F7F2] rounded-xl border border-[#E5EBE6]">
-        <div><p class="font-semibold text-sm text-[#2D3A31]">${i.name}</p><p class="text-[11px] text-[#8FA192]">${i.spec || '—'}</p></div>
+      <div class="flex items-center justify-between p-3 bg-[var(--cream)] rounded-xl border border-[var(--border)]">
+        <div><p class="font-semibold text-sm text-[var(--ink)]">${i.name}</p><p class="text-[11px] text-[var(--ink-muted)]">${i.spec || '—'}</p></div>
         <div class="text-right bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
           <p class="font-bold text-red-600 text-sm">剩 ${todayCounts[i.id]} ${i.unit}</p>
           <p class="text-[10px] text-red-400">低於 ${i.alert}</p>
@@ -732,17 +757,17 @@ async function copyOrderList() {
 function setOverviewFilter(f) {
   overviewFilter = f;
   document.querySelectorAll('.ov-btn').forEach(b => {
-    b.classList.remove('bg-[#6C8673]','text-white','border-[#6C8673]','bg-red-500','border-red-500');
+    b.classList.remove('bg-[var(--sage)]','text-white','border-[var(--sage)]','bg-red-500','border-red-500');
     if (b.id === 'ov-alert') {
       b.classList.add('bg-white','text-red-600','border-red-200');
     } else {
-      b.classList.add('bg-white','text-[#4F6354]','border-[#D4DCD5]');
+      b.classList.add('bg-white','text-[var(--ink-soft)]','border-[var(--border-dark)]');
     }
   });
   const btn = document.getElementById(`ov-${f}`);
-  btn.classList.remove('bg-white','text-[#4F6354]','border-[#D4DCD5]','text-red-600','border-red-200');
+  btn.classList.remove('bg-white','text-[var(--ink-soft)]','border-[var(--border-dark)]','text-red-600','border-red-200');
   if (f === 'alert') btn.classList.add('bg-red-500','text-white','border-red-500');
-  else btn.classList.add('bg-[#6C8673]','text-white','border-[#6C8673]');
+  else btn.classList.add('bg-[var(--sage)]','text-white','border-[var(--sage)]');
   renderOverview();
 }
 
@@ -763,7 +788,6 @@ function renderOverview() {
     });
     emptyMsg = '目前沒有低於安全量的品項 🎉';
   }
-  // overviewFilter === 'all' → show every item in the master list
 
   const tbody = document.getElementById('overview-body');
   tbody.innerHTML = list.map(item => {
@@ -771,23 +795,23 @@ function renderOverview() {
     const raw = todayCounts[item.id];
     const has = raw !== undefined && raw !== '' && raw !== null;
     const c = parseFloat(raw);
-    let vt = '—', badge = `<span class="text-[10px] bg-[#F0F4F1] text-[#8FA192] px-2 py-0.5 rounded-full">未盤</span>`;
-    let vColor = 'text-[#8FA192]';
+    let vt = '—', badge = `<span class="text-[10px] bg-[var(--sage-pale)] text-[var(--ink-muted)] px-2 py-0.5 rounded-full">未盤</span>`;
+    let vColor = 'text-[var(--ink-muted)]';
     if (has && !isNaN(c)) {
       const v = c - sys; const pct = Math.abs(v)/(sys||1);
       vt = v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
       if (c < item.alert) { badge = `<span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">缺貨</span>`; vColor='text-red-600 font-bold'; }
       else if (pct > 0.05 && sys > 0) { badge = `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold">異常</span>`; vColor='text-orange-600 font-bold'; }
-      else { badge = `<span class="text-[10px] bg-[#DCE8DE] text-[#3F5144] px-2 py-0.5 rounded-full">正常</span>`; }
+      else { badge = `<span class="text-[10px] bg-[#DCE8DE] text-[var(--ink-soft)] px-2 py-0.5 rounded-full">正常</span>`; }
     }
-    return `<tr class="hover:bg-[#F6F7F2] transition-colors">
-      <td class="px-4 py-3"><p class="font-semibold text-[#2D3A31] text-sm">${item.name}</p><p class="text-[10px] text-[#8FA192]">${item.unit}</p></td>
+    return `<tr class="hover:bg-[var(--cream)] transition-colors">
+      <td class="px-4 py-3"><p class="font-semibold text-[var(--ink)] text-sm">${item.name}</p><p class="text-[10px] text-[var(--ink-muted)]">${item.unit}</p></td>
       <td class="px-4 py-3 text-right text-[#687A6B] text-sm">${sys}</td>
-      <td class="px-4 py-3 text-right font-bold text-[#2D3A31] text-sm">${has && !isNaN(c) ? c : '—'}</td>
+      <td class="px-4 py-3 text-right font-bold text-[var(--ink)] text-sm">${has && !isNaN(c) ? c : '—'}</td>
       <td class="px-4 py-3 text-right text-sm ${vColor}">${vt}</td>
       <td class="px-4 py-3 text-center">${badge}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="5" class="px-4 py-10 text-center text-[#8FA192] text-sm">${emptyMsg}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="px-4 py-10 text-center text-[var(--ink-muted)] text-sm">${emptyMsg}</td></tr>`;
 
   renderRestockLog();
 }
@@ -803,13 +827,13 @@ function renderRestockLog() {
   list.innerHTML = todayRestockLogs.map(log => {
     const time = log.created_at ? new Date(log.created_at).toLocaleTimeString('zh-TW', { hour:'2-digit', minute:'2-digit' }) : '';
     const qtyText = log.mode === 'add'
-      ? `<span class="text-[#6C8673] font-bold">+${log.qty}</span> ${log.unit}`
-      : `<span class="text-[#6C8673] font-bold">設定為 ${log.after_stock}</span> ${log.unit}`;
+      ? `<span class="text-[var(--sage)] font-bold">+${log.qty}</span> ${log.unit}`
+      : `<span class="text-[var(--sage)] font-bold">設定為 ${log.after_stock}</span> ${log.unit}`;
     return `
     <div class="flex items-center justify-between px-4 py-3">
       <div>
-        <p class="font-semibold text-sm text-[#2D3A31]">${log.item_name}</p>
-        <p class="text-[10px] text-[#8FA192] mt-0.5">${log.before_stock} → ${log.after_stock} ${log.unit}${time ? ` · ${time}` : ''}</p>
+        <p class="font-semibold text-sm text-[var(--ink)]">${log.item_name}</p>
+        <p class="text-[10px] text-[var(--ink-muted)] mt-0.5">${log.before_stock} → ${log.after_stock} ${log.unit}${time ? ` · ${time}` : ''}</p>
       </div>
       <div class="text-right text-sm">${qtyText}</div>
     </div>`;
@@ -848,26 +872,26 @@ function renderCalendar() {
     const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const has = historyData[ds] && Object.keys(historyData[ds]).some(k => historyData[ds][k] !== null);
     const isToday = ds === TODAY, isSel = ds === selectedHistDate;
-    cells += `<div onclick="${has ? `selectHistDate('${ds}')` : ''}" class="h-10 flex flex-col items-center justify-center rounded-xl transition-all ${has?'cursor-pointer hover:bg-[#F0F4F1]':''} ${isSel?'bg-[#6C8673] text-white':''} ${isToday&&!isSel?'bg-[#F0F4F1]':''}">
-      <span class="text-sm font-medium ${isToday&&!isSel?'text-[#6C8673] font-bold':has&&!isSel?'text-[#2D3A31]':'text-[#C3D0C6]'}">${d}</span>
-      ${has ? `<div class="w-1.5 h-1.5 rounded-full mt-0.5 ${isSel?'bg-white':'bg-[#6C8673]'}"></div>` : ''}
+    cells += `<div onclick="${has ? `selectHistDate('${ds}')` : ''}" class="h-10 flex flex-col items-center justify-center rounded-xl transition-all ${has?'cursor-pointer hover:bg-[var(--sage-pale)]':''} ${isSel?'bg-[var(--sage)] text-white':''} ${isToday&&!isSel?'bg-[var(--sage-pale)]':''}">
+      <span class="text-sm font-medium ${isToday&&!isSel?'text-[var(--sage)] font-bold':has&&!isSel?'text-[var(--ink)]':'text-[#C3D0C6]'}">${d}</span>
+      ${has ? `<div class="w-1.5 h-1.5 rounded-full mt-0.5 ${isSel?'bg-white':'bg-[var(--sage)]'}"></div>` : ''}
     </div>`;
   }
   document.getElementById('calendar-wrap').innerHTML = `
     <div class="flex justify-between items-center mb-4">
-      <button onclick="calNavMonth(-1)" class="p-2 rounded-xl hover:bg-[#F0F4F1] transition-all text-[#4F6354]">
+      <button onclick="calNavMonth(-1)" class="p-2 rounded-xl hover:bg-[var(--sage-pale)] transition-all text-[var(--ink-soft)]">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-      <h3 class="font-bold text-[#2D3A31]">${y}年 ${monthNames[m]}</h3>
-      <button onclick="calNavMonth(1)" class="p-2 rounded-xl hover:bg-[#F0F4F1] transition-all text-[#4F6354]">
+      <h3 class="font-bold text-[var(--ink)]">${y}年 ${monthNames[m]}</h3>
+      <button onclick="calNavMonth(1)" class="p-2 rounded-xl hover:bg-[var(--sage-pale)] transition-all text-[var(--ink-soft)]">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
       </button>
     </div>
     <div class="grid grid-cols-7 gap-1 text-center mb-2">
-      ${['日','一','二','三','四','五','六'].map(d=>`<div class="text-xs font-medium text-[#8FA192] py-1">${d}</div>`).join('')}
+      ${['日','一','二','三','四','五','六'].map(d=>`<div class="text-xs font-medium text-[var(--ink-muted)] py-1">${d}</div>`).join('')}
     </div>
     <div class="grid grid-cols-7 gap-1">${cells}</div>
-    ${!selectedHistDate ? `<p class="text-center text-sm text-[#8FA192] mt-4">點選有橘點的日期查看明細</p>` : ''}
+    ${!selectedHistDate ? `<p class="text-center text-sm text-[var(--ink-muted)] mt-4">點選有橘點的日期查看明細</p>` : ''}
   `;
 }
 
@@ -883,14 +907,14 @@ function selectHistDate(ds) {
   const items = ITEMS.filter(i => dayData[i.id] !== undefined && dayData[i.id] !== null);
   document.getElementById('history-detail-title').textContent = `${ds} 盤點明細`;
   document.getElementById('history-detail-body').innerHTML = items.length === 0 
-    ? `<p class="px-5 py-6 text-center text-[#8FA192] text-sm">無盤點資料</p>`
+    ? `<p class="px-5 py-6 text-center text-[var(--ink-muted)] text-sm">無盤點資料</p>`
     : items.map(i => {
         const c = parseFloat(dayData[i.id]);
         const isLow = !isNaN(c) && c < i.alert;
-        return `<div class="flex justify-between items-center px-5 py-3 hover:bg-[#F6F7F2] transition-all">
-          <div><p class="font-semibold text-sm text-[#2D3A31]">${i.name}</p><p class="text-[10px] text-[#8FA192]">安全 ${i.alert} ${i.unit}</p></div>
+        return `<div class="flex justify-between items-center px-5 py-3 hover:bg-[var(--cream)] transition-all">
+          <div><p class="font-semibold text-sm text-[var(--ink)]">${i.name}</p><p class="text-[10px] text-[var(--ink-muted)]">安全 ${i.alert} ${i.unit}</p></div>
           <div class="text-right">
-            <p class="font-bold ${isLow?'text-red-600':'text-[#6C8673]'}">${dayData[i.id]} <span class="text-xs font-normal text-[#8FA192]">${i.unit}</span></p>
+            <p class="font-bold ${isLow?'text-red-600':'text-[var(--sage)]'}">${dayData[i.id]} <span class="text-xs font-normal text-[var(--ink-muted)]">${i.unit}</span></p>
             ${isLow?`<p class="text-[10px] text-red-500">需叫貨</p>`:''}
           </div>
         </div>`;
@@ -914,7 +938,6 @@ function filterRestockItems() {
   const q = document.getElementById('restock-search').value.toLowerCase();
 
   if (!q) {
-    // 預設將「今日需叫貨」品項排在最上方，其餘依原順序接續
     const alertItems = ITEMS.filter(i => {
       const v = todayCounts[i.id]; if (v===''||v===null||v===undefined) return false;
       const c = parseFloat(v); return !isNaN(c) && c < i.alert;
@@ -926,21 +949,21 @@ function filterRestockItems() {
     document.getElementById('restock-list').innerHTML = ordered.map(i => {
       const isAlert = alertIds.has(i.id);
       return `
-      <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[#F0F4F1] cursor-pointer flex justify-between items-center transition-all border-b border-[#F6F7F2] last:border-0">
-        <span class="font-semibold text-sm text-[#2D3A31] flex items-center gap-1.5">${i.name}${isAlert ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">需叫貨</span>' : ''}</span>
-        <span class="text-xs text-[#8FA192]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
+      <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[var(--sage-pale)] cursor-pointer flex justify-between items-center transition-all border-b border-[var(--cream)] last:border-0">
+        <span class="font-semibold text-sm text-[var(--ink)] flex items-center gap-1.5">${i.name}${isAlert ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">需叫貨</span>' : ''}</span>
+        <span class="text-xs text-[var(--ink-muted)]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
       </div>`;
-    }).join('') || `<p class="px-4 py-4 text-center text-sm text-[#8FA192]">找不到品項</p>`;
+    }).join('') || `<p class="px-4 py-4 text-center text-sm text-[var(--ink-muted)]">找不到品項</p>`;
     return;
   }
 
   const list = ITEMS.filter(i => i.name.toLowerCase().includes(q));
   document.getElementById('restock-list').innerHTML = list.slice(0,20).map(i => `
-    <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[#F0F4F1] cursor-pointer flex justify-between items-center transition-all border-b border-[#F6F7F2] last:border-0">
-      <span class="font-semibold text-sm text-[#2D3A31]">${i.name}</span>
-      <span class="text-xs text-[#8FA192]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
+    <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[var(--sage-pale)] cursor-pointer flex justify-between items-center transition-all border-b border-[var(--cream)] last:border-0">
+      <span class="font-semibold text-sm text-[var(--ink)]">${i.name}</span>
+      <span class="text-xs text-[var(--ink-muted)]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
     </div>
-  `).join('') || `<p class="px-4 py-4 text-center text-sm text-[#8FA192]">找不到品項</p>`;
+  `).join('') || `<p class="px-4 py-4 text-center text-sm text-[var(--ink-muted)]">找不到品項</p>`;
 }
 
 function selectRestockItem(id) {
@@ -999,7 +1022,6 @@ async function confirmRestock() {
     if (error) throw error;
     systemStockMap[rsSelectedItem.id] = next;
 
-    // 寫入進貨紀錄
     const logEntry = {
       record_date: TODAY,
       item_id: rsSelectedItem.id,
@@ -1025,10 +1047,11 @@ async function confirmRestock() {
 }
 
 // ─── MENU ───
-function toggleMenu() { document.getElementById('nav-menu').classList.toggle('hidden'); }
+function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
 document.addEventListener('click', e => {
-  const menu = document.getElementById('nav-menu');
-  if (!menu.contains(e.target) && !e.target.closest('button[onclick="toggleMenu()"]')) menu.classList.add('hidden');
+  const menu = document.getElementById('global-nav-menu');
+  const btn = document.getElementById('global-nav-btn');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(event.target)) menu.classList.add('hidden');
 });
 
 // ─── TOAST ───
