@@ -3,1318 +3,1045 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>庫存盤點系統 - 雲端版</title>
-  
+  <title>庫存盤點</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
   <style>
-    /* 隱藏原生數字輸入的上下箭頭 */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    body { background: #F6F7F2; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
     input[type=number] { -moz-appearance: textfield; }
-    
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f5f5f4; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
-
-    /* 隱藏特定區塊的卷軸 (給滑動選單用) */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-    .fade-in { animation: fadeIn 0.25s ease forwards; }
-    
-    /* Toast 置中滑入與滑出動畫 (結合 translate-x 置中處理) */
-    @keyframes toastIn { from { opacity: 0; transform: translate(-50%, -24px); } to { opacity: 1; transform: translate(-50%, 0); } }
-    @keyframes toastOut { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -24px); } }
-    .toast-enter { animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .toast-exit { animation: toastOut 0.3s ease forwards; }
-    
-    /* 自訂鍵盤向上滑入動畫 */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .fade-in { animation: fadeIn 0.2s ease forwards; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .slide-up { animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    
-    /* 儲存圖示旋轉 */
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .animate-spin-slow { animation: spin 1.5s linear infinite; }
+    .slide-up { animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .card-border-ok   { border-left-color: #6C8673; }
+    .card-border-warn { border-left-color: #ef4444; }
+    .card-border-new  { border-left-color: #D4DCD5; }
+    dialog { border: none; background: white; }
+    dialog::backdrop { background: rgba(45,58,49,0.5); backdrop-filter: blur(4px); }
   </style>
 </head>
-<body class="bg-[#FFFDF9] text-stone-800 font-sans antialiased">
-  <div id="root"></div>
-  <script type="text/babel">
-  const { useState, useMemo, useEffect, useRef, useCallback } = React;
+<body class="min-h-screen text-[#2D3A31]">
 
-  const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // --- Icons ---
-  const Search = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-  const ClipboardList = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>;
-  const AlertCircle = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
-  const CheckCircle2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
-  const ShoppingCart = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>;
-  const X = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-  const CalendarIcon = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-  const ChevronLeft = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
-  const ChevronRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
-  const ChevronDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
-  const ListPlus = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>;
-  const MenuIcon = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" py2="18"/></svg>;
-  const BarChart2 = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>;
-  const Download = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
-  const Copy = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
-  const PackagePlus = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>;
-  const History = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
-  const TrendingDown = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>;
-  const TrendingUp = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
-  const RefreshCw = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
-  const Check = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
-  const Filter = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
-
-  // --- 商品主表 (擴充 火腿S 的換算率) ---
-  const initialInventory = [
-    { id: 1, name: '火腿S', spec: '20條/箱', unit: '箱', subUnit: '條', conversionRate: 20, systemStock: 1.2, alertLevel: 0.5, tag: '每日', category: '食材' },
-    { id: 2, name: '沙拉S', spec: '600公克/包', unit: '包', systemStock: 56.0, alertLevel: 50, tag: '每日', category: '食材' },
-    { id: 3, name: '水煮蛋', spec: '50顆/包', unit: '顆', systemStock: 1200.0, alertLevel: 400, tag: '每日', category: '食材' },
-    { id: 4, name: '涼麵條', spec: '3公斤/包', unit: '包', systemStock: 22.0, alertLevel: 12, tag: '每日', category: '食材' },
-    { id: 5, name: '涼麵', spec: '206公克/盒', unit: '盒', systemStock: 66.0, alertLevel: 35, tag: '每日', category: '食材' },
-    { id: 6, name: '小黃瓜(箱)', spec: '15~18公斤/箱', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日', category: '食材' },
-    { id: 7, name: '番茄(箱)', spec: '8公斤/箱；200克/顆', unit: '箱', systemStock: 0.0, alertLevel: 2, tag: '每日', category: '食材' },
-    { id: 8, name: '鮮乳', spec: '936毫升/罐', unit: '罐', systemStock: 17.0, alertLevel: 20, tag: '每日', category: '茶飲' },
-    { id: 9, name: '豆腐', spec: '看有幾盒', unit: '盒', systemStock: 7.0, alertLevel: 3, tag: '每日', category: '食材' },
-    { id: 10, name: '木瓜(顆)', spec: '13顆/箱', unit: '顆', systemStock: 31.0, alertLevel: 1, tag: '每日', category: '茶飲' },
-    { id: 11, name: '涼麵醬(原味)', spec: '80g/包', unit: '包', systemStock: 185.0, alertLevel: 103, tag: '每日', category: '調味' },
-    { id: 12, name: '涼麵醬(辣味)', spec: '80g/包', unit: '包', systemStock: 197.0, alertLevel: 94, tag: '每日', category: '調味' },
-    { id: 13, name: '二砂', spec: '50公斤/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
-    { id: 14, name: '金蘭甲級醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周', category: '調味' },
-    { id: 15, name: '鹽S', spec: '1000公克/包, 24包/袋', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 16, name: '幸福醋', spec: '5.5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 17, name: '芝麻醬', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 2, tag: '每周', category: '調味' },
-    { id: 18, name: '金味王醬油', spec: '5公升/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 19, name: '金梅油膏', spec: '4.5公斤/罐', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 20, name: '細砂糖S', spec: '25公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周', category: '調味' },
-    { id: 21, name: '八角', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
-    { id: 22, name: '花椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '調味' },
-    { id: 23, name: '香油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1.5, tag: '每周', category: '調味' },
-    { id: 24, name: '乾辣椒', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 1.5, tag: '每周', category: '調味' },
-    { id: 25, name: '辣椒油', spec: '3公升/罐, 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 26, name: '熟芝麻', spec: '3公斤/包', unit: '包', systemStock: 0, alertLevel: 0.2, tag: '每周', category: '調味' },
-    { id: 27, name: '果糖', spec: '25公斤/桶', unit: '桶', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '茶飲' },
-    { id: 28, name: '特級阿薩姆紅茶葉', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
-    { id: 29, name: '奶精粉', spec: '1公斤/小包, 25公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '茶飲' },
-    { id: 30, name: '特A紅茶(立)', spec: '600公克/包', unit: '包', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
-    { id: 31, name: '古早味酸梅湯', spec: '12.4公升/罐, 6罐/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '茶飲' },
-    { id: 32, name: '冬瓜磚', spec: '30塊/箱', unit: '箱', systemStock: 0, alertLevel: 6, tag: '每周', category: '茶飲' },
-    { id: 33, name: '綠豆粒', spec: '5公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '食材' },
-    { id: 34, name: '仙草液', spec: '3.2公升/罐. 6罐/箱', unit: '罐', systemStock: 0, alertLevel: 4, tag: '每周', category: '茶飲' },
-    { id: 35, name: '奶精球', spec: '50顆/包', unit: '包', systemStock: 0, alertLevel: 1, tag: '每周', category: '茶飲' },
-    { id: 36, name: '樹薯粉', spec: '400公克/包', unit: '包', systemStock: 0, alertLevel: 0.3, tag: '每周', category: '食材' },
-    { id: 37, name: '紅豆粒', spec: '3公斤/小包, 30公斤/包', unit: '小包', systemStock: 0, alertLevel: 5, tag: '每周', category: '食材' },
-    { id: 38, name: '味噌', spec: '9公斤/箱', unit: '箱', systemStock: 0, alertLevel: 0.8, tag: '每周', category: '調味' },
-    { id: 39, name: '洋蔥', spec: '250公克/顆', unit: '顆', systemStock: 0, alertLevel: 2, tag: '每周', category: '食材' },
-    { id: 40, name: '冰沙粉', spec: '1公斤/包', unit: '包', systemStock: 11.0, alertLevel: 2, tag: '每周', category: '茶飲' },
-    { id: 41, name: '烹大師', spec: '1000公克/包', unit: '包', systemStock: 0.0, alertLevel: 1, tag: '每周', category: '調味' },
-    { id: 42, name: '2杯加大袋(3碗)', spec: '32個/包', unit: '包', systemStock: 8.0, alertLevel: 2, tag: '每周', category: '包材' },
-    { id: 43, name: 'OPS 3H', spec: '20包/箱, 100個/包', unit: '包', systemStock: 21.0, alertLevel: 3, tag: '每周', category: '包材' },
-    { id: 44, name: '粗吸管', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
-    { id: 45, name: '大茶匙', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
-    { id: 46, name: '手扒雞手套', spec: '100/支', unit: '包', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
-    { id: 47, name: '吸管', spec: '100支/包.18包/箱', unit: '箱', systemStock: 0, alertLevel: 0.5, tag: '每周', category: '包材' },
-    { id: 48, name: '耐熱袋(4兩)', spec: '100個/包', unit: '包', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
-    { id: 49, name: '紙390湯杯', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
-    { id: 50, name: '紙390蓋', spec: '50個/條', unit: '條', systemStock: 0, alertLevel: 1, tag: '每周', category: '包材' },
-    { id: 51, name: '紙520湯杯', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
-    { id: 52, name: '紙520蓋', spec: '50個/條.20條/箱', unit: '箱', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
-    { id: 53, name: '湯匙', spec: '100支/包 , 20包/箱', unit: '箱', systemStock: 0, alertLevel: 1, tag: '每周', category: '包材' },
-    { id: 54, name: '筷子', spec: '80雙/包', unit: '包', systemStock: 6.0, alertLevel: 1, tag: '每周', category: '包材' },
-    { id: 55, name: '橡皮筋', spec: '', unit: '包', systemStock: 0, alertLevel: 5, tag: '每周', category: '包材' },
-    { id: 56, name: '洗衣粉', spec: '', unit: '包', systemStock: 0.7, alertLevel: 2, tag: '每周', category: '備品' },
-    { id: 57, name: '熱感應發票紙', spec: '75捲/箱', unit: '箱', systemStock: 7.0, alertLevel: 1, tag: '每周', category: '備品' },
-    { id: 58, name: '廚房紙巾', spec: '12捲/包', unit: '包', systemStock: 4.0, alertLevel: 0.3, tag: '每周', category: '備品' },
-    { id: 59, name: '5斤印刷袋', spec: '', unit: '袋', systemStock: 0, alertLevel: 20, tag: '每周', category: '包材' },
-    { id: 60, name: '沙拉脫S', spec: '3.4公升/桶.4桶/箱', unit: '箱', systemStock: 4.0, alertLevel: 3, tag: '每周', category: '備品' },
-    { id: 61, name: '九如印刷袋35', spec: '70/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
-    { id: 62, name: '常一嚐印刷袋(橘)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 0, tag: '每周', category: '包材' },
-    { id: 63, name: '悠遊感熱紙', spec: '4捲/條.30捲/小箱', unit: '捲', systemStock: 44.0, alertLevel: 3, tag: '每周', category: '備品' },
-    { id: 64, name: '芝麻醬包裝袋', spec: '18cm*400m', unit: '捲', systemStock: 0, alertLevel: 3, tag: '每周', category: '包材' },
-    { id: 65, name: '常一嚐印刷袋(黑)', spec: '2500/包.25公斤/袋', unit: '袋', systemStock: 0, alertLevel: 2, tag: '每周', category: '包材' },
-    { id: 66, name: '飲料標籤貼紙', spec: '1000/捲.100捲/箱', unit: '捲', systemStock: 0, alertLevel: 4.0, tag: '每周', category: '備品' }
-  ];
-
-  const CATEGORIES = ['全部', ...new Set(initialInventory.map(i => i.category))];
-
-  const buildSystemStockMap = (overrides) => {
-    const map = {};
-    initialInventory.forEach(i => { map[i.id] = i.systemStock; });
-    if (overrides) overrides.forEach(o => { map[o.item_id] = o.stock_value; });
-    return map;
-  };
-
-  const getTodayStr = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  };
-
-  // ── Toast ──
-  const Toast = ({ message, type, onDone }) => {
-    const [exiting, setExiting] = useState(false);
-    useEffect(() => {
-      const t1 = setTimeout(() => setExiting(true), 2500);
-      const t2 = setTimeout(() => onDone(), 2800);
-      return () => { clearTimeout(t1); clearTimeout(t2); };
-    }, []);
-    const bg = type === 'error' ? 'bg-red-600/95' : type === 'warning' ? 'bg-amber-500/95' : 'bg-stone-800/95';
-    const Icon = type === 'error' ? X : type === 'warning' ? AlertCircle : CheckCircle2;
-    const iconColor = type === 'error' ? 'text-white' : type === 'warning' ? 'text-white' : 'text-emerald-400';
-
-    return (
-      <div className={`fixed top-6 left-1/2 z-[9999] ${bg} backdrop-blur text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 pointer-events-none ${exiting ? 'toast-exit' : 'toast-enter'}`} style={{ transform: 'translate(-50%, 0)' }}>
-        <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-        <span className="font-medium tracking-wide text-sm">{message}</span>
-      </div>
-    );
-  };
-
-  // ── GlobalNav ──
-  const GlobalNav = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const ref = useRef(null);
-    useEffect(() => {
-      const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
-      document.addEventListener('mousedown', h);
-      return () => document.removeEventListener('mousedown', h);
-    }, []);
-    return (
-      <div className="fixed top-4 left-4 z-[990]" ref={ref}>
-        <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-center w-11 h-11 bg-white/90 backdrop-blur border border-stone-200 rounded-xl shadow-sm hover:bg-stone-50 hover:shadow-md transition-all">
-          <MenuIcon className="w-[22px] h-[22px] text-stone-600" />
+<!-- ─── NAV ─── -->
+<nav class="sticky top-0 z-50 shadow-sm">
+  <div class="bg-[#6C8673]">
+    <div class="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+      <div class="relative">
+        <button onclick="toggleMenu()" class="text-white hover:text-white/80 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
-        {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-stone-100 overflow-hidden">
-            {[
-              { label: '值班系統', color: 'indigo', href: 'index.html' },
-              { label: '每週金庫結算', color: 'emerald', href: 'cash.html' },
-              { label: '庫存盤點', color: 'orange', href: 'inventory.html' },
-              { label: '清潔與值班管理', color: 'green', href: 'clean.html' },
-              { label: '績效評估系統', color: 'purple', href: 'performance.html' }
-            ].map(({ label, color, href }) => (
-              <a key={label} href={href} className={`flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-${color}-50 hover:text-${color}-600 border-b border-stone-50 last:border-0 transition-colors`}>{label}</a>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // ── 自訂底部數字鍵盤 ──
-  const CustomKeypad = ({ activeId, onKeyPress, onClose, onNext, onClear, remainingUncounted, activeItem }) => {
-    const keypadRef = useRef(null);
-
-    useEffect(() => {
-      if (!activeId) return;
-      
-      const handleOutsideClick = (e) => {
-        if (keypadRef.current && keypadRef.current.contains(e.target)) return;
-        if (e.target.closest('.prevent-keypad-close')) return;
-        onClose();
-      };
-
-      document.addEventListener('mousedown', handleOutsideClick);
-      document.addEventListener('touchstart', handleOutsideClick, { passive: true });
-      
-      return () => {
-        document.removeEventListener('mousedown', handleOutsideClick);
-        document.removeEventListener('touchstart', handleOutsideClick);
-      };
-    }, [activeId, onClose]);
-
-    if (!activeId) return null;
-    
-    const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
-    
-    const handleKeyClick = (e, k) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onKeyPress(k);
-    };
-
-    // 動態讀取當前正在輸入的單位 (若有子單位如"條"，鍵盤標題自動顯示"條")
-    const currentUnit = activeItem?.subUnit || activeItem?.unit || '數量';
-
-    return (
-      <div ref={keypadRef} className="fixed bottom-0 left-0 right-0 bg-stone-200 z-[100] pb-1 shadow-[0_-10px_20px_rgba(0,0,0,0.15)] slide-up rounded-t-2xl border-t border-stone-300">
-        <div className="flex justify-between items-center px-4 py-2 bg-stone-100 rounded-t-2xl border-b border-stone-300">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-500">正在輸入: <span className="text-orange-600 font-extrabold">{currentUnit}</span></span>
-            <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
-              剩 {remainingUncounted} 項未填
-            </span>
-            <button onMouseDown={(e) => { e.preventDefault(); onClear(); }} className="px-2 py-0.5 bg-red-50 text-red-600 active:bg-red-100 text-xs font-bold rounded-lg flex items-center shadow-sm border border-red-100 transition-colors">清空</button>
-          </div>
-          <div className="flex gap-2">
-            <button onMouseDown={(e) => { e.preventDefault(); onNext(); }} className="px-4 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-orange-600 flex items-center">下一列 ⏭</button>
-            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }} className="px-4 py-1.5 bg-stone-500 text-white text-xs font-bold rounded-lg shadow-sm active:bg-stone-600 flex items-center">完成 🔽</button>
-          </div>
-        </div>
-        
-        {/* 如果有換算率，在鍵盤最上方提示使用者 */}
-        {activeItem?.conversionRate && (
-          <div className="bg-amber-50 text-amber-800 text-center text-[11px] py-1 font-medium border-b border-stone-300/60 leading-none">
-            💡 換算提示：輸入【{activeItem.subUnit}】系統會自動除以 {activeItem.conversionRate} 轉為【{activeItem.unit}】儲存
-          </div>
-        )}
-
-        <div className="grid grid-cols-3 gap-1.5 p-2 bg-stone-200 max-w-md mx-auto">
-          {keys.map(k => (
-            <button key={k} onMouseDown={(e) => handleKeyClick(e, k)} className="bg-white py-2.5 text-xl font-bold rounded-lg shadow-sm active:bg-stone-100 active:scale-95 transition-transform flex items-center justify-center text-stone-800">
-              {k}
-            </button>
-          ))}
+        <div id="nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-2xl border border-[#E5EBE6] overflow-hidden z-[999]">
+          <a href="index.html"       class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">值班系統</a>
+          <a href="cash.html"        class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">每週金庫結算</a>
+          <a href="inventory.html"   class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">庫存盤點</a>
+          <a href="clean.html"       class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">清潔與值班管理</a>
+          <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1]">績效評估系統</a>
         </div>
       </div>
-    );
-  };
+      <div class="flex items-center gap-2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+        <h1 class="text-base font-bold tracking-widest text-white uppercase">庫存盤點</h1>
+      </div>
+      <div class="ml-auto flex gap-2">
+        <button onclick="openRestock()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
+          進貨
+        </button>
+        <button onclick="openOrderModal()" class="relative flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          叫貨
+          <span id="order-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-  // ── StockCard ──
-  const StockCard = ({ item, onUpdate, systemStock, activeInputId, onFocusInput, status }) => {
-    // 判斷該項目是否有獨立的清點子單位 (如: 條)
-    const isSubUnitMode = !!item.subUnit && !!item.conversionRate;
-    
-    const countStr = item.actualCount ?? '';
-    const hasCounted = countStr !== '';
-    const count = parseFloat(countStr); // 內部儲存的依然是系統主單位 (箱數)
-    const isLow = !isNaN(count) && count < item.alertLevel;
+  <!-- Tab bar -->
+  <div class="bg-white border-b border-[#D4DCD5]">
+    <div class="max-w-2xl mx-auto px-4 relative flex">
+      <button id="tab-count" onclick="switchTab('count')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#2D3A31]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
+        今日盤點
+      </button>
+      <button id="tab-history" onclick="switchTab('history')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#8FA192] hover:text-[#4F6354]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        歷史記錄
+      </button>
+      <button id="tab-overview" onclick="switchTab('overview')" class="flex-1 py-3 text-sm font-medium flex justify-center items-center gap-1.5 text-[#8FA192] hover:text-[#4F6354]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+        總覽
+      </button>
+      <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[#6C8673] rounded-t-full transition-all duration-300 opacity-0" style="width:0"></div>
+    </div>
+  </div>
 
-    const sysStock = systemStock !== undefined ? systemStock : item.systemStock;
-
-    // 如果是子單位模式，介面上輸入框要顯示換算後的數值 (例如箱數 0.5 箱 -> 介面顯示 10 條)
-    let displayInputValue = countStr;
-    if (isSubUnitMode && hasCounted && !isNaN(count)) {
-      const rawSubValue = count * item.conversionRate;
-      displayInputValue = String(Math.round(rawSubValue * 100) / 100); // 防四捨五入浮點數誤差
-    }
-
-    let varianceText = '尚未輸入', varianceColor = 'text-stone-400', isAbnormal = false;
-    if (hasCounted && !isNaN(count)) {
-      const v = count - sysStock;
-      const pct = Math.abs(v) / (sysStock || 1);
-      isAbnormal = pct > 0.05 && sysStock > 0;
-      varianceText = v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
-      varianceColor = isAbnormal ? 'text-orange-600 font-bold' : 'text-stone-600';
-    }
-
-    const lastCount = item.lastCount;
-    const hasLast = lastCount !== undefined && lastCount !== null && lastCount !== '';
-    const lastVal = parseFloat(lastCount);
-    let trendEl = null;
-    if (hasLast && !isNaN(lastVal) && !isNaN(count)) {
-      const diff = count - lastVal;
-      if (diff > 0) trendEl = <span className="text-emerald-600 flex items-center gap-0.5"><TrendingUp className="w-3 h-3"/>+{diff.toFixed(1)}</span>;
-      else if (diff < 0) trendEl = <span className="text-red-500 flex items-center gap-0.5"><TrendingDown className="w-3 h-3"/>{diff.toFixed(1)}</span>;
-      else trendEl = <span className="text-stone-400">持平</span>;
-    }
-
-    let border = 'border-stone-200';
-    if (isLow) border = 'border-red-500';
-    else if (isAbnormal) border = 'border-orange-500';
-    else if (hasCounted) border = 'border-green-400';
-    else border = 'border-orange-200';
-
-    const cardBg = hasCounted ? 'bg-white shadow-sm' : 'bg-white shadow-md ring-1 ring-orange-50';
-    const isActive = activeInputId === item.id;
-
-    // 步進按鈕功能 (如果是有子單位的品項，加減是以 1 條為基準單位)
-    const handleStep = (delta) => {
-      if (isSubUnitMode) {
-        let currentSubVal = parseFloat(displayInputValue);
-        if (isNaN(currentSubVal)) currentSubVal = 0;
-        let nextSubVal = Math.max(0, currentSubVal + delta);
-        // 自動除以換算率，轉回箱數傳給父組件
-        const nextMainVal = nextSubVal / item.conversionRate;
-        onUpdate(item.id, String(Math.round(nextMainVal * 1000) / 1000));
-      } else {
-        let current = parseFloat(countStr);
-        if (isNaN(current)) current = 0;
-        let next = Math.max(0, current + delta);
-        next = Math.round(next * 10) / 10;
-        onUpdate(item.id, String(next));
-      }
-    };
-
-    return (
-      <div id={`stock-card-${item.id}`} className={`relative rounded-xl border-l-4 fade-in transition-all duration-300 ${cardBg} ${border}`}>
-        {status && (
-          <div className="absolute top-3 right-3 flex items-center justify-center bg-white/80 rounded-full backdrop-blur-sm p-0.5 shadow-sm">
-            {status === 'saving' && <RefreshCw className="w-4 h-4 text-orange-500 animate-spin-slow" />}
-            {status === 'saved' && <Check className="w-4 h-4 text-green-500 fade-in" />}
-            {status === 'error' && <X className="w-4 h-4 text-red-500 fade-in" />}
-          </div>
-        )}
-
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-2 pr-6">
-            <div>
-              <h3 className={`font-bold text-base ${hasCounted ? 'text-stone-600' : 'text-stone-800'}`}>{item.name}</h3>
-              <p className="text-xs text-stone-400 mt-0.5">規格: {item.spec} · 安全線: <span className="text-orange-500 font-medium">{item.alertLevel} {item.unit}</span></p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className={`flex-1 rounded-lg p-2 flex justify-between items-center transition-colors ${isActive ? 'bg-orange-50' : 'bg-white'}`}>
-              <div className="flex flex-col">
-                <span className="text-xs text-stone-500 font-medium whitespace-nowrap">盤點輸入</span>
-                {isSubUnitMode && <span className="text-[10px] text-orange-600 font-bold leading-none mt-0.5">(輸入以{item.subUnit}計算)</span>}
-              </div>
-              
-              <div className="flex items-center gap-1.5 ml-2 prevent-keypad-close">
-                <button onClick={() => handleStep(-1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">-</button>
-                
-                <div 
-                  onClick={(e) => { e.preventDefault(); onFocusInput(item.id); }}
-                  className={`w-[72px] h-[36px] px-2 flex items-center justify-center bg-white border rounded-md text-center font-bold text-base transition-all cursor-pointer select-none ${isActive ? 'border-orange-500 ring-2 ring-orange-500 text-orange-700' : isLow ? 'border-red-300 text-red-600' : 'border-stone-300 text-stone-800'}`}
-                >
-                  {displayInputValue === '' ? <span className="text-stone-300 font-normal text-sm">輸入..</span> : displayInputValue}
-                </div>
-                
-                <button onClick={() => handleStep(1)} className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 font-bold text-lg flex items-center justify-center active:bg-stone-200">+</button>
-                <span className="text-sm font-bold text-stone-600 ml-1 w-6 shrink-0">{isSubUnitMode ? item.subUnit : item.unit}</span>
-              </div>
-            </div>
-
-            {hasLast && (
-              <div className="flex justify-between items-center text-xs px-1 py-1.5 bg-orange-50/60 rounded-lg border border-orange-100">
-                <span className="text-orange-700 flex items-center gap-1">
-                  <History className="w-3 h-3 text-orange-500"/> 上次 {lastVal} {item.unit} {item.lastDate && <span className="text-orange-400 ml-1">({item.lastDate})</span>}
-                </span>
-                {trendEl && <span className="text-xs font-medium flex items-center gap-0.5">{trendEl}</span>}
-              </div>
-            )}
-
-            <div className={`flex justify-between items-center text-xs px-1 pt-1 mt-1 border-t border-stone-100 ${isAbnormal ? 'bg-orange-50 p-1.5 rounded' : ''}`}>
-              <span className="text-stone-500">
-                帳面庫存：{sysStock} {item.unit}
-                {isSubUnitMode && <span className="text-stone-400 text-[10px] ml-1">({Math.round(sysStock * item.conversionRate)}條)</span>}
-              </span>
-              <span className="flex items-center text-stone-500">
-                盤差：
-                <span className={`ml-1 ${varianceColor}`}>
-                  {varianceText} {item.unit}
-                </span>
-                {isAbnormal && <AlertCircle className="w-3 h-3 text-orange-500 ml-1"/>}
-              </span>
-            </div>
-          </div>
-          {isLow && <div className="mt-2 flex items-center text-xs font-medium text-red-600"><AlertCircle className="w-3.5 h-3.5 mr-1"/>低於安全警戒，需叫貨</div>}
+  <!-- Progress bar (only on count tab) -->
+  <div id="progress-bar-wrap" class="bg-white border-b border-[#E5EBE6] hidden">
+    <div class="max-w-2xl mx-auto px-4 py-3">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase">今日盤點進度</span>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1.5 text-xs text-[#4F6354] font-medium cursor-pointer">
+            <input type="checkbox" id="hide-counted-chk" onchange="toggleHideCounted()" class="rounded accent-[#6C8673] w-3.5 h-3.5">
+            隱藏已盤
+          </label>
+          <span id="progress-label" class="text-xs font-bold text-[#6C8673]">0 / 0</span>
         </div>
       </div>
-    );
-  };
-
-  // ── 進貨登記 Modal ──
-  const RestockModal = ({ onClose, systemStockMap, onRestock, showToast, getLatestRecord }) => {
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [restockQty, setRestockQty] = useState('');
-    const [newTotal, setNewTotal] = useState('');
-    const [mode, setMode] = useState('add');
-    const [isLoading, setIsLoading] = useState(false);
-    const [log, setLog] = useState([]);
-
-    const filteredItems = useMemo(() => {
-      if (!searchQuery) return initialInventory;
-      return initialInventory.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [searchQuery]);
-
-    const curStock = selectedItem ? (systemStockMap[selectedItem.id] ?? selectedItem.systemStock) : null;
-    const lastRecord = selectedItem && getLatestRecord ? getLatestRecord(selectedItem.id) : null;
-    const baseStock = selectedItem ? (lastRecord && !isNaN(parseFloat(lastRecord.count)) ? parseFloat(lastRecord.count) : curStock) : null;
-    const todayStr = getTodayStr();
-
-    const handleSelectItem = (item) => {
-      setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setRestockQty('');
-      const cur = systemStockMap[item.id] ?? item.systemStock; setNewTotal(String(cur));
-    };
-
-    const handleConfirm = async () => {
-      if (!selectedItem) return;
-      let finalVal;
-      if (mode === 'add') {
-        const qty = parseFloat(restockQty);
-        if (isNaN(qty) || qty <= 0) { showToast('請輸入有效的進貨數量', 'error'); return; }
-        finalVal = parseFloat((baseStock + qty).toFixed(2));
-      } else {
-        const v = parseFloat(newTotal);
-        if (isNaN(v) || v < 0) { showToast('請輸入有效的帳面數值', 'error'); return; }
-        finalVal = v;
-      }
-
-      setIsLoading(true);
-      try {
-        const { error } = await supabase.from('system_stock_overrides').upsert({
-          item_id: selectedItem.id, stock_value: finalVal, updated_at: new Date().toISOString()
-        }, { onConflict: 'item_id' });
-        if (error) throw error;
-
-        onRestock(selectedItem.id, finalVal);
-        setLog(prev => [{ name: selectedItem.name, unit: selectedItem.unit, before: mode === 'add' ? baseStock : curStock, after: finalVal, mode, qty: mode === 'add' ? parseFloat(restockQty) : null }, ...prev]);
-        showToast(`「${selectedItem.name}」帳面已更新為 ${finalVal} ${selectedItem.unit}`);
-        setSelectedItem(null); setSearchQuery(''); setRestockQty(''); setNewTotal('');
-      } catch (err) {
-        console.error(err); showToast('更新失敗，請稍後再試', 'error');
-      } finally { setIsLoading(false); }
-    };
-
-    const previewVal = useMemo(() => {
-      if (!selectedItem) return null;
-      if (mode === 'add') {
-        const qty = parseFloat(restockQty);
-        if (isNaN(qty)) return null;
-        return parseFloat((baseStock + qty).toFixed(2));
-      } else {
-        const v = parseFloat(newTotal); return isNaN(v) ? null : v;
-      }
-    }, [selectedItem, mode, restockQty, newTotal, baseStock]);
-
-    return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm fade-in">
-        <div className="bg-white w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:rounded-2xl shadow-xl max-w-md overflow-hidden flex flex-col">
-          <div className="bg-emerald-600 text-white p-4 flex justify-between items-center flex-shrink-0">
-            <h2 className="text-lg font-bold flex items-center gap-2"><PackagePlus className="w-5 h-5"/>進貨 / 更新帳面庫存</h2>
-            <button onClick={onClose} className="hover:bg-emerald-700 p-1 rounded-full"><X className="w-5 h-5"/></button>
-          </div>
-          <div className="p-4 overflow-y-auto flex-1 custom-scrollbar space-y-4">
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-700 leading-relaxed">
-              進貨數量將優先以「上次實際盤點量」作為加總基準，確保帳面精準。
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-500 mb-1.5">選擇品項</label>
-              <div className="relative z-20">
-                <input type="text" placeholder="輸入品名搜尋..." value={searchQuery}
-                  onChange={e => { setSearchQuery(e.target.value); setSelectedItem(null); setIsDropdownOpen(true); }}
-                  onFocus={() => setIsDropdownOpen(true)}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm font-medium"
-                />
-                {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}/>}
-                {isDropdownOpen && (
-                  <div className="relative mt-1.5 bg-white border border-stone-100 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-20">
-                    {filteredItems.length > 0 ? filteredItems.map(item => (
-                      <div key={item.id} onClick={() => handleSelectItem(item)}
-                        className="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-stone-50 last:border-0 flex justify-between items-center text-sm">
-                        <span className="font-bold text-stone-800">{item.name}</span>
-                        <span className="text-xs text-stone-400">{systemStockMap[item.id] ?? item.systemStock} {item.unit}</span>
-                      </div>
-                    )) : <div className="px-4 py-4 text-center text-stone-400 text-sm">找不到品項</div>}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {selectedItem && (
-              <div className="fade-in space-y-3">
-                <div className="bg-stone-50 border border-stone-200 rounded-xl p-3 space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-500">上次實際盤點</span>
-                    <span className="font-bold text-stone-800">
-                      {lastRecord && !isNaN(parseFloat(lastRecord.count)) ? lastRecord.count : '無紀錄'}
-                      {lastRecord && <span className="text-xs font-normal text-stone-400 ml-1">({lastRecord.date === todayStr ? '今日' : lastRecord.date})</span>}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-500">目前帳面庫存</span>
-                    <span className="font-bold text-stone-800">{curStock} {selectedItem.unit}</span>
-                  </div>
-                </div>
-
-                <div className="flex rounded-xl overflow-hidden border border-stone-200">
-                  <button onClick={() => setMode('add')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'add' ? 'bg-emerald-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>＋ 加入進貨量</button>
-                  <button onClick={() => setMode('set')} className={`flex-1 py-2 text-sm font-bold transition-colors ${mode === 'set' ? 'bg-emerald-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'}`}>✎ 直接設定</button>
-                </div>
-
-                {mode === 'add' ? (
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 mb-1.5">本次進貨數量（{selectedItem.unit}）</label>
-                    <input type="number" inputMode="decimal" step="0.1" min="0" placeholder="例如：5" value={restockQty} onChange={e => setRestockQty(e.target.value)}
-                      className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 mb-1.5">設定新帳面庫存（{selectedItem.unit}）</label>
-                    <input type="number" inputMode="decimal" step="0.1" min="0" value={newTotal} onChange={e => setNewTotal(e.target.value)}
-                      className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/30 text-center" />
-                  </div>
-                )}
-                {previewVal !== null && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center fade-in">
-                    <span className="text-sm text-emerald-700">更新後帳面</span>
-                    <span className="text-lg font-bold text-emerald-700">{mode === 'add' ? baseStock : curStock} → <span className="text-emerald-600">{previewVal}</span><span className="text-sm font-normal ml-1">{selectedItem.unit}</span></span>
-                  </div>
-                )}
-              </div>
-            )}
-            {log.length > 0 && (
-              <div className="fade-in pb-4">
-                <p className="text-xs font-bold text-stone-400 mb-2">本次更新紀錄</p>
-                <div className="space-y-1.5">
-                  {log.map((l, i) => (
-                    <div key={i} className="bg-stone-50 rounded-lg px-3 py-2 flex justify-between items-center text-xs border border-stone-100">
-                      <span className="font-bold text-stone-700">{l.name}</span>
-                      <span className="text-stone-500">{l.before} → <span className="text-emerald-600 font-bold">{l.after}</span> {l.unit} {l.mode === 'add' && <span className="text-emerald-400 ml-1">(+{l.qty})</span>}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="p-4 border-t border-stone-100 bg-white flex gap-3 flex-shrink-0">
-            <button onClick={onClose} className="flex-1 py-3 bg-white border-2 border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors">關閉</button>
-            <button onClick={handleConfirm} disabled={!selectedItem || isLoading || (mode === 'add' ? !restockQty : !newTotal)} className="flex-[2] py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center gap-2">
-              {isLoading ? '更新中...' : <><PackagePlus className="w-4 h-4"/>確認更新帳面</>}
-            </button>
-          </div>
-        </div>
+      <div class="h-1.5 bg-[#D4DCD5] rounded-full overflow-hidden">
+        <div id="progress-fill" class="h-full bg-[#6C8673] rounded-full transition-all duration-500" style="width:0%"></div>
       </div>
-    );
-  };
+    </div>
+  </div>
+</nav>
 
-  // ── App 主程式 ──
-  function App() {
-    const LIFF_ID = '2010172685-AS9WfPXH';
+<!-- ─── MAIN ─── -->
+<main class="max-w-2xl mx-auto px-4 py-6 pb-40">
 
-    useEffect(() => {
-      const initLiff = async () => {
-        try {
-          await window.liff.init({ liffId: LIFF_ID });
-          if (window.liff.isLoggedIn()) {
-            const profile = await window.liff.getProfile();
-            showToast(`歡迎回來，${profile.displayName} 👋`);
-          }
-        } catch (error) {
-          console.error("LIFF 初始化失敗:", error);
-        }
-      };
-      initLiff();
-    }, []);
+  <!-- ══ COUNT TAB ══ -->
+  <div id="section-count">
+    <!-- Quick load buttons -->
+    <div id="quick-load-wrap" class="mb-6">
+      <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">選擇今日盤點範圍</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="quickLoad('每日')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[#E5EBE6] hover:border-[#6C8673] hover:shadow-md transition-all active:scale-95 shadow-sm">
+          <span class="text-lg">☀️</span>
+          <span class="font-bold text-[#2D3A31] text-sm">每日盤點</span>
+          <span class="text-[11px] text-[#8FA192]">食材、茶飲、常用品</span>
+        </button>
+        <button onclick="quickLoad('每周')" class="flex flex-col items-start gap-1 p-4 bg-white rounded-2xl border border-[#E5EBE6] hover:border-[#6C8673] hover:shadow-md transition-all active:scale-95 shadow-sm">
+          <span class="text-lg">📦</span>
+          <span class="font-bold text-[#2D3A31] text-sm">每周盤點</span>
+          <span class="text-[11px] text-[#8FA192]">調味、包材、備品</span>
+        </button>
+      </div>
+    </div>
 
-    const [isDBLoading, setIsDBLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('record');
-    const [historyData, setHistoryData] = useState({});
-    const [calendarMonth, setCalendarMonth] = useState(new Date());
-    const [selectedHistoryDate, setSelectedHistoryDate] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [inputValue, setInputValue] = useState('');
-    const [showOrderModal, setShowOrderModal] = useState(false);
-    const [showRestockModal, setShowRestockModal] = useState(false);
-    const [toast, setToast] = useState(null);
-    const [systemStockMap, setSystemStockMap] = useState({});
-    
-    const [activeInputId, setActiveInputId] = useState(null);
-    const [hideCounted, setHideCounted] = useState(false); 
-    
-    const [searchCategory, setSearchCategory] = useState('全部'); 
-    const [listCategory, setListCategory] = useState('全部');     
-    
-    const [overviewFilter, setOverviewFilter] = useState('all'); 
-    const [itemSaveStatus, setItemSaveStatus] = useState({}); 
+    <!-- Item list -->
+    <div id="item-list" class="space-y-2"></div>
+  </div>
 
-    const lastActiveInputId = useRef(null);
+  <!-- ══ HISTORY TAB ══ -->
+  <div id="section-history" class="hidden">
+    <div id="calendar-wrap" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-5 mb-5"></div>
+    <div id="history-detail" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] overflow-hidden hidden fade-in">
+      <div class="flex justify-between items-center px-5 py-4 border-b border-[#E5EBE6]">
+        <h3 id="history-detail-title" class="font-bold text-[#2D3A31]"></h3>
+        <button onclick="document.getElementById('history-detail').classList.add('hidden')" class="text-[#8FA192] hover:text-[#4F6354]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div id="history-detail-body" class="divide-y divide-[#E5EBE6] max-h-[60vh] overflow-y-auto"></div>
+    </div>
+  </div>
 
-    const todayStr = getTodayStr();
-    const todayCounts = useMemo(() => historyData[todayStr] || [], [historyData, todayStr]);
+  <!-- ══ OVERVIEW TAB ══ -->
+  <div id="section-overview" class="hidden">
+    <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
+      <button onclick="setOverviewFilter('counted')" id="ov-counted" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-[#6C8673] text-white border-[#6C8673]">今日已盤</button>
+      <button onclick="setOverviewFilter('alert')" id="ov-alert" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-white text-red-600 border-red-200">⚠ 需叫貨</button>
+      <button onclick="setOverviewFilter('all')" id="ov-all" class="ov-btn whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-white text-[#4F6354] border-[#D4DCD5]">全部商品</button>
+    </div>
+    <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-[#F6F7F2] text-[#8FA192] text-xs font-semibold uppercase tracking-wide border-b border-[#E5EBE6]">
+          <tr>
+            <th class="px-4 py-3 text-left">品名</th>
+            <th class="px-4 py-3 text-right">帳面</th>
+            <th class="px-4 py-3 text-right">實盤</th>
+            <th class="px-4 py-3 text-right">盤差</th>
+            <th class="px-4 py-3 text-center">狀態</th>
+          </tr>
+        </thead>
+        <tbody id="overview-body" class="divide-y divide-[#F0F4F1]"></tbody>
+      </table>
+    </div>
 
-    const showToast = useCallback((msg, type = 'success') => setToast({ msg, type, key: Date.now() }), []);
+    <div id="restock-log-section" class="mt-5 hidden">
+      <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3 pl-1">📦 今日進貨紀錄</p>
+      <div id="restock-log-list" class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] divide-y divide-[#F0F4F1] overflow-hidden"></div>
+    </div>
 
-    // 取得當前作用中的品項定義
-    const activeItemDef = useMemo(() => {
-      if (!activeInputId) return null;
-      return initialInventory.find(i => i.id === activeInputId);
-    }, [activeInputId]);
+    <button onclick="exportCSV()" class="mt-4 w-full py-3 bg-white border border-[#D4DCD5] rounded-2xl text-sm font-semibold text-[#4F6354] hover:bg-[#F0F4F1] transition-all flex items-center justify-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      匯出 CSV 報表
+    </button>
+  </div>
 
-    const getPreviousRecord = useCallback((itemId) => {
-      const dates = Object.keys(historyData).filter(d => d !== todayStr && historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
-      if (dates.length === 0) return null;
-      const lastDate = dates[0];
-      const entry = historyData[lastDate].find(i => i.id === itemId);
-      return entry ? { count: entry.actualCount, date: lastDate } : null;
-    }, [historyData, todayStr]);
+</main>
 
-    const getLatestRecord = useCallback((itemId) => {
-      const dates = Object.keys(historyData).filter(d => historyData[d].some(i => i.id === itemId && i.actualCount !== '')).sort().reverse();
-      if (dates.length === 0) return null;
-      const lastDate = dates[0];
-      const entry = historyData[lastDate].find(i => i.id === itemId);
-      return entry ? { count: entry.actualCount, date: lastDate } : null;
-    }, [historyData]);
+<!-- ─── Custom Keypad ─── -->
+<div id="keypad" class="fixed bottom-0 left-0 right-0 z-[90] slide-up hidden">
+  <div class="max-w-2xl mx-auto bg-[#E5EBE6] rounded-t-2xl shadow-2xl border-t border-[#C3D0C6] overflow-hidden">
+    <!-- top bar -->
+    <div class="bg-[#F6F7F2] flex items-center justify-between px-4 py-2.5 border-b border-[#D4DCD5]">
+      <div class="flex items-center gap-2">
+        <span id="keypad-unit-label" class="text-xs font-bold text-[#6C8673] bg-[#DCE8DE] px-2.5 py-1 rounded-full">輸入數量</span>
+        <span id="keypad-remaining" class="text-xs font-bold text-[#4F6354] bg-white border border-[#D4DCD5] px-2 py-0.5 rounded-full">剩 0 項</span>
+        <button id="keypad-clear" class="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-lg hover:bg-red-100 transition-all">清空</button>
+      </div>
+      <div class="flex gap-2">
+        <button id="keypad-next" class="text-xs font-bold text-white bg-[#6C8673] px-3 py-1.5 rounded-lg hover:bg-[#5A705F] transition-all">下一項 ⏭</button>
+        <button id="keypad-close" class="text-xs font-bold text-[#4F6354] bg-white border border-[#D4DCD5] px-3 py-1.5 rounded-lg hover:bg-[#F0F4F1] transition-all">完成 ✓</button>
+      </div>
+    </div>
+    <div id="keypad-hint" class="hidden text-center text-[11px] text-amber-700 bg-amber-50 border-b border-amber-200 py-1.5 font-medium"></div>
+    <!-- keys -->
+    <div class="grid grid-cols-3 gap-1.5 p-2.5 bg-[#D4DCD5]">
+      <!-- generated by JS -->
+    </div>
+  </div>
+</div>
 
-    useEffect(() => {
-      const fetchAll = async () => {
-        try {
-          const { data: records, error: e1 } = await supabase.from('inventory_records').select('*');
-          if (e1) throw e1;
-          const { data: overrides, error: e2 } = await supabase.from('system_stock_overrides').select('*');
-          setSystemStockMap(buildSystemStockMap(e2 ? null : overrides));
-          const hData = {};
-          if (records) {
-            records.forEach(row => {
-              const itemDef = initialInventory.find(i => i.id === row.item_id);
-              if (itemDef) {
-                if (!hData[row.record_date]) hData[row.record_date] = [];
-                hData[row.record_date].push({ ...itemDef, actualCount: row.actual_count !== null ? row.actual_count : '' });
-              }
-            });
-          }
-          setHistoryData(hData);
-        } catch (err) {
-          console.error("資料庫連線失敗:", err); showToast("無法連線到雲端資料庫", "error");
-          setSystemStockMap(buildSystemStockMap(null));
-        } finally { setIsDBLoading(false); }
-      };
-      fetchAll();
-    }, [showToast]);
+<!-- ─── ORDER MODAL ─── -->
+<dialog id="order-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[92%] max-w-sm p-0">
+  <div class="bg-red-500 text-white px-5 py-4 flex justify-between items-center">
+    <h2 class="font-bold flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+      今日需叫貨清單
+    </h2>
+    <button onclick="document.getElementById('order-modal').close()" class="hover:bg-red-600 p-1 rounded-full transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <div id="order-body" class="p-4 max-h-72 overflow-y-auto space-y-2"></div>
+  <div class="px-4 pb-4 flex gap-3">
+    <button onclick="document.getElementById('order-modal').close()" class="flex-1 py-3 bg-white border-2 border-[#D4DCD5] text-[#4F6354] rounded-xl font-semibold hover:bg-[#F0F4F1] transition-all">關閉</button>
+    <button onclick="copyOrderList()" id="copy-order-btn" class="flex-[2] py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-all flex items-center justify-center gap-2 hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      複製並傳 LINE
+    </button>
+  </div>
+</dialog>
 
-    useEffect(() => {
-      if (activeTab !== 'record') {
-        if (activeInputId) lastActiveInputId.current = activeInputId;
-        setActiveInputId(null);
-      } else if (activeTab === 'record' && lastActiveInputId.current) {
-        setActiveInputId(lastActiveInputId.current);
-      }
-    }, [activeTab]);
+<!-- ─── RESTOCK MODAL ─── -->
+<dialog id="restock-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[92%] max-w-sm p-0">
+  <div class="bg-[#6C8673] text-white px-5 py-4 flex justify-between items-center">
+    <h2 class="font-bold flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 2 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/></svg>
+      進貨 / 更新帳面
+    </h2>
+    <button onclick="document.getElementById('restock-modal').close()" class="hover:bg-[#5A705F] p-1 rounded-full transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <div class="p-4 space-y-4">
+    <input id="restock-search" type="text" placeholder="搜尋品項名稱..." class="w-full px-4 py-2.5 border border-[#D4DCD5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8673]/30 bg-[#F6F7F2]" oninput="filterRestockItems()">
+    <div id="restock-list" class="max-h-52 overflow-y-auto space-y-1 rounded-xl border border-[#E5EBE6] bg-white"></div>
+    <div id="restock-form" class="hidden space-y-3">
+      <div class="bg-[#F0F4F1] rounded-xl p-3 text-sm">
+        <div class="flex justify-between"><span class="text-[#687A6B]">品名</span><span id="rs-name" class="font-bold"></span></div>
+        <div class="flex justify-between mt-1"><span class="text-[#687A6B]">目前帳面</span><span id="rs-cur" class="font-bold"></span></div>
+      </div>
+      <div>
+        <label id="rs-qty-label" class="block text-xs font-bold text-[#8FA192] mb-1.5">本次進貨數量</label>
+        <input id="rs-qty" type="number" inputmode="decimal" placeholder="輸入數量..." class="w-full px-4 py-3 border border-[#D4DCD5] rounded-xl text-lg font-bold text-[#6C8673] text-center focus:outline-none focus:ring-2 focus:ring-[#6C8673]/30 bg-[#F0F4F1]" oninput="updateRsPreview()">
+      </div>
+      <div id="rs-preview" class="hidden bg-[#DCE8DE] rounded-xl p-3 text-sm text-center text-[#3F5144] font-bold"></div>
+      <button onclick="toggleRsMode()" id="rs-mode-toggle" class="text-xs font-semibold text-[#8FA192] hover:text-[#6C8673] transition-colors">✎ 帳面數字不對？直接設定正確庫存</button>
+    </div>
+  </div>
+  <div class="px-4 pb-4 flex gap-3">
+    <button onclick="document.getElementById('restock-modal').close()" class="flex-1 py-3 bg-white border-2 border-[#D4DCD5] text-[#4F6354] rounded-xl font-semibold hover:bg-[#F0F4F1] transition-all">取消</button>
+    <button onclick="confirmRestock()" id="rs-confirm-btn" class="flex-[2] py-3 bg-[#6C8673] text-white rounded-xl font-semibold hover:bg-[#5A705F] transition-all disabled:opacity-40" disabled>確認更新</button>
+  </div>
+</dialog>
 
-    useEffect(() => {
-      if (activeInputId) {
-        const el = document.getElementById(`stock-card-${activeInputId}`);
-        if (el) setTimeout(() => {
-          const y = el.getBoundingClientRect().top + window.pageYOffset - 240;
-          window.scrollTo({top: y, behavior: 'smooth'});
-        }, 50);
-      }
-    }, [activeInputId]);
+<!-- ─── RESTOCK SUCCESS MODAL ─── -->
+<dialog id="restock-success-modal" class="rounded-3xl shadow-2xl border border-[#E5EBE6] w-[88%] max-w-xs p-0">
+  <div class="p-8 text-center">
+    <div class="w-14 h-14 bg-[#DCE8DE] rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#6C8673]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <h3 class="text-lg font-bold text-[#2D3A31] mb-1">更新成功</h3>
+    <p id="restock-success-msg" class="text-sm text-[#687A6B] mb-5"></p>
+    <button onclick="document.getElementById('restock-success-modal').close()" class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-semibold hover:bg-[#5A705F] transition-all">確認</button>
+  </div>
+</dialog>
 
-    const handleRestock = useCallback((itemId, newVal) => { setSystemStockMap(prev => ({ ...prev, [itemId]: newVal })); }, []);
+<!-- ─── TOAST ─── -->
+<div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-[#3F5144]/95 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none z-[1000]">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#A3B4A5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toast-msg"></span>
+</div>
 
-    const filteredSearchItems = useMemo(() => {
-      let list = initialInventory;
-      if (searchCategory !== '全部') list = list.filter(i => i.category === searchCategory);
-      if (!searchQuery) return list;
-      return list.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()) || (i.tag && i.tag.includes(searchQuery)));
-    }, [searchQuery, searchCategory]);
+<script>
+// ─── SUPABASE ───
+const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const handleSelectItem = (item) => {
-      setSelectedItem(item); setSearchQuery(item.name); setIsDropdownOpen(false); setInputValue('');
-    };
+// ─── DATA ───
+const ITEMS = [
+  { id:1,  name:'火腿S',      spec:'20條/箱',         unit:'箱', subUnit:'條', conv:20, sys:1.2,  alert:0.5, tag:'每日', cat:'食材' },
+  { id:2,  name:'沙拉S',      spec:'600公克/包',       unit:'包', sys:56.0, alert:50, tag:'每日', cat:'食材' },
+  { id:3,  name:'水煮蛋',     spec:'50顆/包',         unit:'顆', sys:1200, alert:400, tag:'每日', cat:'食材' },
+  { id:4,  name:'涼麵條',     spec:'3公斤/包',        unit:'包', sys:22,   alert:12, tag:'每日', cat:'食材' },
+  { id:5,  name:'涼麵',       spec:'206公克/盒',      unit:'盒', sys:66,   alert:35, tag:'每日', cat:'食材' },
+  { id:6,  name:'小黃瓜(箱)', spec:'15~18公斤/箱',   unit:'箱', sys:0,    alert:2,  tag:'每日', cat:'食材' },
+  { id:7,  name:'番茄(箱)',   spec:'8公斤/箱',        unit:'箱', sys:0,    alert:2,  tag:'每日', cat:'食材' },
+  { id:8,  name:'鮮乳',       spec:'936毫升/罐',      unit:'罐', sys:17,   alert:20, tag:'每日', cat:'茶飲' },
+  { id:9,  name:'豆腐',       spec:'看有幾盒',        unit:'盒', sys:7,    alert:3,  tag:'每日', cat:'食材' },
+  { id:10, name:'木瓜(顆)',   spec:'13顆/箱',         unit:'顆', sys:31,   alert:1,  tag:'每日', cat:'茶飲' },
+  { id:11, name:'涼麵醬(原味)',spec:'80g/包',         unit:'包', sys:185,  alert:103,tag:'每日', cat:'調味' },
+  { id:12, name:'涼麵醬(辣味)',spec:'80g/包',         unit:'包', sys:197,  alert:94, tag:'每日', cat:'調味' },
+  { id:13, name:'二砂',        spec:'50公斤/包',      unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
+  { id:14, name:'金蘭甲級醬油',spec:'5公升/罐',      unit:'罐', sys:0, alert:2,   tag:'每周', cat:'調味' },
+  { id:15, name:'鹽S',         spec:'1000公克/包',    unit:'包', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:16, name:'幸福醋',      spec:'5.5公升/罐',     unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:17, name:'芝麻醬',      spec:'3公升/罐',       unit:'罐', sys:0, alert:2,   tag:'每周', cat:'調味' },
+  { id:18, name:'金味王醬油',  spec:'5公升/罐',       unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:19, name:'金梅油膏',    spec:'4.5公斤/罐',     unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:20, name:'細砂糖S',     spec:'25公斤/包',      unit:'包', sys:0, alert:0.2, tag:'每周', cat:'調味' },
+  { id:21, name:'八角',        spec:'600公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
+  { id:22, name:'花椒',        spec:'600公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
+  { id:23, name:'香油',        spec:'3公升/罐',       unit:'罐', sys:0, alert:1.5, tag:'每周', cat:'調味' },
+  { id:24, name:'乾辣椒',      spec:'600公克/包',     unit:'包', sys:0, alert:1.5, tag:'每周', cat:'調味' },
+  { id:25, name:'辣椒油',      spec:'3公升/罐',       unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:26, name:'熟芝麻',      spec:'3公斤/包',       unit:'包', sys:0, alert:0.2, tag:'每周', cat:'調味' },
+  { id:27, name:'果糖',        spec:'25公斤/桶',      unit:'桶', sys:0, alert:0.3, tag:'每周', cat:'茶飲' },
+  { id:28, name:'特級阿薩姆紅茶葉',spec:'600公克/包', unit:'包',sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:29, name:'奶精粉',      spec:'1公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'茶飲' },
+  { id:30, name:'特A紅茶(立)', spec:'600公克/包',     unit:'包', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:31, name:'古早味酸梅湯',spec:'12.4公升/罐',    unit:'箱', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:32, name:'冬瓜磚',      spec:'30塊/箱',        unit:'箱', sys:0, alert:6,   tag:'每周', cat:'茶飲' },
+  { id:33, name:'綠豆粒',      spec:'5公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'食材' },
+  { id:34, name:'仙草液',      spec:'3.2公升/罐',     unit:'罐', sys:0, alert:4,   tag:'每周', cat:'茶飲' },
+  { id:35, name:'奶精球',      spec:'50顆/包',        unit:'包', sys:0, alert:1,   tag:'每周', cat:'茶飲' },
+  { id:36, name:'樹薯粉',      spec:'400公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'食材' },
+  { id:37, name:'紅豆粒',      spec:'3公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'食材' },
+  { id:38, name:'味噌',        spec:'9公斤/箱',       unit:'箱', sys:0, alert:0.8, tag:'每周', cat:'調味' },
+  { id:39, name:'洋蔥',        spec:'250公克/顆',     unit:'顆', sys:0, alert:2,   tag:'每周', cat:'食材' },
+  { id:40, name:'冰沙粉',      spec:'1公斤/包',       unit:'包', sys:11,alert:2,  tag:'每周', cat:'茶飲' },
+  { id:41, name:'烹大師',      spec:'1000公克/包',    unit:'包', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:42, name:'2杯加大袋(3碗)',spec:'32個/包',      unit:'包', sys:8, alert:2,   tag:'每周', cat:'包材' },
+  { id:43, name:'OPS 3H',      spec:'100個/包',       unit:'包', sys:21,alert:3,  tag:'每周', cat:'包材' },
+  { id:44, name:'粗吸管',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:45, name:'大茶匙',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:46, name:'手扒雞手套',  spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:47, name:'吸管',        spec:'100支/包',       unit:'箱', sys:0, alert:0.5, tag:'每周', cat:'包材' },
+  { id:48, name:'耐熱袋(4兩)', spec:'100個/包',       unit:'包', sys:0, alert:3,   tag:'每周', cat:'包材' },
+  { id:49, name:'紙390湯杯',   spec:'50個/條',        unit:'條', sys:0, alert:3,   tag:'每周', cat:'包材' },
+  { id:50, name:'紙390蓋',     spec:'50個/條',        unit:'條', sys:0, alert:1,   tag:'每周', cat:'包材' },
+  { id:51, name:'紙520湯杯',   spec:'50個/條',        unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:52, name:'紙520蓋',     spec:'50個/條',        unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:53, name:'湯匙',        spec:'100支/包',       unit:'箱', sys:0, alert:1,   tag:'每周', cat:'包材' },
+  { id:54, name:'筷子',        spec:'80雙/包',        unit:'包', sys:6, alert:1,   tag:'每周', cat:'包材' },
+  { id:55, name:'橡皮筋',      spec:'',               unit:'包', sys:0, alert:5,   tag:'每周', cat:'包材' },
+  { id:56, name:'洗衣粉',      spec:'',               unit:'包', sys:0.7,alert:2,  tag:'每周', cat:'備品' },
+  { id:57, name:'熱感應發票紙',spec:'75捲/箱',        unit:'箱', sys:7, alert:1,   tag:'每周', cat:'備品' },
+  { id:58, name:'廚房紙巾',    spec:'12捲/包',        unit:'包', sys:4, alert:0.3, tag:'每周', cat:'備品' },
+  { id:59, name:'5斤印刷袋',   spec:'',               unit:'袋', sys:0, alert:20,  tag:'每周', cat:'包材' },
+  { id:60, name:'沙拉脫S',     spec:'3.4公升/桶',     unit:'箱', sys:4, alert:3,   tag:'每周', cat:'備品' },
+  { id:61, name:'九如印刷袋35',spec:'70/包',          unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:62, name:'常一嚐印刷袋(橘)',spec:'2500/包',    unit:'袋', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:63, name:'悠遊感熱紙',  spec:'4捲/條',         unit:'捲', sys:44,alert:3,  tag:'每周', cat:'備品' },
+  { id:64, name:'芝麻醬包裝袋',spec:'18cm*400m',      unit:'捲', sys:0, alert:3,   tag:'每周', cat:'包材' },
+  { id:65, name:'常一嚐印刷袋(黑)',spec:'2500/包',    unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:66, name:'飲料標籤貼紙',spec:'1000/捲',        unit:'捲', sys:0, alert:4,   tag:'每周', cat:'備品' },
+];
 
-    // 頂部手動搜尋新增：支援子單位自動換算箱數
-    const handleAddRecord = async () => {
-      if (!selectedItem || inputValue === '') return;
-      let count = parseFloat(inputValue);
-      if (isNaN(count)) return;
+// ─── STATE ───
+const TODAY = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+let todayCounts = {}; // id -> actualCount (number or '')
+let systemStockMap = {}; // id -> number
+let historyData = {};   // date -> [{id, actualCount}]
+let activeInputId = null;
+let hideCounted = false;
+let currentTab = 'count';
+let loadedTags = new Set();
+let overviewFilter = 'counted';
+let todayRestockLogs = []; // [{item_name, mode, qty, before, after, unit, created_at}]
 
-      // 如果有子單位，自動將輸入的數量除以換算率 (如 10 條 / 20 = 0.5 箱)
-      if (selectedItem.subUnit && selectedItem.conversionRate) {
-        count = count / selectedItem.conversionRate;
-        count = Math.round(count * 1000) / 1000;
-      }
+// Restock state
+let rsSelectedItem = null, rsMode = 'add';
 
-      const newItem = { ...selectedItem, actualCount: count };
-      setHistoryData(prev => {
-        const list = [...(prev[todayStr] || [])];
-        const idx = list.findIndex(i => i.id === selectedItem.id);
-        if (idx >= 0) list.splice(idx, 1);
-        return { ...prev, [todayStr]: [newItem, ...list] };
+// ─── INIT ───
+async function init() {
+  ITEMS.forEach(i => systemStockMap[i.id] = i.sys);
+
+  try {
+    const [{ data: records }, { data: overrides }, { data: logs }] = await Promise.all([
+      sb.from('inventory_records').select('*'),
+      sb.from('system_stock_overrides').select('*'),
+      sb.from('restock_logs').select('*').eq('record_date', TODAY).order('created_at', { ascending: true }),
+    ]);
+    if (overrides) overrides.forEach(o => systemStockMap[o.item_id] = o.stock_value);
+    if (records) {
+      records.forEach(r => {
+        if (!historyData[r.record_date]) historyData[r.record_date] = {};
+        historyData[r.record_date][r.item_id] = r.actual_count;
+        if (r.record_date === TODAY) todayCounts[r.item_id] = r.actual_count;
       });
-      showToast(`已記錄「${selectedItem.name}」為 ${count} ${selectedItem.unit}`);
-      setSelectedItem(null); setSearchQuery(''); setInputValue('');
-      await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: newItem.id, actual_count: count }, { onConflict: 'record_date, item_id' });
-    };
+    }
+    if (logs) todayRestockLogs = logs;
+    // Figure out which tags already have items loaded today
+    ITEMS.forEach(i => { if (todayCounts[i.id] !== undefined) loadedTags.add(i.tag); });
+  } catch(e) { showToast('無法連線雲端資料庫', true); }
 
-    const handleQuickLoad = async (tag) => {
-      const targetItems = initialInventory.filter(i => i.tag === tag);
-      const currentList = historyData[todayStr] || [];
-      const currentIds = currentList.map(i => i.id);
-      const newItemsToAppend = targetItems.filter(i => !currentIds.includes(i.id));
+  buildKeypad();
+  switchTab('count');
+  setTimeout(updateTabLine, 100);
+  window.addEventListener('resize', updateTabLine);
+}
 
-      if (newItemsToAppend.length > 0 || currentList.length > 0) {
-        const confirmMsg = `此操作將會：\n1. 合併補入 ${newItemsToAppend.length} 項新「${tag}」品項。\n2. 今日已填寫的盤點數量將「完整保留」。\n\n是否繼續？`;
-        if (!window.confirm(confirmMsg)) return;
-      }
+// ─── TAB ───
+function switchTab(tab) {
+  currentTab = tab;
+  ['count','history','overview'].forEach(t => {
+    document.getElementById(`section-${t}`).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById(`tab-${t}`);
+    if (t === tab) {
+      btn.classList.remove('text-[#8FA192]','hover:text-[#4F6354]');
+      btn.classList.add('text-[#2D3A31]');
+    } else {
+      btn.classList.add('text-[#8FA192]','hover:text-[#4F6354]');
+      btn.classList.remove('text-[#2D3A31]');
+    }
+  });
+  document.getElementById('progress-bar-wrap').classList.toggle('hidden', tab !== 'count' || loadedTags.size === 0);
+  if (tab === 'count') renderItemList();
+  if (tab === 'history') renderCalendar();
+  if (tab === 'overview') renderOverview();
+  updateTabLine();
+  closeKeypad();
+}
 
-      const { data: todayRecords } = await supabase.from('inventory_records').select('item_id, actual_count').eq('record_date', todayStr);
-      const dbCountMap = {};
-      if (todayRecords) todayRecords.forEach(r => { if (r.actual_count !== null) dbCountMap[r.item_id] = r.actual_count; });
+function updateTabLine() {
+  const tabs = ['count','history','overview'];
+  const idx = tabs.indexOf(currentTab);
+  const btn = document.getElementById(`tab-${currentTab}`);
+  const line = document.getElementById('tab-line');
+  if (!btn || !line) return;
+  line.style.width = btn.offsetWidth + 'px';
+  line.style.transform = `translateX(${btn.offsetLeft}px)`;
+  line.classList.remove('opacity-0');
+}
 
-      let mergedList = [];
-      setHistoryData(prev => {
-        const existingList = prev[todayStr] || [];
-        const existingMap = {};
-        existingList.forEach(item => { existingMap[item.id] = item; });
-        const updatedList = [...existingList];
-        
-        targetItems.forEach(item => {
-          if (!existingMap[item.id]) {
-            let count = '';
-            if (dbCountMap[item.id] !== undefined) count = dbCountMap[item.id];
-            updatedList.push({ ...item, actualCount: count });
-          }
-        });
-        mergedList = updatedList;
-        return { ...prev, [todayStr]: updatedList };
-      });
+// ─── QUICK LOAD ───
+async function quickLoad(tag) {
+  const tagItems = ITEMS.filter(i => i.tag === tag);
+  const newIds = tagItems.filter(i => todayCounts[i.id] === undefined).map(i => i.id);
 
-      if (mergedList.length > 0) {
-        const dbUpserts = mergedList.map(item => ({ 
-          record_date: todayStr, 
-          item_id: item.id, 
-          actual_count: item.actualCount !== '' ? parseFloat(item.actualCount) : null 
-        }));
-        await supabase.from('inventory_records').upsert(dbUpserts, { onConflict: 'record_date, item_id' });
-      }
+  if (loadedTags.has(tag) && newIds.length === 0) {
+    showToast(`「${tag}」盤點表已載入`);
+    return;
+  }
 
-      showToast(`已成功載入與合併「${tag}」盤點表`);
+  if (loadedTags.has(tag)) {
+    showToast(`補入 ${newIds.length} 項新品項`);
+  } else {
+    showToast(`已載入「${tag}」盤點表`);
+    loadedTags.add(tag);
+  }
 
-      setTimeout(() => {
-        const remainingUncounted = mergedList.filter(i => i.actualCount === '');
-        if (remainingUncounted.length > 0) setActiveInputId(remainingUncounted[0].id);
-      }, 300);
-    };
+  newIds.forEach(id => { todayCounts[id] = ''; });
 
-    const handleUpdateListItem = async (id, val) => {
-      setHistoryData(prev => ({ ...prev, [todayStr]: (prev[todayStr] || []).map(i => i.id === id ? { ...i, actualCount: val } : i) }));
-      setItemSaveStatus(prev => ({ ...prev, [id]: 'saving' }));
-      
-      try {
-        const count = parseFloat(val);
-        const { error } = await supabase.from('inventory_records').upsert({ record_date: todayStr, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
-        if (error) throw error;
-        
-        setItemSaveStatus(prev => ({ ...prev, [id]: 'saved' }));
-        setTimeout(() => { setItemSaveStatus(prev => ({ ...prev, [id]: null })); }, 2000);
-      } catch (err) {
-        console.error(err);
-        setItemSaveStatus(prev => ({ ...prev, [id]: 'error' }));
-        setTimeout(() => { setItemSaveStatus(prev => ({ ...prev, [id]: null })); }, 3000);
-      }
-    };
-
-    // 自訂虛擬鍵盤輸入：處理換算邏輯
-    const handleKeypadPress = (key) => {
-      if (!activeInputId) return;
-      const item = todayCounts.find(i => i.id === activeInputId);
-      if (!item) return;
-
-      const isSubUnitMode = !!item.subUnit && !!item.conversionRate;
-      
-      // 讀取目前的顯示字串
-      let currentDisplayStr = '';
-      if (item.actualCount !== '') {
-        if (isSubUnitMode) {
-          // 如果是子單位模式，當前鍵盤抓到並操作的字串是「條數」
-          currentDisplayStr = String(Math.round(parseFloat(item.actualCount) * item.conversionRate * 100) / 100);
-        } else {
-          currentDisplayStr = String(item.actualCount);
-        }
-      }
-
-      if (key === '⌫') {
-        currentDisplayStr = currentDisplayStr.slice(0, -1);
-      } else if (key === '.') {
-        if (!currentDisplayStr.includes('.')) currentDisplayStr += '.';
-      } else {
-        currentDisplayStr += key;
-      }
-
-      // 準備存入的值
-      if (currentDisplayStr === '') {
-        handleUpdateListItem(activeInputId, '');
-      } else {
-        let finalMainValue = parseFloat(currentDisplayStr);
-        if (!isNaN(finalMainValue)) {
-          if (isSubUnitMode) {
-            // 如果是子單位輸入，存入資料庫前自動除以換算率
-            finalMainValue = finalMainValue / item.conversionRate;
-            finalMainValue = Math.round(finalMainValue * 1000) / 1000;
-          }
-          handleUpdateListItem(activeInputId, String(finalMainValue));
-        }
-      }
-    };
-
-    const handleKeypadNext = () => {
-      const currentDisplayedIds = displayedRecordItems.map(i => i.id);
-      const currentIdx = currentDisplayedIds.indexOf(activeInputId);
-      if (currentIdx >= 0) {
-        const nextUncountedItem = displayedRecordItems.slice(currentIdx + 1).find(i => i.actualCount === '');
-        if (nextUncountedItem) {
-          setActiveInputId(nextUncountedItem.id);
-          return;
-        }
-      }
-      setActiveInputId(null);
-      showToast('此區塊未填寫品項已全部聚焦完畢！');
-    };
-
-    const handleExportCSV = () => {
-      let csv = "\uFEFF品名,規格,標籤,帳面庫存,實際盤點,盤差,單位\n";
-      initialInventory.forEach(item => {
-        const sysStock = systemStockMap[item.id] ?? item.systemStock;
-        const c = todayCounts.find(i => i.id === item.id);
-        const actual = c && c.actualCount !== '' ? c.actualCount : '未盤點';
-        const v = c && c.actualCount !== '' && !isNaN(parseFloat(c.actualCount)) ? (parseFloat(c.actualCount) - sysStock).toFixed(1) : '';
-        csv += `${item.name},${item.spec||''},${item.tag},${sysStock},${actual},${v},${item.unit}\n`;
-      });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-      link.download = `庫存總表_${getTodayStr()}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    };
-
-    const handleCopyAndLine = async () => {
-      let text = `【${getTodayStr()} 叫貨清單】\n\n`;
-      orderList.forEach(i => { text += `▪ ${i.name}：剩 ${i.actualCount} ${i.unit}\n`; });
-      try { await navigator.clipboard.writeText(text); showToast('已複製！可直接貼到 LINE'); } 
-      catch { window.open(`line://msg/text/${encodeURIComponent(text)}`, '_blank'); }
-    };
-
-    const orderList = useMemo(() => todayCounts.filter(i => { const c = parseFloat(i.actualCount); return !isNaN(c) && c < i.alertLevel; }), [todayCounts]);
-    const countedNum = useMemo(() => todayCounts.filter(i => i.actualCount !== '').length, [todayCounts]);
-
-    const displayedRecordItems = useMemo(() => {
-      let list = todayCounts;
-      if (listCategory !== '全部') list = list.filter(i => i.category === listCategory);
-      if (hideCounted) list = list.filter(i => i.actualCount === '');
-      return list;
-    }, [todayCounts, listCategory, hideCounted]);
-
-    const remainingUncountedCount = useMemo(() => {
-      return displayedRecordItems.filter(i => i.actualCount === '').length;
-    }, [displayedRecordItems]);
-
-    const displayedOverviewItems = useMemo(() => {
-      let list = initialInventory;
-      if (overviewFilter === 'daily') list = list.filter(i => i.tag === '每日');
-      if (overviewFilter === 'weekly') list = list.filter(i => i.tag === '每周');
-      if (overviewFilter === 'abnormal') {
-        list = list.filter(item => {
-          const sysStock = systemStockMap[item.id] ?? item.systemStock;
-          const counted = todayCounts.find(i=>i.id===item.id);
-          const has = counted && counted.actualCount!=='';
-          if (!has) return false;
-          const c = parseFloat(counted.actualCount);
-          if (isNaN(c)) return false;
-          if (c < item.alertLevel) return true; 
-          const pct = Math.abs(c - sysStock) / (sysStock || 1);
-          if (pct > 0.05 && sysStock > 0) return true; 
-          return false;
-        });
-      }
-      return list;
-    }, [initialInventory, overviewFilter, todayCounts, systemStockMap]);
-
-    const prevMonth = () => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1));
-    const nextMonth = () => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1));
-
-    const renderCalendar = () => {
-      const y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
-      const firstDay = new Date(y, m, 1).getDay(), days_in = new Date(y, m+1, 0).getDate();
-      const cells = [];
-      for (let i = 0; i < firstDay; i++) cells.push(<div key={`e${i}`} className="h-10"/>);
-      for (let i = 1; i <= days_in; i++) {
-        const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-        const has = !!(historyData[ds] && historyData[ds].some(x => x.actualCount !== ''));
-        const isToday = ds === todayStr, isSel = selectedHistoryDate === ds;
-        cells.push(
-          <div key={ds} onClick={() => has && setSelectedHistoryDate(ds)} className={`h-12 flex flex-col items-center justify-center rounded-xl transition-all ${has ? 'cursor-pointer hover:bg-orange-50' : 'cursor-default'} ${isSel ? 'bg-orange-100 ring-2 ring-orange-400' : ''} ${isToday && !isSel ? 'bg-stone-100' : ''}`}>
-            <span className={`text-sm font-medium ${isToday ? 'text-orange-600' : has ? 'text-stone-800' : 'text-stone-400'}`}>{i}</span>
-            {has && <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-0.5"/>}
-          </div>
-        );
-      }
-      return (
-        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 mb-6">
-          <div className="flex justify-between items-center mb-4 px-2">
-            <button onClick={prevMonth} className="p-2 text-stone-500 hover:bg-stone-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
-            <h3 className="font-bold text-lg text-stone-800">{y}年 {calendarMonth.toLocaleString('zh-TW',{month:'long'})}</h3>
-            <button onClick={nextMonth} className="p-2 text-stone-500 hover:bg-stone-100 rounded-full"><ChevronRight className="w-5 h-5"/></button>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center mb-2">
-            {['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-xs font-medium text-stone-400 py-1">{d}</div>)}
-          </div>
-          <div className="grid grid-cols-7 gap-1">{cells}</div>
-        </div>
-      );
-    };
-
-    const handleCloseKeypad = useCallback(() => {
-      setActiveInputId(null); lastActiveInputId.current = null;
-    }, []);
-
-    if (isDBLoading) return <div className="min-h-screen flex items-center justify-center text-orange-600 font-bold bg-[#FFFDF9]">連線雲端資料庫中...</div>;
-
-    const searchCategoryIndex = CATEGORIES.indexOf(searchCategory);
-    const listCategoryIndex = CATEGORIES.indexOf(listCategory);
-
-    return (
-      <div className={`min-h-screen flex flex-col ${activeInputId ? 'pb-60' : 'pb-24'}`}>
-        <GlobalNav />
-        {toast && <Toast key={toast.key} message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
-
-        <header className="bg-white shadow-sm sticky top-0 z-30">
-          <div className="max-w-2xl mx-auto px-4 py-3 pl-16 flex justify-between items-center gap-2 border-b border-orange-50">
-            <div className="flex items-center space-x-2 text-orange-600">
-              <ClipboardList className="w-6 h-6"/>
-              <h1 className="text-xl font-bold tracking-tight">庫存盤點</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setShowRestockModal(true)} className="flex items-center space-x-1 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-full font-medium hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-200">
-                <PackagePlus className="w-5 h-5"/><span className="hidden sm:inline text-sm">進貨</span>
-              </button>
-              <button onClick={() => setShowOrderModal(true)} className="flex items-center space-x-1 bg-rose-50 text-rose-600 px-3 py-2 rounded-full font-medium hover:bg-rose-100 transition-colors shadow-sm border border-rose-200">
-                <ShoppingCart className="w-5 h-5"/><span className="hidden sm:inline text-sm">結算</span>
-                {orderList.length > 0 && <span className="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">{orderList.length}</span>}
-              </button>
-            </div>
-          </div>
-          <div className="max-w-2xl mx-auto px-2 pb-0 flex border-b border-stone-200 bg-white relative z-10">
-            {[{k:'record',l:'紀錄',I:ListPlus},{k:'history',l:'歷史',I:CalendarIcon},{k:'overview',l:'總表',I:BarChart2}].map(({k,l,I})=>(
-              <button key={k} onClick={()=>{setActiveTab(k);if(k!=='history')setSelectedHistoryDate(null);}}
-                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${activeTab===k?'border-orange-500 text-orange-600':'border-transparent text-stone-500 hover:text-stone-700'}`}>
-                <I className="w-4 h-4"/> {l}
-              </button>
-            ))}
-          </div>
-          {activeTab === 'record' && todayCounts.length > 0 && (
-            <div className="max-w-2xl mx-auto px-4 py-3 bg-stone-50/50 border-b border-stone-200 shadow-inner">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-stone-500">今日盤點進度</span>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-stone-600 font-medium cursor-pointer bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm hover:bg-stone-50 transition-colors">
-                    <input type="checkbox" checked={hideCounted} onChange={e => setHideCounted(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500 w-3 h-3 accent-orange-500 border-stone-300" />
-                    隱藏已盤
-                  </label>
-                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{countedNum} / {todayCounts.length} <span className="font-normal text-orange-400 ml-1">({Math.round(countedNum/todayCounts.length*100)}%)</span></span>
-                </div>
-              </div>
-              <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-500" style={{width:`${Math.round(countedNum/todayCounts.length*100)}%`}}/>
-              </div>
-            </div>
-          )}
-        </header>
-
-        <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
-          {activeTab === 'record' && (
-            <div className="space-y-6 fade-in">
-              <div className="bg-white px-4 py-5 rounded-2xl shadow-sm border border-orange-100">
-                <h2 className="text-sm font-bold text-stone-600 mb-3 flex items-center"><Search className="w-4 h-4 mr-1 text-orange-500"/>搜尋新增盤點品項</h2>
-                <div className="relative z-20">
-                  <div className="relative mb-3">
-                    <input type="text" placeholder="點擊展開選單，或輸入關鍵字..." value={searchQuery}
-                      onChange={e=>{setSearchQuery(e.target.value);setSelectedItem(null);setIsDropdownOpen(true);}}
-                      onFocus={()=>setIsDropdownOpen(true)}
-                      className="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 focus:bg-white transition-colors text-base font-medium"/>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
-                      <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isDropdownOpen?'rotate-180':''}`}/>
-                    </div>
-                  </div>
-                  
-                  <div className="w-full overflow-x-auto hide-scrollbar mb-2 pb-1">
-                    <div className="relative inline-flex bg-stone-100 p-1.5 rounded-2xl shadow-inner border border-stone-200/60">
-                      <div 
-                        className="absolute top-1.5 bottom-1.5 w-20 bg-stone-800 rounded-xl shadow-md transition-transform duration-300 ease-out"
-                        style={{ transform: `translateX(${searchCategoryIndex * 100}%)` }}
-                      />
-                      {CATEGORIES.map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => setSearchCategory(cat)}
-                          className={`relative z-10 w-20 py-2 text-sm font-bold rounded-xl transition-colors duration-300 whitespace-nowrap ${
-                            searchCategory === cat ? 'text-white' : 'text-stone-500 hover:text-stone-800'
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {isDropdownOpen && <div className="fixed inset-0 z-10" onClick={()=>setIsDropdownOpen(false)}/>}
-                  {isDropdownOpen && (
-                    <div className="relative mt-2 bg-white border border-stone-100 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar z-20">
-                      {filteredSearchItems.length > 0 ? filteredSearchItems.map(item=>(
-                        <div key={item.id} onClick={()=>handleSelectItem(item)}
-                          className="px-4 py-3 hover:bg-orange-50 cursor-pointer border-b border-stone-50 last:border-0 flex justify-between items-center transition-colors">
-                          <div><span className="font-bold text-stone-800 block">{item.name}</span><span className="text-xs text-stone-400 block mt-0.5">{item.spec||'無規格'}</span></div>
-                          <span className="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded-md">{item.tag}</span>
-                        </div>
-                      )) : <div className="px-4 py-6 text-center text-stone-400 text-sm">找不到相關品項</div>}
-                    </div>
-                  )}
-                </div>
-                {!selectedItem && (
-                  <div className="mt-4 pt-4 border-t border-stone-100 flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-                    <button onClick={()=>handleQuickLoad('每日')} className="whitespace-nowrap text-sm bg-amber-50 text-amber-700 px-4 py-2.5 rounded-xl font-bold hover:bg-amber-100 border border-amber-200 transition-colors">+ 載入「每日」盤點表</button>
-                    <button onClick={()=>handleQuickLoad('每周')} className="whitespace-nowrap text-sm bg-amber-50 text-amber-700 px-4 py-2.5 rounded-xl font-bold hover:bg-amber-100 border border-amber-200 transition-colors">+ 載入「每周」盤點表</button>
-                  </div>
-                )}
-                {selectedItem && (
-                  <div className="mt-4 pt-4 border-t border-stone-100 flex items-end gap-3 fade-in">
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold text-stone-500 mb-1.5">
-                        輸入數量 ({selectedItem.subUnit || selectedItem.unit})
-                        {selectedItem.subUnit && <span className="text-orange-600 ml-1">(系統會自動換算成{selectedItem.unit})</span>}
-                      </label>
-                      <input type="number" inputMode="decimal" step="0.1" min="0" value={inputValue}
-                        onChange={e=>setInputValue(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAddRecord()}
-                        placeholder={selectedItem.subUnit ? `換算基準: 1箱 = ${selectedItem.conversionRate}條` : `帳面庫存: ${systemStockMap[selectedItem.id] ?? selectedItem.systemStock}`}
-                        className="w-full px-4 py-3 border border-stone-200 rounded-xl text-lg font-bold text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-orange-50/30"/>
-                    </div>
-                    <button onClick={handleAddRecord} disabled={inputValue===''}
-                      className="px-6 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">加入</button>
-                  </div>
-                )}
-              </div>
-
-              {todayCounts.length > 0 && (
-                <div className="w-full overflow-x-auto hide-scrollbar bg-white p-2 rounded-2xl border border-stone-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-1 px-2">
-                    <span className="text-xs font-bold text-stone-500">清單分類篩選:</span>
-                  </div>
-                  <div className="relative inline-flex bg-stone-50 p-1 rounded-xl border border-stone-200/60">
-                    <div 
-                      className="absolute top-1 bottom-1 bg-orange-500 rounded-lg shadow-sm transition-transform duration-300 ease-out"
-                      style={{ 
-                        width: '72px',
-                        transform: `translateX(${listCategoryIndex * 72}%)` 
-                      }}
-                    />
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => setListCategory(cat)}
-                        className={`relative z-10 w-[72px] py-1.5 text-xs font-bold rounded-lg transition-colors duration-300 text-center ${
-                          listCategory === cat ? 'text-white' : 'text-stone-500 hover:text-stone-800'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                {todayCounts.length === 0 ? (
-                  <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
-                    <ClipboardList className="w-12 h-12 text-stone-300 mx-auto mb-2"/>
-                    <p className="text-stone-400">目前還沒有紀錄<br/>請從上方搜尋或載入盤點表</p>
-                  </div>
-                ) : displayedRecordItems.length === 0 ? (
-                  <div className="text-center py-12 text-stone-400 bg-white rounded-2xl border border-stone-100 shadow-sm">
-                    <p>🎉 這個分類的項目都盤點完囉！</p>
-                  </div>
-                ) : (
-                  <div className="space-y-5 relative z-0">
-                    {['每日', '每周'].map(tagGroup => {
-                      const groupItems = displayedRecordItems.filter(i => i.tag === tagGroup);
-                      if (groupItems.length === 0) return null;
-                      
-                      return (
-                        <div key={tagGroup} className="space-y-3">
-                          <div className="sticky top-[108px] z-20 pt-1 pb-1">
-                            <span className="inline-block px-4 py-1.5 bg-amber-100 text-amber-800 border border-amber-200 text-sm font-bold shadow-sm rounded-lg">
-                              📌 {tagGroup} 盤點區
-                            </span>
-                          </div>
-                          {groupItems.map(item => {
-                            const prev = getPreviousRecord(item.id);
-                            return (
-                              <StockCard key={item.id}
-                                item={{ ...item, lastCount: prev?.count, lastDate: prev?.date }}
-                                onUpdate={handleUpdateListItem}
-                                systemStock={systemStockMap[item.id]}
-                                activeInputId={activeInputId}
-                                onFocusInput={setActiveInputId}
-                                status={itemSaveStatus[item.id]}
-                              />
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'history' && (
-            <div className="fade-in">
-              {renderCalendar()}
-              {selectedHistoryDate && (
-                <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden fade-in">
-                  <div className="bg-stone-50 p-4 border-b border-stone-100 flex justify-between items-center">
-                    <h3 className="font-bold text-stone-800 flex items-center"><CalendarIcon className="w-4 h-4 mr-2 text-orange-600"/>{selectedHistoryDate} 盤點明細</h3>
-                    <button onClick={()=>setSelectedHistoryDate(null)} className="text-stone-400 hover:text-stone-600"><X className="w-5 h-5"/></button>
-                  </div>
-                  <div className="divide-y divide-stone-50">
-                    {(historyData[selectedHistoryDate]||[]).filter(i=>i.actualCount!=='').map(item=>{
-                      const c=parseFloat(item.actualCount), isLow=!isNaN(c)&&c<item.alertLevel;
-                      return (
-                        <div key={item.id} className="p-4 flex justify-between items-center hover:bg-stone-50">
-                          <div><div className="font-bold text-stone-800">{item.name}</div><div className="text-xs text-stone-400 mt-1">安全線: {item.alertLevel} {item.unit}</div></div>
-                          <div className="text-right">
-                            <div className={`font-bold text-lg ${isLow?'text-red-600':'text-emerald-600'}`}>{item.actualCount} <span className="text-sm font-normal text-stone-500">{item.unit}</span></div>
-                            {isLow&&<div className="text-[10px] text-red-500 font-medium flex items-center justify-end mt-1"><AlertCircle className="w-3 h-3 mr-0.5"/>需叫貨</div>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              {!selectedHistoryDate && <div className="text-center py-8 text-stone-400 text-sm">點擊日曆上有橘點的日期查看盤點明細</div>}
-            </div>
-          )}
-
-          {activeTab === 'overview' && (
-            <div className="fade-in">
-              <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 mb-4">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h2 className="font-bold text-stone-800">今日庫存總覽</h2>
-                    <p className="text-xs text-stone-500 mt-1">已盤 {countedNum} / {initialInventory.length} 項（{Math.round(countedNum/initialInventory.length*100)}%）</p>
-                  </div>
-                  <button onClick={handleExportCSV} className="flex items-center gap-1.5 bg-stone-100 text-stone-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-stone-200 transition-colors border border-stone-200">
-                    <Download className="w-4 h-4"/>匯出報表
-                  </button>
-                </div>
-                
-                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-                  <button onClick={() => setOverviewFilter('all')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'all' ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>全部</button>
-                  <button onClick={() => setOverviewFilter('daily')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'daily' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>僅每日</button>
-                  <button onClick={() => setOverviewFilter('weekly')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${overviewFilter === 'weekly' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'}`}>僅每周</button>
-                  <button onClick={() => setOverviewFilter('abnormal')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border flex items-center ${overviewFilter === 'abnormal' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-red-600 border-red-200 hover:bg-red-50'}`}>
-                    <Filter className="w-3 h-3 mr-1"/> ⚠️ 異常與缺貨
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
-                <div className="overflow-x-auto custom-scrollbar">
-                  <table className="w-full text-left text-sm whitespace-nowrap">
-                    <thead className="bg-stone-50 text-stone-600 font-medium border-b border-stone-100">
-                      <tr><th className="px-4 py-3">品名</th><th className="px-4 py-3 text-right">帳面</th><th className="px-4 py-3 text-right">實盤</th><th className="px-4 py-3 text-right">盤差</th><th className="px-4 py-3 text-center">狀態</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-stone-50">
-                      {displayedOverviewItems.map(item=>{
-                        const sysStock = systemStockMap[item.id] ?? item.systemStock;
-                        const counted = todayCounts.find(i=>i.id===item.id);
-                        const has = counted && counted.actualCount!=='';
-                        const c = has ? parseFloat(counted.actualCount) : NaN;
-                        let vt='-', vc='text-stone-400', badge=<span className="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded">未盤點</span>;
-                        if (has && !isNaN(c)) {
-                          const v=c-sysStock, pct=Math.abs(v)/(sysStock||1);
-                          vt=v>0?`+${v.toFixed(1)}`:v.toFixed(1);
-                          if (c<item.alertLevel) { vc='text-red-600 font-bold'; badge=<span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-medium">缺貨</span>; }
-                          else if (pct>0.05&&sysStock>0) { vc='text-orange-600 font-bold'; badge=<span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded font-medium">異常</span>; }
-                          else { vc='text-stone-600'; badge=<span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-1 rounded font-medium">正常</span>; }
-                        }
-                        return (
-                          <tr key={item.id} className="hover:bg-stone-50 transition-colors">
-                            <td className="px-4 py-3">
-                              <div className="font-bold text-stone-800">{item.name}</div>
-                              <div className="text-[10px] text-stone-400">{item.unit}{item.subUnit ? ` (1${item.unit}=${item.conversionRate}${item.subUnit})` : ''}</div>
-                            </td>
-                            <td className="px-4 py-3 text-right text-stone-600">{sysStock}</td>
-                            <td className="px-4 py-3 text-right font-bold text-stone-800">
-                              {has ? (
-                                <span>
-                                  {c}
-                                  {item.subUnit && <span className="text-xs font-normal text-stone-400 ml-1">({Math.round(c * item.conversionRate)}{item.subUnit})</span>}
-                                </span>
-                              ) : '-'}
-                            </td>
-                            <td className={`px-4 py-3 text-right ${vc}`}>{vt}</td>
-                            <td className="px-4 py-3 text-center">{badge}</td>
-                          </tr>
-                        );
-                      })}
-                      {displayedOverviewItems.length === 0 && (
-                        <tr><td colSpan="5" className="px-4 py-8 text-center text-stone-400">目前沒有符合條件的項目</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-        </main>
-
-        {showOrderModal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-              <div className="bg-red-600 text-white p-4 flex justify-between items-center">
-                <h2 className="text-lg font-bold flex items-center"><ShoppingCart className="w-5 h-5 mr-2"/>今日需叫貨清單</h2>
-                <button onClick={()=>setShowOrderModal(false)} className="text-white hover:bg-red-700 p-1 rounded-full"><X className="w-5 h-5"/></button>
-              </div>
-              <div className="p-4 overflow-y-auto flex-1 bg-stone-50">
-                {orderList.length > 0 ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-stone-500 mb-2">以下盤點數量低於安全警戒值：</p>
-                    {orderList.map(item=>(
-                      <div key={item.id} className="bg-white p-3 rounded-xl border border-stone-100 flex justify-between items-center shadow-sm">
-                        <div><div className="font-bold text-stone-800">{item.name}</div><div className="text-xs text-stone-400 mt-1">規格: {item.spec||'無'}</div></div>
-                        <div className="text-right bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
-                          <div className="text-red-600 font-bold">剩 {item.actualCount} <span className="text-sm font-normal">{item.unit}</span></div>
-                          <div className="text-[10px] text-red-400 mt-0.5">低於 {item.alertLevel}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 flex flex-col items-center">
-                    <div className="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="w-8 h-8"/></div>
-                    <p className="text-lg font-bold text-stone-800">庫存都很充足！</p>
-                    <p className="text-stone-500 text-sm mt-1">今日已盤點的品項皆在安全量之上</p>
-                  </div>
-                )}
-              </div>
-              <div className="p-4 border-t border-stone-100 bg-white flex gap-3">
-                <button onClick={()=>setShowOrderModal(false)} className="flex-1 py-3 bg-white border-2 border-stone-200 text-stone-700 rounded-xl font-bold hover:bg-stone-50 transition-colors">返回</button>
-                {orderList.length > 0 && (
-                  <button onClick={async()=>{await handleCopyAndLine();setShowOrderModal(false);}} className="flex-[2] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 flex justify-center items-center shadow-sm transition-colors gap-2">
-                    <Copy className="w-5 h-5"/>複製清單傳LINE
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showRestockModal && <RestockModal onClose={() => setShowRestockModal(false)} systemStockMap={systemStockMap} onRestock={handleRestock} showToast={showToast} getLatestRecord={getLatestRecord} />}
-        
-        <CustomKeypad 
-          activeId={activeInputId} 
-          onKeyPress={handleKeypadPress} 
-          onNext={handleKeypadNext} 
-          onClose={handleCloseKeypad} 
-          onClear={() => handleUpdateListItem(activeInputId, '')}
-          remainingUncounted={remainingUncountedCount}
-          activeItem={activeItemDef}
-        />
-      </div>
+  // upsert nulls so they appear in DB
+  if (newIds.length > 0) {
+    await sb.from('inventory_records').upsert(
+      newIds.map(id => ({ record_date: TODAY, item_id: id, actual_count: null })),
+      { onConflict: 'record_date, item_id' }
     );
   }
 
-  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+  document.getElementById('quick-load-wrap').classList.add('hidden');
+  document.getElementById('progress-bar-wrap').classList.remove('hidden');
+  renderItemList();
+  updateProgress();
+}
+
+// ─── RENDER ITEM LIST ───
+function renderItemList() {
+  const container = document.getElementById('item-list');
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+
+  if (loadedItems.length === 0) {
+    document.getElementById('quick-load-wrap').classList.remove('hidden');
+    container.innerHTML = '';
+    return;
+  }
+  document.getElementById('quick-load-wrap').classList.add('hidden');
+
+  const groups = {};
+  loadedItems.forEach(i => {
+    if (!groups[i.tag]) groups[i.tag] = [];
+    groups[i.tag].push(i);
+  });
+
+  let html = '';
+  ['每日','每周'].forEach(tag => {
+    if (!groups[tag]) return;
+    const items = hideCounted ? groups[tag].filter(i => todayCounts[i.id] === '' || todayCounts[i.id] === null || todayCounts[i.id] === undefined) : groups[tag];
+    if (items.length === 0) return;
+    html += `<div class="mb-1">
+      <div class="sticky top-[${tag==='每日'?'108':'108'}px] z-10 py-2">
+        <span class="inline-block px-3 py-1 bg-[#6C8673] text-white text-xs font-bold rounded-lg">📌 ${tag}</span>
+      </div>
+      <div class="space-y-2">${items.map(item => renderCard(item)).join('')}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html || `<div class="text-center py-12 text-[#8FA192]">🎉 全部品項盤點完成！</div>`;
+}
+
+function renderCard(item) {
+  const raw = todayCounts[item.id];
+  const hasCounted = raw !== '' && raw !== null && raw !== undefined;
+  const count = parseFloat(raw);
+  const sys = systemStockMap[item.id] ?? item.sys;
+  const isLow = hasCounted && !isNaN(count) && count < item.alert;
+  const isActive = activeInputId === item.id;
+
+  // Display value (sub-unit mode)
+  let displayVal = '';
+  if (hasCounted && !isNaN(count)) {
+    displayVal = item.conv ? String(Math.round(count * item.conv * 100)/100) : String(count);
+  }
+
+  // Variance
+  let varianceHtml = '';
+  if (hasCounted && !isNaN(count)) {
+    const v = count - sys;
+    const pct = Math.abs(v) / (sys || 1);
+    const isAbnormal = pct > 0.05 && sys > 0;
+    const vText = v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
+    const vColor = isAbnormal ? 'text-orange-600 font-bold' : 'text-[#687A6B]';
+    varianceHtml = `<span class="text-xs ${vColor}">盤差 ${vText} ${item.unit}</span>`;
+  }
+
+  const borderClass = isLow ? 'card-border-warn' : hasCounted ? 'card-border-ok' : 'card-border-new';
+
+  return `
+  <div id="card-${item.id}" class="bg-white rounded-2xl border-l-4 ${borderClass} border border-[#E5EBE6] p-4 transition-all ${isActive?'ring-2 ring-[#6C8673]/40 shadow-md':'shadow-sm'}">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <h3 class="font-semibold text-[#2D3A31] text-sm">${item.name}</h3>
+        <p class="text-[11px] text-[#8FA192] mt-0.5">${item.spec || '—'} · 安全 ${item.alert} ${item.unit}</p>
+      </div>
+      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${hasCounted ? isLow ? 'bg-red-100 text-red-600' : 'bg-[#DCE8DE] text-[#3F5144]' : 'bg-[#F0F4F1] text-[#8FA192]'}">
+        ${hasCounted ? isLow ? '⚠ 需叫貨' : '✓ 已盤' : '待盤點'}
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="stepCard(${item.id},-1)" class="w-9 h-9 rounded-xl bg-[#F0F4F1] text-[#4F6354] font-bold text-lg flex items-center justify-center hover:bg-[#D4DCD5] active:scale-95 transition-all">−</button>
+      <div onclick="focusCard(${item.id})" class="flex-1 h-10 flex items-center justify-center border-2 rounded-xl cursor-pointer transition-all font-bold text-base ${isActive ? 'border-[#6C8673] bg-[#F0F4F1] text-[#3F5144]' : displayVal ? 'border-[#A3B4A5] text-[#2D3A31]' : 'border-[#D4DCD5] text-[#C3D0C6]'}" >
+        ${displayVal || '<span class="font-normal text-sm">點擊輸入</span>'}
+        ${displayVal ? `<span class="text-xs font-normal text-[#8FA192] ml-1">${item.conv ? item.subUnit : item.unit}</span>` : ''}
+      </div>
+      <button onclick="stepCard(${item.id},1)" class="w-9 h-9 rounded-xl bg-[#F0F4F1] text-[#4F6354] font-bold text-lg flex items-center justify-center hover:bg-[#D4DCD5] active:scale-95 transition-all">＋</button>
+    </div>
+    <div class="flex justify-between items-center mt-2 text-[11px]">
+      <span class="text-[#8FA192]">帳面 ${sys} ${item.unit}${item.conv ? ` (${Math.round(sys*item.conv)}${item.subUnit})` : ''}</span>
+      ${varianceHtml}
+    </div>
+    ${isLow ? `<div class="mt-2 text-xs text-red-600 font-medium flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>低於安全警戒，需叫貨</div>` : ''}
+  </div>`;
+}
+
+function stepCard(id, delta) {
+  const item = ITEMS.find(i => i.id === id);
+  if (!item) return;
+  const isSubUnit = item.conv;
+  let cur = todayCounts[id];
+  let mainVal = (cur === '' || cur === null || cur === undefined) ? 0 : parseFloat(cur);
+  if (isNaN(mainVal)) mainVal = 0;
+  if (isSubUnit) {
+    let subVal = Math.round(mainVal * item.conv * 100) / 100;
+    subVal = Math.max(0, subVal + delta);
+    mainVal = Math.round(subVal / item.conv * 1000) / 1000;
+  } else {
+    mainVal = Math.max(0, Math.round((mainVal + delta) * 10) / 10);
+  }
+  saveCount(id, mainVal);
+}
+
+function focusCard(id) {
+  activeInputId = id;
+  const item = ITEMS.find(i => i.id === id);
+  // Update keypad label
+  document.getElementById('keypad-unit-label').textContent = `輸入 ${item.conv ? item.subUnit : item.unit}`;
+  if (item.conv) {
+    document.getElementById('keypad-hint').textContent = `換算提示：輸入【${item.subUnit}】，系統自動換算為【${item.unit}】儲存`;
+    document.getElementById('keypad-hint').classList.remove('hidden');
+  } else {
+    document.getElementById('keypad-hint').classList.add('hidden');
+  }
+  updateKeypadRemaining();
+  document.getElementById('keypad').classList.remove('hidden');
+  // Scroll card into view
+  setTimeout(() => {
+    const card = document.getElementById(`card-${id}`);
+    if (card) {
+      const y = card.getBoundingClientRect().top + window.pageYOffset - 220;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, 60);
+  renderItemList();
+}
+
+function closeKeypad() {
+  activeInputId = null;
+  document.getElementById('keypad').classList.add('hidden');
+}
+
+function updateKeypadRemaining() {
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const remaining = loadedItems.filter(i => {
+    const v = todayCounts[i.id];
+    return v === '' || v === null || v === undefined;
+  }).length;
+  document.getElementById('keypad-remaining').textContent = `剩 ${remaining} 項`;
+}
+
+// ─── KEYPAD ───
+function buildKeypad() {
+  const keys = ['1','2','3','4','5','6','7','8','9','.','0','⌫'];
+  const grid = document.querySelector('#keypad .grid');
+  grid.innerHTML = keys.map(k => `
+    <button class="kp-key bg-white py-3 text-xl font-bold rounded-xl shadow-sm active:bg-[#F0F4F1] active:scale-95 transition-all text-[#2D3A31] flex items-center justify-center">${k}</button>
+  `).join('');
+  grid.querySelectorAll('.kp-key').forEach(btn => {
+    btn.addEventListener('pointerdown', e => { e.preventDefault(); handleKey(btn.textContent.trim()); });
+  });
+  document.getElementById('keypad-clear').addEventListener('pointerdown', e => { e.preventDefault(); if(activeInputId) saveCount(activeInputId, ''); renderItemList(); });
+  document.getElementById('keypad-close').addEventListener('pointerdown', e => { e.preventDefault(); closeKeypad(); renderItemList(); });
+  document.getElementById('keypad-next').addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+    const curIdx = loadedItems.findIndex(i => i.id === activeInputId);
+    const next = loadedItems.slice(curIdx + 1).find(i => {
+      const v = todayCounts[i.id]; return v === '' || v === null || v === undefined;
+    });
+    if (next) focusCard(next.id); else { closeKeypad(); showToast('所有項目已盤點完成！'); renderItemList(); }
+  });
+}
+
+function handleKey(k) {
+  if (!activeInputId) return;
+  const item = ITEMS.find(i => i.id === activeInputId);
+  const isSubUnit = item && item.conv;
+  let raw = todayCounts[activeInputId];
+  let displayStr = '';
+  if (raw !== '' && raw !== null && raw !== undefined && !isNaN(parseFloat(raw))) {
+    displayStr = isSubUnit ? String(Math.round(parseFloat(raw) * item.conv * 100)/100) : String(raw);
+  }
+  if (k === '⌫') displayStr = displayStr.slice(0,-1);
+  else if (k === '.') { if (!displayStr.includes('.')) displayStr += '.'; }
+  else displayStr += k;
+
+  if (displayStr === '') { saveCount(activeInputId, ''); return; }
+  let finalVal = parseFloat(displayStr);
+  if (!isNaN(finalVal)) {
+    if (isSubUnit) finalVal = Math.round(finalVal / item.conv * 1000) / 1000;
+    saveCount(activeInputId, finalVal);
+  }
+}
+
+async function saveCount(id, val) {
+  todayCounts[id] = val;
+  updateProgress();
+  updateKeypadRemaining();
+  // Re-render just this card
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    const item = ITEMS.find(i => i.id === id);
+    card.outerHTML = renderCard(item);
+    if (activeInputId === id) {
+      const newCard = document.getElementById(`card-${id}`);
+      if (newCard) newCard.classList.add('ring-2','ring-[#6C8673]/40','shadow-md');
+    }
+  }
+  // update order badge
+  updateOrderBadge();
+  // DB save (debounce light)
+  const count = val === '' ? null : parseFloat(val);
+  await sb.from('inventory_records').upsert({ record_date: TODAY, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
+}
+
+function updateProgress() {
+  const loaded = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const done = loaded.filter(i => { const v = todayCounts[i.id]; return v !== '' && v !== null && v !== undefined; });
+  const pct = loaded.length ? Math.round(done.length / loaded.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done.length} / ${loaded.length}`;
+}
+
+function toggleHideCounted() {
+  hideCounted = document.getElementById('hide-counted-chk').checked;
+  renderItemList();
+}
+
+// ─── ORDER BADGE ───
+function updateOrderBadge() {
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const alertItems = loadedItems.filter(i => {
+    const v = todayCounts[i.id];
+    if (v === '' || v === null || v === undefined) return false;
+    const c = parseFloat(v); return !isNaN(c) && c < i.alert;
+  });
+  const badge = document.getElementById('order-badge');
+  badge.textContent = alertItems.length;
+  badge.classList.toggle('hidden', alertItems.length === 0);
+}
+
+// ─── ORDER MODAL ───
+function openOrderModal() {
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const alertItems = loadedItems.filter(i => {
+    const v = todayCounts[i.id];
+    if (v === '' || v === null || v === undefined) return false;
+    const c = parseFloat(v); return !isNaN(c) && c < i.alert;
+  });
+  const body = document.getElementById('order-body');
+  if (alertItems.length === 0) {
+    body.innerHTML = `<div class="text-center py-8"><div class="text-4xl mb-2">✅</div><p class="font-bold text-[#2D3A31]">庫存都很充足！</p><p class="text-sm text-[#8FA192] mt-1">已盤品項皆在安全量以上</p></div>`;
+    document.getElementById('copy-order-btn').classList.add('hidden');
+  } else {
+    body.innerHTML = alertItems.map(i => `
+      <div class="flex items-center justify-between p-3 bg-[#F6F7F2] rounded-xl border border-[#E5EBE6]">
+        <div><p class="font-semibold text-sm text-[#2D3A31]">${i.name}</p><p class="text-[11px] text-[#8FA192]">${i.spec || '—'}</p></div>
+        <div class="text-right bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+          <p class="font-bold text-red-600 text-sm">剩 ${todayCounts[i.id]} ${i.unit}</p>
+          <p class="text-[10px] text-red-400">低於 ${i.alert}</p>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('copy-order-btn').classList.remove('hidden');
+  }
+  document.getElementById('order-modal').showModal();
+}
+
+async function copyOrderList() {
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const alertItems = loadedItems.filter(i => {
+    const v = todayCounts[i.id]; if (v===''||v===null) return false;
+    return parseFloat(v) < i.alert;
+  });
+  let text = `【${TODAY} 叫貨清單】\n\n`;
+  alertItems.forEach(i => { text += `▪ ${i.name}：剩 ${todayCounts[i.id]} ${i.unit}\n`; });
+  try { await navigator.clipboard.writeText(text); showToast('已複製，可貼至 LINE'); } 
+  catch { window.open(`line://msg/text/${encodeURIComponent(text)}`, '_blank'); }
+  document.getElementById('order-modal').close();
+}
+
+// ─── OVERVIEW ───
+function setOverviewFilter(f) {
+  overviewFilter = f;
+  document.querySelectorAll('.ov-btn').forEach(b => {
+    b.classList.remove('bg-[#6C8673]','text-white','border-[#6C8673]','bg-red-500','border-red-500');
+    if (b.id === 'ov-alert') {
+      b.classList.add('bg-white','text-red-600','border-red-200');
+    } else {
+      b.classList.add('bg-white','text-[#4F6354]','border-[#D4DCD5]');
+    }
+  });
+  const btn = document.getElementById(`ov-${f}`);
+  btn.classList.remove('bg-white','text-[#4F6354]','border-[#D4DCD5]','text-red-600','border-red-200');
+  if (f === 'alert') btn.classList.add('bg-red-500','text-white','border-red-500');
+  else btn.classList.add('bg-[#6C8673]','text-white','border-[#6C8673]');
+  renderOverview();
+}
+
+function renderOverview() {
+  let list = ITEMS;
+  let emptyMsg = '無符合條件的品項';
+
+  if (overviewFilter === 'counted') {
+    list = list.filter(i => {
+      const v = todayCounts[i.id];
+      return v !== undefined && v !== '' && v !== null;
+    });
+    emptyMsg = '今天還沒有盤點任何品項，到「今日盤點」分頁開始吧';
+  } else if (overviewFilter === 'alert') {
+    list = list.filter(i => {
+      const v = todayCounts[i.id]; if (v===''||v===null||v===undefined) return false;
+      const c = parseFloat(v); return !isNaN(c) && c < i.alert;
+    });
+    emptyMsg = '目前沒有低於安全量的品項 🎉';
+  }
+  // overviewFilter === 'all' → show every item in the master list
+
+  const tbody = document.getElementById('overview-body');
+  tbody.innerHTML = list.map(item => {
+    const sys = systemStockMap[item.id] ?? item.sys;
+    const raw = todayCounts[item.id];
+    const has = raw !== undefined && raw !== '' && raw !== null;
+    const c = parseFloat(raw);
+    let vt = '—', badge = `<span class="text-[10px] bg-[#F0F4F1] text-[#8FA192] px-2 py-0.5 rounded-full">未盤</span>`;
+    let vColor = 'text-[#8FA192]';
+    if (has && !isNaN(c)) {
+      const v = c - sys; const pct = Math.abs(v)/(sys||1);
+      vt = v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
+      if (c < item.alert) { badge = `<span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">缺貨</span>`; vColor='text-red-600 font-bold'; }
+      else if (pct > 0.05 && sys > 0) { badge = `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold">異常</span>`; vColor='text-orange-600 font-bold'; }
+      else { badge = `<span class="text-[10px] bg-[#DCE8DE] text-[#3F5144] px-2 py-0.5 rounded-full">正常</span>`; }
+    }
+    return `<tr class="hover:bg-[#F6F7F2] transition-colors">
+      <td class="px-4 py-3"><p class="font-semibold text-[#2D3A31] text-sm">${item.name}</p><p class="text-[10px] text-[#8FA192]">${item.unit}</p></td>
+      <td class="px-4 py-3 text-right text-[#687A6B] text-sm">${sys}</td>
+      <td class="px-4 py-3 text-right font-bold text-[#2D3A31] text-sm">${has && !isNaN(c) ? c : '—'}</td>
+      <td class="px-4 py-3 text-right text-sm ${vColor}">${vt}</td>
+      <td class="px-4 py-3 text-center">${badge}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" class="px-4 py-10 text-center text-[#8FA192] text-sm">${emptyMsg}</td></tr>`;
+
+  renderRestockLog();
+}
+
+function renderRestockLog() {
+  const section = document.getElementById('restock-log-section');
+  const list = document.getElementById('restock-log-list');
+  if (!todayRestockLogs || todayRestockLogs.length === 0) {
+    section.classList.add('hidden');
+    return;
+  }
+  section.classList.remove('hidden');
+  list.innerHTML = todayRestockLogs.map(log => {
+    const time = log.created_at ? new Date(log.created_at).toLocaleTimeString('zh-TW', { hour:'2-digit', minute:'2-digit' }) : '';
+    const qtyText = log.mode === 'add'
+      ? `<span class="text-[#6C8673] font-bold">+${log.qty}</span> ${log.unit}`
+      : `<span class="text-[#6C8673] font-bold">設定為 ${log.after_stock}</span> ${log.unit}`;
+    return `
+    <div class="flex items-center justify-between px-4 py-3">
+      <div>
+        <p class="font-semibold text-sm text-[#2D3A31]">${log.item_name}</p>
+        <p class="text-[10px] text-[#8FA192] mt-0.5">${log.before_stock} → ${log.after_stock} ${log.unit}${time ? ` · ${time}` : ''}</p>
+      </div>
+      <div class="text-right text-sm">${qtyText}</div>
+    </div>`;
+  }).join('');
+}
+
+function exportCSV() {
+  let csv = "\uFEFF品名,規格,標籤,帳面庫存,實際盤點,盤差,單位\n";
+  ITEMS.forEach(i => {
+    const sys = systemStockMap[i.id] ?? i.sys;
+    const raw = todayCounts[i.id];
+    const has = raw !== undefined && raw !== '' && raw !== null;
+    const c = parseFloat(raw);
+    const actual = has && !isNaN(c) ? c : '未盤點';
+    const v = has && !isNaN(c) ? (c - sys).toFixed(1) : '';
+    csv += `${i.name},${i.spec||''},${i.tag},${sys},${actual},${v},${i.unit}\n`;
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8;' }));
+  a.download = `庫存總表_${TODAY}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ─── HISTORY CALENDAR ───
+let calMonth = new Date();
+let selectedHistDate = null;
+
+function renderCalendar() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const firstDay = new Date(y,m,1).getDay();
+  const daysIn = new Date(y,m+1,0).getDate();
+  const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  let cells = '';
+  for (let i = 0; i < firstDay; i++) cells += `<div></div>`;
+  for (let d = 1; d <= daysIn; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const has = historyData[ds] && Object.keys(historyData[ds]).some(k => historyData[ds][k] !== null);
+    const isToday = ds === TODAY, isSel = ds === selectedHistDate;
+    cells += `<div onclick="${has ? `selectHistDate('${ds}')` : ''}" class="h-10 flex flex-col items-center justify-center rounded-xl transition-all ${has?'cursor-pointer hover:bg-[#F0F4F1]':''} ${isSel?'bg-[#6C8673] text-white':''} ${isToday&&!isSel?'bg-[#F0F4F1]':''}">
+      <span class="text-sm font-medium ${isToday&&!isSel?'text-[#6C8673] font-bold':has&&!isSel?'text-[#2D3A31]':'text-[#C3D0C6]'}">${d}</span>
+      ${has ? `<div class="w-1.5 h-1.5 rounded-full mt-0.5 ${isSel?'bg-white':'bg-[#6C8673]'}"></div>` : ''}
+    </div>`;
+  }
+  document.getElementById('calendar-wrap').innerHTML = `
+    <div class="flex justify-between items-center mb-4">
+      <button onclick="calNavMonth(-1)" class="p-2 rounded-xl hover:bg-[#F0F4F1] transition-all text-[#4F6354]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h3 class="font-bold text-[#2D3A31]">${y}年 ${monthNames[m]}</h3>
+      <button onclick="calNavMonth(1)" class="p-2 rounded-xl hover:bg-[#F0F4F1] transition-all text-[#4F6354]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+      ${['日','一','二','三','四','五','六'].map(d=>`<div class="text-xs font-medium text-[#8FA192] py-1">${d}</div>`).join('')}
+    </div>
+    <div class="grid grid-cols-7 gap-1">${cells}</div>
+    ${!selectedHistDate ? `<p class="text-center text-sm text-[#8FA192] mt-4">點選有橘點的日期查看明細</p>` : ''}
+  `;
+}
+
+function calNavMonth(delta) {
+  calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
+  renderCalendar();
+}
+
+function selectHistDate(ds) {
+  selectedHistDate = ds;
+  renderCalendar();
+  const dayData = historyData[ds] || {};
+  const items = ITEMS.filter(i => dayData[i.id] !== undefined && dayData[i.id] !== null);
+  document.getElementById('history-detail-title').textContent = `${ds} 盤點明細`;
+  document.getElementById('history-detail-body').innerHTML = items.length === 0 
+    ? `<p class="px-5 py-6 text-center text-[#8FA192] text-sm">無盤點資料</p>`
+    : items.map(i => {
+        const c = parseFloat(dayData[i.id]);
+        const isLow = !isNaN(c) && c < i.alert;
+        return `<div class="flex justify-between items-center px-5 py-3 hover:bg-[#F6F7F2] transition-all">
+          <div><p class="font-semibold text-sm text-[#2D3A31]">${i.name}</p><p class="text-[10px] text-[#8FA192]">安全 ${i.alert} ${i.unit}</p></div>
+          <div class="text-right">
+            <p class="font-bold ${isLow?'text-red-600':'text-[#6C8673]'}">${dayData[i.id]} <span class="text-xs font-normal text-[#8FA192]">${i.unit}</span></p>
+            ${isLow?`<p class="text-[10px] text-red-500">需叫貨</p>`:''}
+          </div>
+        </div>`;
+      }).join('');
+  document.getElementById('history-detail').classList.remove('hidden');
+}
+
+// ─── RESTOCK ───
+function openRestock() {
+  rsSelectedItem = null; rsMode = 'add';
+  document.getElementById('restock-search').value = '';
+  document.getElementById('restock-form').classList.add('hidden');
+  document.getElementById('rs-confirm-btn').disabled = true;
+  document.getElementById('rs-qty').value = '';
+  document.getElementById('rs-preview').classList.add('hidden');
+  filterRestockItems();
+  document.getElementById('restock-modal').showModal();
+}
+
+function filterRestockItems() {
+  const q = document.getElementById('restock-search').value.toLowerCase();
+
+  if (!q) {
+    // 預設將「今日需叫貨」品項排在最上方，其餘依原順序接續
+    const alertItems = ITEMS.filter(i => {
+      const v = todayCounts[i.id]; if (v===''||v===null||v===undefined) return false;
+      const c = parseFloat(v); return !isNaN(c) && c < i.alert;
+    });
+    const alertIds = new Set(alertItems.map(i => i.id));
+    const rest = ITEMS.filter(i => !alertIds.has(i.id));
+    const ordered = [...alertItems, ...rest].slice(0, 20);
+
+    document.getElementById('restock-list').innerHTML = ordered.map(i => {
+      const isAlert = alertIds.has(i.id);
+      return `
+      <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[#F0F4F1] cursor-pointer flex justify-between items-center transition-all border-b border-[#F6F7F2] last:border-0">
+        <span class="font-semibold text-sm text-[#2D3A31] flex items-center gap-1.5">${i.name}${isAlert ? '<span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold">需叫貨</span>' : ''}</span>
+        <span class="text-xs text-[#8FA192]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
+      </div>`;
+    }).join('') || `<p class="px-4 py-4 text-center text-sm text-[#8FA192]">找不到品項</p>`;
+    return;
+  }
+
+  const list = ITEMS.filter(i => i.name.toLowerCase().includes(q));
+  document.getElementById('restock-list').innerHTML = list.slice(0,20).map(i => `
+    <div onclick="selectRestockItem(${i.id})" class="px-4 py-2.5 hover:bg-[#F0F4F1] cursor-pointer flex justify-between items-center transition-all border-b border-[#F6F7F2] last:border-0">
+      <span class="font-semibold text-sm text-[#2D3A31]">${i.name}</span>
+      <span class="text-xs text-[#8FA192]">${systemStockMap[i.id] ?? i.sys} ${i.unit}</span>
+    </div>
+  `).join('') || `<p class="px-4 py-4 text-center text-sm text-[#8FA192]">找不到品項</p>`;
+}
+
+function selectRestockItem(id) {
+  rsSelectedItem = ITEMS.find(i => i.id === id);
+  rsMode = 'add';
+  document.getElementById('restock-search').value = rsSelectedItem.name;
+  document.getElementById('restock-list').innerHTML = '';
+  document.getElementById('rs-name').textContent = rsSelectedItem.name;
+  document.getElementById('rs-cur').textContent = `${systemStockMap[rsSelectedItem.id] ?? rsSelectedItem.sys} ${rsSelectedItem.unit}`;
+  document.getElementById('rs-qty').value = '';
+  document.getElementById('rs-qty-label').textContent = '本次進貨數量';
+  document.getElementById('rs-qty').placeholder = '輸入數量...';
+  document.getElementById('rs-mode-toggle').textContent = '✎ 帳面數字不對？直接設定正確庫存';
+  document.getElementById('rs-preview').classList.add('hidden');
+  document.getElementById('restock-form').classList.remove('hidden');
+  document.getElementById('rs-confirm-btn').disabled = true;
+}
+
+function toggleRsMode() {
+  rsMode = rsMode === 'add' ? 'set' : 'add';
+  if (rsMode === 'set') {
+    document.getElementById('rs-qty-label').textContent = '設定為帳面庫存';
+    document.getElementById('rs-qty').placeholder = '輸入正確庫存數量...';
+    document.getElementById('rs-mode-toggle').textContent = '← 改回「加入進貨量」';
+  } else {
+    document.getElementById('rs-qty-label').textContent = '本次進貨數量';
+    document.getElementById('rs-qty').placeholder = '輸入數量...';
+    document.getElementById('rs-mode-toggle').textContent = '✎ 帳面數字不對？直接設定正確庫存';
+  }
+  document.getElementById('rs-qty').value = '';
+  document.getElementById('rs-preview').classList.add('hidden');
+  document.getElementById('rs-confirm-btn').disabled = true;
+}
+
+function updateRsPreview() {
+  if (!rsSelectedItem) return;
+  const cur = systemStockMap[rsSelectedItem.id] ?? rsSelectedItem.sys;
+  const qty = parseFloat(document.getElementById('rs-qty').value);
+  if (isNaN(qty)) { document.getElementById('rs-preview').classList.add('hidden'); document.getElementById('rs-confirm-btn').disabled=true; return; }
+  const next = rsMode==='add' ? cur + qty : qty;
+  document.getElementById('rs-preview').textContent = `更新後：${cur} → ${next.toFixed(2)} ${rsSelectedItem.unit}`;
+  document.getElementById('rs-preview').classList.remove('hidden');
+  document.getElementById('rs-confirm-btn').disabled = false;
+}
+
+async function confirmRestock() {
+  if (!rsSelectedItem) return;
+  const cur = systemStockMap[rsSelectedItem.id] ?? rsSelectedItem.sys;
+  const qty = parseFloat(document.getElementById('rs-qty').value);
+  if (isNaN(qty)) return;
+  const next = rsMode==='add' ? parseFloat((cur + qty).toFixed(2)) : qty;
+  const itemName = rsSelectedItem.name, itemUnit = rsSelectedItem.unit;
+  const nowIso = new Date().toISOString();
+  try {
+    const { error } = await sb.from('system_stock_overrides').upsert({ item_id: rsSelectedItem.id, stock_value: next, updated_at: nowIso }, { onConflict: 'item_id' });
+    if (error) throw error;
+    systemStockMap[rsSelectedItem.id] = next;
+
+    // 寫入進貨紀錄
+    const logEntry = {
+      record_date: TODAY,
+      item_id: rsSelectedItem.id,
+      item_name: itemName,
+      mode: rsMode,
+      qty: rsMode === 'add' ? qty : null,
+      before_stock: cur,
+      after_stock: next,
+      unit: itemUnit,
+      created_at: nowIso,
+    };
+    const { error: logError } = await sb.from('restock_logs').insert(logEntry);
+    if (!logError) todayRestockLogs.push(logEntry);
+
+    document.getElementById('restock-modal').close();
+    document.getElementById('restock-success-msg').textContent = `「${itemName}」帳面已更新為 ${next} ${itemUnit}`;
+    document.getElementById('restock-success-modal').showModal();
+    if (currentTab === 'overview') renderOverview();
+    if (currentTab === 'count') renderItemList();
+  } catch(e) {
+    showToast('更新失敗，請稍後再試', true);
+  }
+}
+
+// ─── MENU ───
+function toggleMenu() { document.getElementById('nav-menu').classList.toggle('hidden'); }
+document.addEventListener('click', e => {
+  const menu = document.getElementById('nav-menu');
+  if (!menu.contains(e.target) && !e.target.closest('button[onclick="toggleMenu()"]')) menu.classList.add('hidden');
+});
+
+// ─── TOAST ───
+function showToast(msg, isWarn=false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = `fixed top-6 left-1/2 -translate-x-1/2 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium transition-all duration-300 z-[1000] ${isWarn?'bg-orange-500/95':'bg-[#3F5144]/95'}`;
+  t.classList.remove('opacity-0','-translate-y-4','pointer-events-none');
+  setTimeout(()=>t.classList.add('opacity-0','-translate-y-4','pointer-events-none'), 3000);
+}
+
+// ─── GO ───
+init();
+</script>
 </body>
 </html>

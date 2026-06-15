@@ -102,13 +102,15 @@
         }
 
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: var(--sage); color: #fff; font-size: 15px; font-weight: 700; padding: 10px 12px; letter-spacing: 1px; border: 1px solid var(--border); white-space: nowrap; text-align: center; }
-        td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: middle; transition: background 0.2s; font-size: 15px; text-align: center; }
+        
+        /* 縮小電腦版標題與內文字體、間距 */
+        th { background: var(--sage); color: #fff; font-size: 14px; font-weight: 700; padding: 8px 10px; letter-spacing: 1px; border: 1px solid var(--border); white-space: nowrap; text-align: center; }
+        td { padding: 6px 10px; border: 1px solid var(--border); vertical-align: middle; transition: background 0.2s; font-size: 14px; text-align: center; }
 
         /* 可編輯區域樣式 */
         .editable {
-            min-height: 30px; border-radius: 6px; padding: 6px; outline: none; transition: all 0.2s;
-            white-space: pre-wrap; word-break: break-word; line-height: 1.4; background: var(--cream); border: 1px solid transparent;
+            min-height: 26px; border-radius: 6px; padding: 4px 6px; outline: none; transition: all 0.2s;
+            white-space: pre-wrap; word-break: break-word; line-height: 1.3; background: var(--cream); border: 1px solid transparent;
         }
         .editable:hover { border-color: var(--border-dark); background: #fff; }
         .editable:focus { background-color: #fff; border-color: var(--sage); box-shadow: inset 0 0 0 1.5px var(--sage-light); }
@@ -120,7 +122,7 @@
         /* 底部滑動按鈕基礎設定 */
         .view-btn { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
 
-        /* 手機響應式優化 (Card View) */
+        /* 手機響應式優化 (Card View) - 縮小字體與間距 */
         @media screen and (max-width: 900px) {
             .page-header { padding: 24px 12px 12px; gap: 16px; }
             .modern-select-centered { font-size: 22px; }
@@ -128,25 +130,25 @@
             table { min-width: auto; }
             thead { display: none; }
             tr { 
-                display: flex; flex-direction: column; padding: 14px 12px; background: white !important;
-                border-radius: 12px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border) !important; position: relative;
+                display: flex; flex-direction: column; padding: 10px 10px; background: white !important;
+                border-radius: 12px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border) !important; position: relative;
             }
             td { 
-                padding: 12px 4px; border: none; border-bottom: 1px solid var(--border); display: grid; 
-                grid-template-columns: 85px 1fr; align-items: center; gap: 8px; font-size: 17px; 
+                padding: 8px 4px; border: none; border-bottom: 1px solid var(--border); display: grid; 
+                grid-template-columns: 85px 1fr; align-items: center; gap: 8px; font-size: 15px; 
             }
-            td:last-child { border-bottom: none; padding-bottom: 4px; }
+            td:last-child { border-bottom: none; padding-bottom: 2px; }
             
             /* 手機版 第一排 (DATE 標籤與置中日期) */
             td:first-child {
-                font-size: 18px; font-weight: 700; color: var(--sage); border-bottom: 2px solid var(--border);
-                padding-bottom: 12px; margin-bottom: 6px; 
+                font-size: 16px; font-weight: 700; color: var(--sage); border-bottom: 2px solid var(--border);
+                padding-bottom: 8px; margin-bottom: 4px; 
                 display: grid; grid-template-columns: 80px 1fr; align-items: center;
                 background-color: transparent !important;
             }
             td::before { 
                 content: attr(data-label); font-weight: 600; color: var(--ink-muted); 
-                font-size: 14px; text-transform: uppercase; text-align: left; white-space: nowrap; 
+                font-size: 13px; text-transform: uppercase; text-align: left; white-space: nowrap; 
             }
             /* 第一排內的自定義排版 */
             .mobile-date-container {
@@ -156,8 +158,8 @@
             td[data-label="Day"], td[data-label="星期"] { display: none; }
             
             .editable { 
-                width: 100%; min-height: 28px; text-align: center; background: transparent; border: none; 
-                padding: 4px; box-shadow: none; font-weight: 600; font-size: 17px;
+                width: 100%; min-height: 24px; text-align: center; background: transparent; border: none; 
+                padding: 2px; box-shadow: none; font-weight: 600; font-size: 15px;
             }
             .editable:focus { background: #fff; box-shadow: inset 0 0 0 1.5px var(--sage-light); border-radius: 6px; }
             .is-today { border: 2px solid var(--sage) !important; }
@@ -181,7 +183,6 @@
 </head>
 <body>
 
-    <!-- ── 頂部導覽列 (透明選單按鈕 + 標題) ── -->
     <div class="topbar no-print">
         <div class="topbar-left relative">
             <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
@@ -192,7 +193,6 @@
                 <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">值班管理系統</h1>
             </div>
             
-            <!-- 全域下拉選單 -->
             <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
                 <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
                     <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
@@ -216,7 +216,6 @@
         </div>
     </div>
 
-    <!-- ── 頁首區塊 ── -->
     <header class="page-header no-print">
         <div class="text-center space-y-1 w-full">
             <h2 class="text-[10px] md:text-xs font-bold tracking-[0.3em] text-[var(--ink-muted)] uppercase mb-1">2026 Shift Schedule</h2>
@@ -259,7 +258,6 @@
         </div>
     </header>
 
-    <!-- ── 主要表格區 ── -->
     <main class="max-w-6xl mx-auto w-full flex-grow px-2 md:px-6">
         <div id="capture-area" class="sage-card"> 
             <table id="mainTable">
@@ -289,10 +287,8 @@
         </div>
     </main>
 
-    <!-- 底部橫向滑動視圖切換器 -->
     <div class="fixed-bottom-bar fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 no-print">
         <div class="flex p-1 bg-white/95 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-[var(--border)] relative w-[240px] h-[44px]">
-            <!-- 滑動底色塊 -->
             <div id="view-slider" class="absolute top-1 bottom-1 left-1 bg-[var(--sage)] rounded-lg transition-transform duration-300 ease-out shadow-sm" style="width: calc(33.333% - 2.66px); transform: translateX(0);"></div>
             
             <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm transition-colors duration-300 whitespace-nowrap text-white" onclick="switchView('day', 0)" id="btn-day">今日</button>
@@ -301,7 +297,6 @@
         </div>
     </div>
 
-    <!-- 統計 Modal -->
     <div id="statsModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-[var(--ink)]/50 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto pointer-events-none">
@@ -392,7 +387,6 @@
         </div>
     </div>
 
-    <!-- 休假 Modal -->
     <div id="leaveScheduleModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-[var(--ink)]/60 backdrop-blur-sm transition-opacity" onclick="closeLeaveSchedule()"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto pointer-events-none flex min-h-full items-center justify-center p-4 text-center sm:p-0">
@@ -417,7 +411,6 @@
         </div>
     </div>
 
-    <!-- 崗位表 Modal -->
     <div id="stationModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-[var(--ink)]/60 backdrop-blur-sm transition-opacity" onclick="closeStationModal()"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto pointer-events-none flex min-h-full items-center justify-center p-4 text-center sm:p-0">
@@ -438,7 +431,6 @@
         </div>
     </div>
 
-    <!-- PIN 碼解鎖 Modal -->
     <div id="pinModal" class="fixed inset-0 z-[200] hidden">
         <div class="fixed inset-0 bg-[var(--ink)]/40 backdrop-blur-sm" onclick="closePinModal()"></div>
         <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
@@ -457,10 +449,8 @@
         </div>
     </div>
 
-    <!-- Toast -->
     <div id="toast">已儲存</div>
 
-    <!-- 快速輸入面板 (Sage Theme) -->
     <div id="quick-input-panel" class="hidden absolute z-[2000] pointer-events-auto">
         <div class="flex justify-between items-center mb-3 pb-2 border-b border-[var(--border)]">
             <span class="text-xs font-bold text-[var(--ink-muted)]">快速輸入面板</span>
@@ -642,15 +632,13 @@
                 
                 tr.innerHTML = `
                     <td data-label="DATE" data-day="${i}">
-                        <!-- 手機版 排版 -->
                         <div class="mobile-date-container md:hidden">
-                            <span class="font-bold text-[var(--ink)] text-[22px] leading-none">${currentMonth + 1}/${i}</span>
-                            <span class="text-base text-[var(--ink-muted)] font-medium leading-none ml-2">${weekNamesZh[dayIdx]}</span>
-                            ${isTodayRow ? '<span class="today-badge text-[11px] bg-[var(--sage)] text-white px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm">TODAY</span>' : ''}
+                            <span class="font-bold text-[var(--ink)] text-[20px] leading-none">${currentMonth + 1}/${i}</span>
+                            <span class="text-sm text-[var(--ink-muted)] font-medium leading-none ml-2">${weekNamesZh[dayIdx]}</span>
+                            ${isTodayRow ? '<span class="today-badge text-[10px] bg-[var(--sage)] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm">TODAY</span>' : ''}
                         </div>
-                        <!-- 電腦版 排版 -->
                         <div class="hidden md:flex items-center justify-center w-full relative">
-                            <span class="font-bold text-[var(--ink)] text-[16px] leading-none">${currentMonth + 1}/${i}</span>
+                            <span class="font-bold text-[var(--ink)] text-[15px] leading-none">${currentMonth + 1}/${i}</span>
                         </div>
                     </td>
                     <td data-label="Day" data-day="${i}" class="md:text-center text-[var(--ink-muted)] font-medium hidden md:table-cell">${weekNames[dayIdx]}</td>
@@ -677,7 +665,7 @@
                         <div inputmode="none" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-[var(--ink-soft)]" oninput="updateData(${i}, 'clean', this.innerText, this)">${dayData.clean || ''}</div>
                     </td>
                     <td data-label="備註">
-                        <div data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-[var(--ink-muted)] text-base md:text-sm" oninput="updateData(${i}, 'notes', this.innerText, this)">${dayData.notes || ''}</div>
+                        <div data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-[var(--ink-muted)] text-sm md:text-xs" oninput="updateData(${i}, 'notes', this.innerText, this)">${dayData.notes || ''}</div>
                     </td>
                 `;
                 scheduleBody.appendChild(tr);

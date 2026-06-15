@@ -11,6 +11,22 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
+    :root {
+      /* 績效評分系統的質感莫蘭迪配色 */
+      --sage: #6C8673;        /* 主色系 (深綠) */
+      --sage-light: #8FA192;  /* 次要色系 (淺綠灰) */
+      --sage-pale: #F0F4F1;   /* 極淺底色 */
+      --olive: #5A705F;       /* Hover 加深色 */
+      --cream: #F6F7F2;       /* 網頁整體背景色 */
+      --warm-white: #ffffff;  /* 卡片純白 */
+      --ink: #2D3A31;         /* 主要深色文字 */
+      --ink-soft: #4F6354;    /* 次要深色文字 */
+      --ink-muted: #8FA192;   /* 提示文字 / 圖示顏色 */
+      --accent-red: #c0392b;  /* 警告/休假紅 */
+      --border: #E5EBE6;      /* 淺邊框 */
+      --border-dark: #D4DCD5; /* 深邊框 */
+    }
+
     body {
       background-color: #F6F7F2; 
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -95,27 +111,43 @@
   <nav class="sticky top-0 z-50 flex flex-col shadow-sm">
     <div class="bg-[#6C8673]">
       <div class="max-w-6xl mx-auto px-4 md:px-6 py-4">
-        <div class="flex items-center space-x-4 md:space-x-5">
+        <div class="flex items-center justify-between">
           
-          <div class="relative flex items-center">
-            <button onclick="toggleGlobalMenu()" class="flex items-center justify-center p-1 text-white hover:text-white/80 transition-all focus:outline-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
-              </svg>
-            </button>
+          <div class="flex items-center space-x-4 md:space-x-5">
+            <div class="relative flex items-center">
+              <button onclick="toggleGlobalMenu()" class="flex items-center justify-center p-1 text-white hover:text-white/80 transition-all focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+                </svg>
+              </button>
+              
+              <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
+                <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                    <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
+                </a>
+                <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                    <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算
+                </a>
+                <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                    <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
+                </a>
+                <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
+                </a>
+                <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
+                </a>
+              </div>
+            </div>
             
-            <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-[#E5EBE6] overflow-hidden transition-all z-[999]">
-              <a href="index.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">值班系統</a>
-              <a href="cash.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">每週金庫結算</a>
-              <a href="inventory.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">庫存盤點</a>
-              <a href="clean.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">清潔與值班管理</a>
-              <a href="performance.html" class="block px-4 py-3 text-sm font-bold text-[#3F5144] hover:bg-[#F0F4F1] border-b border-[#E5EBE6]">績效評估系統</a>
+            <div class="flex items-center space-x-2.5 md:space-x-3 select-none">
+              <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+              <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
             </div>
           </div>
-          
-          <div class="flex items-center space-x-2.5 md:space-x-3 select-none">
-            <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
-            <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
+
+          <div class="hidden md:flex items-center gap-2 text-xs text-white opacity-90">
+            <i data-lucide="cloud" class="w-4 h-4"></i><span id="statusText">System Ready</span>
           </div>
 
         </div>
