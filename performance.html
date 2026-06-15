@@ -674,6 +674,7 @@
 
     function adjustScore(stationId, cId, delta) {
       if (!currentEvalData[currentSelectedEmp][stationId]) return;
+      delete currentEvalData[currentSelectedEmp].precalculatedScore;  // 新增
       let currentScore = currentEvalData[currentSelectedEmp][stationId][cId].score;
       let newScore = Math.min(10, Math.max(1, currentScore + delta));
       currentEvalData[currentSelectedEmp][stationId][cId].score = newScore;
@@ -684,6 +685,7 @@
 
     function updateScore(stationId, cId, val) {
       if (!currentEvalData[currentSelectedEmp][stationId]) return;
+      delete currentEvalData[currentSelectedEmp].precalculatedScore;  // 新增
       currentEvalData[currentSelectedEmp][stationId][cId].score = parseInt(val, 10);
       document.getElementById(`score-display-${cId}`).innerText = val;
       updateTotalAndSuggestion();
