@@ -166,6 +166,12 @@
     </div>
 
     <div id="item-list" class="space-y-2"></div>
+
+    <div id="save-section" class="mt-8 flex justify-end hidden">
+      <button onclick="saveInventoryData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl shadow-lg shadow-[#6C8673]/20 transition-all active:scale-95 font-medium tracking-wide">
+        <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存盤點紀錄
+      </button>
+    </div>
   </div>
 
   <div id="section-history" class="hidden">
@@ -294,6 +300,27 @@
     <h3 class="text-lg font-bold text-[var(--ink)] mb-1">更新成功</h3>
     <p id="restock-success-msg" class="text-sm text-[#687A6B] mb-5"></p>
     <button onclick="document.getElementById('restock-success-modal').close()" class="w-full py-3 bg-[var(--sage)] text-white rounded-xl font-semibold hover:bg-[var(--olive)] transition-all">確認</button>
+  </div>
+</dialog>
+<dialog id="status-modal" class="backdrop:bg-[#2D3A31]/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-[#E5EBE6] w-[90%] max-w-sm">
+  <div class="p-8 text-center">
+    <div id="modal-loading" class="hidden">
+      <div class="w-16 h-16 border-4 border-[#D4DCD5] border-t-[#6C8673] rounded-full animate-spin mx-auto mb-4"></div>
+      <h3 class="text-xl font-bold text-[#2D3A31] mb-2">同步中</h3>
+      <p class="text-[#687A6B] text-sm">正在將資料傳送至雲端，請稍候...</p>
+    </div>
+
+    <div id="modal-success" class="hidden">
+      <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="check" class="w-8 h-8 text-emerald-600"></i>
+      </div>
+      <h3 class="text-xl font-bold text-[#2D3A31] mb-2">儲存成功</h3>
+      <p class="text-[#687A6B] text-sm mb-6">今日的盤點紀錄已成功上傳。</p>
+      <button onclick="document.getElementById('status-modal').close()" 
+              class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-medium hover:bg-[#5A705F] transition-all">
+        確認
+      </button>
+    </div>
   </div>
 </dialog>
 
@@ -459,27 +486,6 @@ async function quickLoad(tag) {
   const tagItems = ITEMS.filter(i => i.tag === tag);
   const newIds = tagItems.filter(i => todayCounts[i.id] === undefined).map(i => i.id);
 
-  if (loadedTags.has(tag) && newIds.length === 0) {
-    showToast(`「${tag}」盤點表已載入`);
-    return;
-  }
-
-  if (loadedTags.has(tag)) {
-    showToast(`補入 ${newIds.length} 項新品項`);
-  } else {
-    showToast(`已載入「${tag}」盤點表`);
-    loadedTags.add(tag);
-  }
-
-  newIds.forEach(id => { todayCounts[id] = ''; });
-
-  if (newIds.length > 0) {
-    await sb.from('inventory_records').upsert(
-      newIds.map(id => ({ record_date: TODAY, item_id: id, actual_count: null })),
-      { onConflict: 'record_date, item_id' }
-    );
-  }
-
   document.getElementById('quick-load-wrap').classList.add('hidden');
   document.getElementById('progress-bar-wrap').classList.remove('hidden');
   renderItemList();
@@ -518,6 +524,16 @@ function renderItemList() {
   });
 
   container.innerHTML = html || `<div class="text-center py-12 text-[var(--ink-muted)]">🎉 全部品項盤點完成！</div>`;
+
+  // === 新增：控制儲存按鈕的顯示與隱藏 ===
+  const saveSection = document.getElementById('save-section');
+  if (saveSection) {
+    if (loadedItems.length > 0) {
+      saveSection.classList.remove('hidden');
+    } else {
+      saveSection.classList.add('hidden');
+    }
+  }
 }
 
 function renderCard(item) {
@@ -669,7 +685,7 @@ function handleKey(k) {
   }
 }
 
-async function saveCount(id, val) {
+function saveCount(id, val) {
   todayCounts[id] = val;
   updateProgress();
   updateKeypadRemaining();
@@ -684,7 +700,51 @@ async function saveCount(id, val) {
   }
   updateOrderBadge();
   const count = val === '' ? null : parseFloat(val);
-  await sb.from('inventory_records').upsert({ record_date: TODAY, item_id: id, actual_count: isNaN(count) ? null : count }, { onConflict: 'record_date, item_id' });
+}
+
+async function saveInventoryData() {
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  
+  // 組合要上傳的資料
+  const records = loadedItems.map(item => {
+    const val = todayCounts[item.id];
+    const count = (val === '' || val === null || val === undefined) ? null : parseFloat(val);
+    return {
+      record_date: TODAY,
+      item_id: item.id,
+      actual_count: isNaN(count) ? null : count
+    };
+  });
+
+  if (records.length === 0) {
+    showToast('目前沒有可儲存的盤點資料');
+    return;
+  }
+
+  // 叫出彈出視窗與 loading 動畫
+  const modal = document.getElementById('status-modal');
+  const loading = document.getElementById('modal-loading');
+  const success = document.getElementById('modal-success');
+  
+  modal.showModal();
+  loading.classList.remove('hidden');
+  success.classList.add('hidden');
+
+  try {
+    // 一次性將所有資料送到 Supabase
+    const { error } = await sb.from('inventory_records').upsert(records, { onConflict: 'record_date, item_id' });
+    if (error) throw error;
+    
+    // 成功後切換視窗狀態
+    loading.classList.add('hidden');
+    success.classList.remove('hidden');
+    lucide.createIcons(); // 確保成功打勾圖示正確渲染
+  } catch (error) {
+    loading.classList.add('hidden');
+    modal.close();
+    showToast('網路連線錯誤，儲存失敗', true);
+    console.error('儲存失敗:', error);
+  }
 }
 
 function updateProgress() {
