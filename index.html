@@ -1020,14 +1020,27 @@
 
         function showQuickInput(cell) {
             const panel = document.getElementById('quick-input-panel');
+            // 先解除 hidden 才能正確量到高度/寬度
+            panel.classList.remove('hidden');
+
             const rect = cell.getBoundingClientRect();
-            let topPos = rect.bottom + 5;
-            let leftPos = rect.left;
-            if (topPos + 250 > window.innerHeight) topPos = rect.top - panel.offsetHeight - 5; 
-            if (leftPos + 280 > window.innerWidth) leftPos = window.innerWidth - 290; 
+            const panelHeight = panel.offsetHeight || 250;
+            const panelWidth = panel.offsetWidth || 280;
+
+            // 加上 scrollY / scrollX，因為面板是 absolute（相對文件），rect 是相對視窗
+            let topPos = rect.bottom + window.scrollY + 5;
+            let leftPos = rect.left + window.scrollX;
+
+            if (rect.bottom + panelHeight + 5 > window.innerHeight) {
+                topPos = rect.top + window.scrollY - panelHeight - 5;
+            }
+            if (rect.left + panelWidth > window.innerWidth) {
+                leftPos = window.innerWidth + window.scrollX - panelWidth - 10;
+            }
+            if (leftPos < window.scrollX + 10) leftPos = window.scrollX + 10;
+
             panel.style.top = `${topPos}px`;
             panel.style.left = `${leftPos}px`;
-            panel.classList.remove('hidden');
             lucide.createIcons();
         }
 
