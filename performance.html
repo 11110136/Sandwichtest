@@ -460,6 +460,7 @@
       }
 
       currentSelectedEmp = EMPLOYEES[0].name;
+      await fetchTodayHistory();   // 新增：抓雲端今日紀錄並合併進 currentEvalData / cleaningData
       loadDataFromStorage();
       renderEmployeeList();
       selectEmployee(currentSelectedEmp);
