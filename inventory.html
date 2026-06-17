@@ -485,6 +485,8 @@ function updateTabLine() {
 async function quickLoad(tag) {
   const tagItems = ITEMS.filter(i => i.tag === tag);
   const newIds = tagItems.filter(i => todayCounts[i.id] === undefined).map(i => i.id);
+  newIds.forEach(id => { todayCounts[id] = ''; });
+  loadedTags.add(tag);
 
   document.getElementById('quick-load-wrap').classList.add('hidden');
   document.getElementById('progress-bar-wrap').classList.remove('hidden');
