@@ -12,48 +12,37 @@
   
   <style>
     :root {
-      /* 績效評分系統的質感莫蘭迪配色 */
-      --sage: #6C8673;        /* 主色系 (深綠) */
-      --sage-light: #8FA192;  /* 次要色系 (淺綠灰) */
-      --sage-pale: #F0F4F1;   /* 極淺底色 */
-      --olive: #5A705F;       /* Hover 加深色 */
-      --cream: #F6F7F2;       /* 網頁整體背景色 */
-      --warm-white: #ffffff;  /* 卡片純白 */
-      --ink: #2D3A31;         /* 主要深色文字 */
-      --ink-soft: #4F6354;    /* 次要深色文字 */
-      --ink-muted: #8FA192;   /* 提示文字 / 圖示顏色 */
-      --accent-red: #c0392b;  /* 警告/休假紅 */
-      --border: #E5EBE6;      /* 淺邊框 */
-      --border-dark: #D4DCD5; /* 深邊框 */
+      --sage: #6C8673;
+      --sage-light: #8FA192;
+      --sage-pale: #F0F4F1;
+      --olive: #5A705F;
+      --cream: #F6F7F2;
+      --warm-white: #ffffff;
+      --ink: #2D3A31;
+      --ink-soft: #4F6354;
+      --ink-muted: #8FA192;
+      --accent-red: #c0392b;
+      --border: #E5EBE6;
+      --border-dark: #D4DCD5;
     }
-
     body {
-      background-color: var(--cream); 
+      background-color: var(--cream);
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    
-    /* ── TOP NAV (從 index.html 移植) ── */
     .topbar {
-        background: var(--sage);
-        color: #fff;
-        padding: 0 16px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      background: var(--sage); color: #fff; padding: 0 16px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
     }
     .topbar-left { display: flex; align-items: center; gap: 8px; }
-    .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px;}
-    
+    .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px; }
     .nav-btn {
-        display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
-        background: transparent; border: none; outline: none;
-        cursor: pointer; color: white; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; background: transparent; border: none; outline: none;
+      cursor: pointer; color: white; transition: all 0.2s;
     }
-    .nav-btn:hover { color: rgba(255, 255, 255, 0.8); transform: scale(1.05); }
+    .nav-btn:hover { color: rgba(255,255,255,0.8); transform: scale(1.05); }
     .nav-btn:active { transform: scale(0.95); }
-
     input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
@@ -64,16 +53,16 @@
     input[type=range]::-webkit-slider-runnable-track {
       width: 100%; height: 8px; cursor: pointer; background: #D4DCD5; border-radius: 4px;
     }
-
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* 星星評分 */
+    @keyframes pulse-border {
+      0%,100% { border-color: #FCD34D; }
+      50%      { border-color: #F59E0B; }
+    }
     .star-rating { display: flex; gap: 6px; }
     .star-btn {
       cursor: pointer; color: #D4DCD5;
@@ -81,8 +70,6 @@
       background: none; border: none; padding: 0;
     }
     .star-btn:hover, .star-btn.active { color: #f59e0b; transform: scale(1.15); }
-
-    /* 等級徽章 */
     .grade-badge {
       display: inline-flex; align-items: center; justify-content: center;
       width: 32px; height: 32px; border-radius: 8px;
@@ -93,76 +80,106 @@
     .grade-B { background: #dbeafe; color: #1e40af; }
     .grade-C { background: #f3e8ff; color: #6b21a8; }
     .grade-D { background: #fee2e2; color: #991b1b; }
-
-    /* 崗位選擇按鈕 */
     .station-btn {
       display: inline-flex; align-items: center; justify-content: center;
       gap: 8px; padding: 8px 16px 8px 8px; border-radius: 999px; border: 1.5px solid #D4DCD5;
-      background: white; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      background: white; cursor: pointer; transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
       font-size: 14px; font-weight: 600; color: #4F6354; letter-spacing: 0.025em;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .station-btn:hover { 
-      border-color: #A3B4A5; background: #F8FAF8; transform: translateY(-1px);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    .station-btn.active {
-      border-color: #6C8673; background: #6C8673; color: white;
-      box-shadow: 0 4px 12px rgba(108, 134, 115, 0.2);
-    }
+    .station-btn:hover { border-color:#A3B4A5; background:#F8FAF8; transform:translateY(-1px); box-shadow:0 4px 6px rgba(0,0,0,0.05); }
+    .station-btn.active { border-color:#6C8673; background:#6C8673; color:white; box-shadow:0 4px 12px rgba(108,134,115,0.2); }
     .station-btn .icon-wrapper {
       display: flex; align-items: center; justify-content: center;
-      width: 28px; height: 28px; border-radius: 50%;
-      background: #F0F4F1; transition: all 0.2s;
+      width: 28px; height: 28px; border-radius: 50%; background: #F0F4F1; transition: all 0.2s;
     }
-    .station-btn.active .icon-wrapper {
-      background: white; 
+    .station-btn.active .icon-wrapper { background: white; }
+    dialog { border: none; background: white; }
+    dialog::backdrop { background: rgba(45,58,49,0.5); }
+
+    /* ── AI 代評專屬樣式 ── */
+    .ai-banner {
+      background: linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%);
+      border: 1.5px solid #FCD34D;
+      border-radius: 20px;
+      animation: pulse-border 2.5s ease-in-out infinite;
     }
-    
-    dialog {
-      border: none;
-      background: white;
+    .ai-topbar-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: white; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.025em;
     }
-    dialog::backdrop {
-      background: rgba(45, 58, 49, 0.5); 
+    .ai-topbar-btn:hover  { background: rgba(255,255,255,0.25); }
+    .ai-topbar-btn:active { transform: scale(0.97); }
+    .ai-modal-header {
+      background: linear-gradient(135deg,#2D3A31 0%,#3F5144 100%);
+      padding: 20px 24px; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    .severity-btn {
+      flex:1; padding:6px 0; border-radius:10px; font-size:12px;
+      font-weight:600; border:2px solid #D4DCD5; background:white;
+      color:#8FA192; cursor:pointer; transition:all 0.2s;
+    }
+    .severity-btn.mild.active   { background:#EFF6FF; color:#1D4ED8; border-color:#93C5FD; }
+    .severity-btn.medium.active { background:#FFFBEB; color:#B45309; border-color:#FCD34D; }
+    .severity-btn.severe.active { background:#FEF2F2; color:#B91C1C; border-color:#FCA5A5; }
+    .severity-btn:hover:not(.active) { border-color:#8FA192; }
+    .ai-score-card {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:14px 16px; border-radius:16px;
+      border:1px solid #E5EBE6; background:#F8FAF8;
+    }
+    .ai-score-bubble {
+      flex-shrink:0; width:48px; height:48px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:18px;
+    }
+    #ai-eval-modal {
+      width:95%; max-width:520px; max-height:88vh;
+      flex-direction:column;
+      border-radius:24px; overflow:hidden; padding:0;
+    }
+    #ai-eval-modal[open] { display:flex; }
+    .ai-modal-body {
+      flex:1; overflow-y:auto;
+      -ms-overflow-style:none; scrollbar-width:none;
+    }
+    .ai-modal-body::-webkit-scrollbar { display:none; }
+    .ai-modal-footer {
+      flex-shrink:0; padding:16px 24px;
+      border-top:1px solid #E5EBE6; background:white;
     }
   </style>
 </head>
 <body class="min-h-screen text-[#2D3A31] selection:bg-[#D4DCD5]">
 
   <nav class="sticky top-0 z-50 flex flex-col shadow-sm">
-    
     <div class="topbar no-print">
-        <div class="topbar-left relative">
-            <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
-                <i data-lucide="menu" class="w-6 h-6 stroke-[2.5]"></i>
-            </button>
-            <div class="flex items-center space-x-2 select-none ml-1">
-                <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
-                <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
-            </div>
-            
-            <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
-                <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-                    <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
-                </a>
-                <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-                    <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算
-                </a>
-                <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-                    <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
-                </a>
-                <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
-                </a>
-                <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
-                </a>
-            </div>
+      <div class="topbar-left relative">
+        <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
+          <i data-lucide="menu" class="w-6 h-6 stroke-[2.5]"></i>
+        </button>
+        <div class="flex items-center space-x-2 select-none ml-1">
+          <i data-lucide="clipboard-list" class="w-5 h-5 md:w-6 md:h-6 text-white stroke-[2.2]"></i>
+          <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">績效評分系統</h1>
         </div>
-        <div class="hidden md:flex items-center gap-2 text-xs opacity-90">
-            <i data-lucide="cloud" class="w-4 h-4"></i><span id="statusText">System Ready</span>
+        <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
+          <a href="index.html"       class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="calendar"          class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統</a>
+          <a href="cash.html"        class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算</a>
+          <a href="inventory.html"   class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="package"           class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點</a>
+          <a href="clean.html"       class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="sparkles"          class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理</a>
+          <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">                                  <i data-lucide="clipboard-list"   class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統</a>
         </div>
+      </div>
+      <!-- AI 代評快捷按鈕（永遠可見） -->
+      <button onclick="openAIEvalModal()" class="ai-topbar-btn">
+        <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">AI 代評</span>
+        <span class="sm:hidden">AI</span>
+      </button>
     </div>
 
     <div class="bg-white border-b border-[#D4DCD5]">
@@ -171,12 +188,10 @@
           <button id="tab-evaluate" onclick="switchTab('evaluate')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-[#2D3A31]">
             <i data-lucide="clipboard-edit" class="w-4 h-4 mr-1.5 opacity-80"></i> 店長評分
           </button>
-          
           <button id="tab-cleaning" onclick="switchTab('cleaning')" class="flex-1 py-3 text-sm md:text-base font-medium flex justify-center items-center transition-all duration-300 text-[#8FA192] hover:text-[#4F6354]">
             <i data-lucide="sparkles" class="w-4 h-4 mr-1.5 opacity-80"></i> 清潔評分
           </button>
-
-          <div id="tab-indicator" class="absolute bottom-0 left-0 h-[3px] bg-[#6C8673] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width: 0; transform: translateX(0);"></div>
+          <div id="tab-indicator" class="absolute bottom-0 left-0 h-[3px] bg-[#6C8673] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width:0;transform:translateX(0);"></div>
         </div>
       </div>
     </div>
@@ -184,17 +199,34 @@
 
   <main class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
 
+    <!-- AI 代評橫幅（可柔未排班時自動出現） -->
+    <div id="ai-mode-banner" class="hidden mb-6 ai-banner">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <i data-lucide="bot" class="w-6 h-6 text-amber-600"></i>
+          </div>
+          <div>
+            <p class="font-bold text-amber-900 text-sm tracking-wide">可柔今日未排班 — AI 代評模式</p>
+            <p class="text-amber-700 text-xs mt-0.5">由 Groq AI 根據今日事件，自動計算各員工績效分數</p>
+          </div>
+        </div>
+        <button onclick="openAIEvalModal()"
+          class="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-2xl text-sm font-bold transition-all shadow-md shadow-amber-200">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> 開始 AI 代評
+        </button>
+      </div>
+    </div>
+
+    <!-- 店長評分 Section -->
     <div id="section-evaluate" class="block">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-
         <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
           <h2 class="text-xs md:text-sm font-semibold text-[#8FA192] tracking-widest uppercase mb-2 md:mb-4 pl-1">當天值班人員</h2>
           <div id="employee-list" class="flex overflow-x-auto md:flex-col gap-2 md:gap-3 pb-3 md:pb-0 hide-scrollbar snap-x"></div>
         </div>
-
         <div class="md:col-span-8 lg:col-span-9" id="evaluate-content">
           <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-5 md:p-10">
-
             <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-6 md:mb-8 border-b border-[#E5EBE6] pb-5 md:pb-6">
               <div class="flex-1">
                 <h2 class="text-2xl md:text-3xl font-light text-[#2D3A31] tracking-wide mb-1 md:mb-2 flex items-center gap-2">
@@ -209,14 +241,11 @@
                 <p id="current-total-score" class="text-3xl md:text-4xl font-light text-[#2D3A31]">0.0</p>
               </div>
             </div>
-
             <div class="mb-6 md:mb-8">
               <p class="text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">今日工作崗位</p>
               <div class="flex gap-2 flex-wrap" id="station-selector"></div>
             </div>
-
             <div id="criteria-form" class="space-y-4 md:space-y-6"></div>
-
             <div class="mt-8 md:mt-10 flex justify-end">
               <button onclick="saveData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl shadow-lg shadow-[#6C8673]/20 transition-all active:scale-95 font-medium tracking-wide">
                 <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存今日評定紀錄
@@ -224,25 +253,21 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
+    <!-- 清潔評分 Section -->
     <div id="section-cleaning" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
       <div class="text-center mb-6 md:mb-10">
         <h2 class="text-2xl md:text-3xl font-light text-[#2D3A31] tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
         <p class="text-xs md:text-sm text-[#687A6B]">獨立紀錄清潔人員的表現，與工作崗位評分分開計算</p>
       </div>
-
       <div class="bg-white rounded-3xl shadow-sm border border-[#E5EBE6] p-6 md:p-10 max-w-2xl mx-auto">
         <div class="mb-8">
           <label class="block text-xs font-semibold text-[#8FA192] tracking-widest uppercase mb-3">今日例行清潔人員 (全體名單)</label>
-          <div class="flex flex-wrap gap-2" id="cleaning-emp-selector">
-          </div>
+          <div class="flex flex-wrap gap-2" id="cleaning-emp-selector"></div>
         </div>
-
         <div id="cleaning-selected-list" class="space-y-4"></div>
-
         <div class="mt-8 flex justify-end">
           <button onclick="saveCleaningData()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl shadow-lg shadow-[#6C8673]/20 transition-all active:scale-95 font-medium tracking-wide">
             <i data-lucide="save" class="w-5 h-5 mr-2"></i> 儲存清潔評分
@@ -250,7 +275,8 @@
         </div>
       </div>
     </div>
-    
+
+    <!-- 儲存狀態 Modal -->
     <dialog id="status-modal" class="backdrop:bg-[#2D3A31]/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-[#E5EBE6] w-[90%] max-w-sm">
       <div class="p-8 text-center">
         <div id="modal-loading" class="hidden">
@@ -258,19 +284,145 @@
           <h3 class="text-xl font-bold text-[#2D3A31] mb-2">同步中</h3>
           <p class="text-[#687A6B] text-sm">正在將資料傳送至雲端，請稍候...</p>
         </div>
-
         <div id="modal-success" class="hidden">
           <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <i data-lucide="check" class="w-8 h-8 text-emerald-600"></i>
           </div>
           <h3 class="text-xl font-bold text-[#2D3A31] mb-2">儲存成功</h3>
           <p class="text-[#687A6B] text-sm mb-6">今日的評定紀錄已成功上傳。</p>
-          <button onclick="document.getElementById('status-modal').close()" 
-                  class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-medium hover:bg-[#5A705F] transition-all">
-            確認
+          <button onclick="document.getElementById('status-modal').close()"
+            class="w-full py-3 bg-[#6C8673] text-white rounded-xl font-medium hover:bg-[#5A705F] transition-all">確認</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- ══ AI 代評 Modal ══ -->
+    <dialog id="ai-eval-modal">
+
+      <!-- 共用 Header -->
+      <div class="ai-modal-header">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <p class="text-white font-bold text-sm tracking-wide">AI 代評模式</p>
+            <p id="ai-modal-subtitle" class="text-white/60 text-xs">Groq · llama-3.3-70b</p>
+          </div>
+        </div>
+        <button onclick="closeAIModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+          <i data-lucide="x" class="w-4 h-4 text-white"></i>
+        </button>
+      </div>
+
+      <!-- Step: API Key -->
+      <div id="ai-step-key" class="hidden ai-modal-body p-6 space-y-5">
+        <div class="text-center pt-2 pb-1">
+          <div class="w-14 h-14 bg-[#F0F4F1] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="key-round" class="w-7 h-7 text-[#6C8673]"></i>
+          </div>
+          <h3 class="font-bold text-[#2D3A31] text-lg">設定 Groq API Key</h3>
+          <p class="text-[#687A6B] text-xs mt-1.5">只需設定一次，儲存於本機瀏覽器</p>
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">API Key</label>
+          <div class="relative">
+            <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8FA192]"></i>
+            <input id="groq-key-input" type="password" placeholder="gsk_..." autocomplete="off"
+              class="w-full pl-9 pr-4 py-3 rounded-xl border border-[#D4DCD5] text-sm text-[#2D3A31] focus:outline-none focus:ring-2 focus:ring-[#6C8673]/30 bg-white" />
+          </div>
+          <p class="text-xs text-[#8FA192]">免費取得：<a href="https://console.groq.com/keys" target="_blank" class="text-[#6C8673] underline underline-offset-2">console.groq.com/keys</a></p>
+        </div>
+      </div>
+      <div id="ai-step-key-footer" class="hidden ai-modal-footer">
+        <button onclick="saveGroqKey()" class="w-full py-3 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl font-bold transition-all active:scale-95">
+          儲存並繼續
+        </button>
+      </div>
+
+      <!-- Step: 事件表單 -->
+      <div id="ai-step-form" class="hidden ai-modal-body p-6 space-y-5">
+        <div>
+          <h3 class="font-bold text-[#2D3A31] text-base mb-1">今日有發生任何問題嗎？</h3>
+          <p class="text-[#687A6B] text-xs">記錄今日事件，AI 會據此計算每人分數。沒有問題就直接送出。</p>
+        </div>
+
+        <!-- 快速選項：無特殊事件 -->
+        <div id="no-incident-label"
+          onclick="toggleNoIncident()"
+          class="flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all select-none"
+          style="border-color:#D4DCD5; background:white;">
+          <div id="no-incident-check"
+            class="w-5 h-5 rounded-full border-2 border-[#D4DCD5] flex items-center justify-center flex-shrink-0 transition-all">
+          </div>
+          <div>
+            <p class="font-semibold text-[#2D3A31] text-sm">今日無特殊事件</p>
+            <p class="text-[#8FA192] text-xs">所有員工以基礎分 60~75 分計算</p>
+          </div>
+        </div>
+
+        <!-- 事件列表 -->
+        <div id="incident-section">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">事件記錄</p>
+            <button onclick="addIncident()"
+              class="flex items-center gap-1.5 text-xs font-bold text-[#6C8673] hover:text-[#5A705F] transition-colors">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> 新增事件
+            </button>
+          </div>
+          <div id="incident-list" class="space-y-3">
+            <p class="text-center text-[#8FA192] text-xs py-6 border-2 border-dashed border-[#D4DCD5] rounded-2xl">
+              尚無事件 — 點擊「新增事件」或勾選無特殊事件
+            </p>
+          </div>
+        </div>
+
+        <button onclick="resetGroqKey()"
+          class="w-full text-xs text-[#8FA192] hover:text-[#6C8673] transition-colors flex items-center justify-center gap-1.5 pt-1">
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i> 重新設定 Groq API Key
+        </button>
+      </div>
+      <div id="ai-step-form-footer" class="hidden ai-modal-footer">
+        <button onclick="submitToAI()"
+          class="w-full py-3.5 bg-[#2D3A31] hover:bg-[#3F5144] text-white rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> 送出給 AI 分析
+        </button>
+      </div>
+
+      <!-- Step: 處理中 -->
+      <div id="ai-step-loading" class="hidden ai-modal-body p-10 text-center">
+        <div class="w-16 h-16 border-4 border-[#D4DCD5] border-t-[#6C8673] rounded-full animate-spin mx-auto mb-5"></div>
+        <h3 class="font-bold text-[#2D3A31] text-lg mb-2">AI 正在分析</h3>
+        <p class="text-[#687A6B] text-sm">Groq llama-3.3 評估今日事件中，請稍候...</p>
+        <div class="mt-6 flex justify-center gap-1.5">
+          <div class="w-2 h-2 rounded-full bg-[#6C8673] animate-bounce" style="animation-delay:0ms"></div>
+          <div class="w-2 h-2 rounded-full bg-[#6C8673] animate-bounce" style="animation-delay:150ms"></div>
+          <div class="w-2 h-2 rounded-full bg-[#6C8673] animate-bounce" style="animation-delay:300ms"></div>
+        </div>
+      </div>
+
+      <!-- Step: 結果預覽 -->
+      <div id="ai-step-results" class="hidden ai-modal-body p-6 space-y-4">
+        <div>
+          <h3 class="font-bold text-[#2D3A31] text-base mb-1">AI 評分結果預覽</h3>
+          <p class="text-[#687A6B] text-xs">確認無誤後點擊「套用評分」，你仍可手動調整各項細節。</p>
+        </div>
+        <div id="ai-results-list" class="space-y-3"></div>
+        <div id="ai-result-summary" class="hidden p-3 rounded-xl bg-[#F0F4F1] text-xs text-[#4F6354] text-center"></div>
+      </div>
+      <div id="ai-step-results-footer" class="hidden ai-modal-footer">
+        <div class="flex gap-3">
+          <button onclick="resetAIForm()"
+            class="flex-1 py-3 bg-[#F0F4F1] hover:bg-[#D4DCD5] text-[#4F6354] rounded-xl font-bold transition-all active:scale-95 text-sm">
+            重新填寫
+          </button>
+          <button onclick="applyAIScores()"
+            class="flex-1 py-3 bg-[#6C8673] hover:bg-[#5A705F] text-white rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-sm">
+            <i data-lucide="check" class="w-4 h-4"></i> 套用評分
           </button>
         </div>
       </div>
+
     </dialog>
   </main>
 
@@ -280,28 +432,15 @@
   </div>
 
   <script>
-    // =============================================
-    // 雲端與連線設定
-    // =============================================
+    // ── 雲端設定 ──
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-
-    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';  
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';  
-    
-    if (!window.supabaseClient) {
-        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
-    
+    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
+    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';
+    if (!window.supabaseClient) window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     var supabase = window.supabaseClient;
 
-    async function initSupabase() {
-      return true;
-    }
-
-    // =============================================
-    // 基本資料設定 
-    // =============================================
+    // ── 員工與崗位資料 ──
     const ALL_EMPLOYEES = [
       { name: '俐嬅', joinDate: '2021-03-01', gradeTier: 'C' },
       { name: '小郭', joinDate: '2022-06-15', gradeTier: 'C' },
@@ -313,91 +452,81 @@
       { name: '翠翠', joinDate: '2022-11-01', gradeTier: 'C' },
       { name: '偲璇', joinDate: '2024-05-01', gradeTier: 'A' },
     ];
-
-    let EMPLOYEES = []; 
+    let EMPLOYEES = [];
 
     const STATIONS = [
-      {
-        id: 'fryer', name: '油鍋', icon: 'flame', color: 'text-orange-500',
-        criteria: [
-          { id: 'speed',    name: '速度',   desc: '讓做餐人員等候的時間長短', weight: 0.30 },
-          { id: 'fry',      name: '油炸狀態', desc: '是否過深/過淺、顏色均勻度', weight: 0.25 },
-          { id: 'technique',name: '手法',   desc: '三明治剪開深淺、是否筆直居中', weight: 0.25 },
-          { id: 'pro',      name: '專業度', desc: '挑出品質不佳的三明治、油渣集中收集、環境整潔', weight: 0.20 },
-        ]
-      },
-      {
-        id: 'sandwich_main', name: '三明治主手', icon: 'sandwich', color: 'text-amber-500',
-        criteria: [
-          { id: 'teamwork',  name: '協作', desc: '是否協同副手作餐、確認應做的餐點數量', weight: 0.25 },
-          { id: 'filling',   name: '內餡擺放', desc: '美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開', weight: 0.30 },
-          { id: 'speed',     name: '速度', desc: '有無配合現場訂單視情況，整併數量出餐', weight: 0.25 },
-          { id: 'quality',   name: '品質把關', desc: '確認成品外觀、內餡是否完整正確', weight: 0.20 },
-        ]
-      },
-      {
-        id: 'sandwich_sub', name: '三明治副手', icon: 'users', color: 'text-blue-500',
-        criteria: [
-          { id: 'order',    name: '確認訂單', desc: '核對訂單內容出餐，出餐時客人是否方便帶走', weight: 0.25 },
-          { id: 'clean',    name: '環境整潔', desc: '工作環境是否隨時保持整潔', weight: 0.25 },
-          { id: 'filling',  name: '內餡擺放', desc: '美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開', weight: 0.25 },
-          { id: 'speed',    name: '速度配合', desc: '有無配合現場訂單視情況，整併數量出餐', weight: 0.25 },
-        ]
-      },
-      {
-        id: 'cashier', name: '結帳', icon: 'circle-dollar-sign', color: 'text-emerald-500',
-        criteria: [
-          { id: 'accuracy',  name: '結帳正確性', desc: '結帳清晰、是否有誤差', weight: 0.30 },
-          { id: 'stock',     name: '備品補充', desc: '備品是否即時補充', weight: 0.20 },
-          { id: 'service',   name: '服務性', desc: '態度是否良好且專業，幫助客人疑難排解', weight: 0.25 },
-          { id: 'packaging', name: '包裝完整性', desc: '餐點是否擺放平整、內容物及餐具是否正確擺放', weight: 0.25 },
-        ]
-      },
-      {
-        id: 'kitchen', name: '廚房', icon: 'chef-hat', color: 'text-[#4F6354]',
-        criteria: [
-          { id: 'efficiency', name: '烹製效率', desc: '食品烹製效率、物料是否先進先出', weight: 0.25 },
-          { id: 'detail',     name: '料理細節', desc: '番茄的刀工、茶類奶精是否泡散、綠豆是否煮至柔軟', weight: 0.30 },
-          { id: 'clean',      name: '整潔度', desc: '餐具及鍋碗瓢盆是否整潔、環境的整潔及收納', weight: 0.25 },
-          { id: 'speed',      name: '出菜速度', desc: '配合前場需求的出菜節奏', weight: 0.20 },
-        ]
-      },
-      {
-        id: 'side_dish', name: '附餐', icon: 'utensils-crossed', color: 'text-rose-500',
-        criteria: [
-          { id: 'prep',    name: '備餐速度', desc: '附餐準備與出餐的節奏', weight: 0.30 },
-          { id: 'quality', name: '品質控管', desc: '附餐口味、溫度與包裝正確性', weight: 0.40 },
-          { id: 'clean',   name: '環境整潔', desc: '工作區域與器具的清潔程度', weight: 0.30 },
-        ]
-      }
+      { id:'fryer',         name:'油鍋',      icon:'flame',              color:'text-orange-500',
+        criteria:[
+          { id:'speed',     name:'速度',     desc:'讓做餐人員等候的時間長短',                                           weight:0.30 },
+          { id:'fry',       name:'油炸狀態', desc:'是否過深/過淺、顏色均勻度',                                          weight:0.25 },
+          { id:'technique', name:'手法',     desc:'三明治剪開深淺、是否筆直居中',                                        weight:0.25 },
+          { id:'pro',       name:'專業度',   desc:'挑出品質不佳的三明治、油渣集中收集、環境整潔',                         weight:0.20 },
+        ]},
+      { id:'sandwich_main', name:'三明治主手', icon:'sandwich',          color:'text-amber-500',
+        criteria:[
+          { id:'teamwork',  name:'協作',     desc:'是否協同副手作餐、確認應做的餐點數量',                               weight:0.25 },
+          { id:'filling',   name:'內餡擺放', desc:'美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開',                   weight:0.30 },
+          { id:'speed',     name:'速度',     desc:'有無配合現場訂單視情況，整併數量出餐',                               weight:0.25 },
+          { id:'quality',   name:'品質把關', desc:'確認成品外觀、內餡是否完整正確',                                     weight:0.20 },
+        ]},
+      { id:'sandwich_sub',  name:'三明治副手', icon:'users',             color:'text-blue-500',
+        criteria:[
+          { id:'order',     name:'確認訂單', desc:'核對訂單內容出餐，出餐時客人是否方便帶走',                           weight:0.25 },
+          { id:'clean',     name:'環境整潔', desc:'工作環境是否隨時保持整潔',                                           weight:0.25 },
+          { id:'filling',   name:'內餡擺放', desc:'美乃滋無收乾淨、魯蛋及番茄的擺放、火腿花有無散開',                   weight:0.25 },
+          { id:'speed',     name:'速度配合', desc:'有無配合現場訂單視情況，整併數量出餐',                               weight:0.25 },
+        ]},
+      { id:'cashier',       name:'結帳',      icon:'circle-dollar-sign', color:'text-emerald-500',
+        criteria:[
+          { id:'accuracy',  name:'結帳正確性', desc:'結帳清晰、是否有誤差',                                            weight:0.30 },
+          { id:'stock',     name:'備品補充',   desc:'備品是否即時補充',                                                weight:0.20 },
+          { id:'service',   name:'服務性',     desc:'態度是否良好且專業，幫助客人疑難排解',                            weight:0.25 },
+          { id:'packaging', name:'包裝完整性', desc:'餐點是否擺放平整、內容物及餐具是否正確擺放',                       weight:0.25 },
+        ]},
+      { id:'kitchen',       name:'廚房',      icon:'chef-hat',           color:'text-[#4F6354]',
+        criteria:[
+          { id:'efficiency',name:'烹製效率', desc:'食品烹製效率、物料是否先進先出',                                     weight:0.25 },
+          { id:'detail',    name:'料理細節', desc:'番茄的刀工、茶類奶精是否泡散、綠豆是否煮至柔軟',                     weight:0.30 },
+          { id:'clean',     name:'整潔度',   desc:'餐具及鍋碗瓢盆是否整潔、環境的整潔及收納',                          weight:0.25 },
+          { id:'speed',     name:'出菜速度', desc:'配合前場需求的出菜節奏',                                            weight:0.20 },
+        ]},
+      { id:'side_dish',     name:'附餐',      icon:'utensils-crossed',   color:'text-rose-500',
+        criteria:[
+          { id:'prep',      name:'備餐速度', desc:'附餐準備與出餐的節奏',                                              weight:0.30 },
+          { id:'quality',   name:'品質控管', desc:'附餐口味、溫度與包裝正確性',                                        weight:0.40 },
+          { id:'clean',     name:'環境整潔', desc:'工作區域與器具的清潔程度',                                          weight:0.30 },
+        ]},
     ];
 
-    const GRADE_LIMITS = { O: 1, A: 2, B: 4, C: 3, D: 2 };
     const GRADE_COLORS = {
-      O: { bg: '#fef9c3', text: '#854d0e', border: '#fde68a' },
-      A: { bg: '#dcfce7', text: '#166534', border: '#bbf7d0' },
-      B: { bg: '#dbeafe', text: '#1e40af', border: '#bfdbfe' },
-      C: { bg: '#f3e8ff', text: '#6b21a8', border: '#e9d5ff' },
-      D: { bg: '#fee2e2', text: '#991b1b', border: '#fecaca' },
+      O:{ bg:'#fef9c3', text:'#854d0e', border:'#fde68a' },
+      A:{ bg:'#dcfce7', text:'#166534', border:'#bbf7d0' },
+      B:{ bg:'#dbeafe', text:'#1e40af', border:'#bfdbfe' },
+      C:{ bg:'#f3e8ff', text:'#6b21a8', border:'#e9d5ff' },
+      D:{ bg:'#fee2e2', text:'#991b1b', border:'#fecaca' },
     };
-
     const GRADE_TABLE = {
-      '到職1年以內': { over90: 'O', over80: 'O', over70: 'A', over60: 'B', under60: 'C' },
-      '到職1~3年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
-      '到職3~5年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
-      '到職5~8年':  { over90: 'O', over80: 'A', over70: 'B', over60: 'C', under60: 'D' },
+      '到職1年以內':{ over90:'O', over80:'O', over70:'A', over60:'B', under60:'C' },
+      '到職1~3年':  { over90:'O', over80:'A', over70:'B', over60:'C', under60:'D' },
+      '到職3~5年':  { over90:'O', over80:'A', over70:'B', over60:'C', under60:'D' },
+      '到職5~8年':  { over90:'O', over80:'A', over70:'B', over60:'C', under60:'D' },
     };
+    const GRADE_SCORES = { O:100, A:90, B:80, C:70, D:60 };
 
-    const GRADE_SCORES = {
-      'O': 100, 'A': 90, 'B': 80, 'C': 70, 'D': 60
-    };
+    let currentEvalData = {}, cleaningData = {};
+    let currentSelectedEmp = '', currentStation = STATIONS[0].id;
+    let todayString = new Date().toLocaleDateString('sv-SE',{ timeZone:'Asia/Taipei' });
 
-    let currentEvalData = {};
-    let cleaningData = {}; 
-    let currentSelectedEmp = "";
-    let currentStation = STATIONS[0].id;
-    let todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+    // ── AI 代評狀態 ──
+    let isKoujouAbsent = false;
+    let groqApiKey    = localStorage.getItem('groq_api_key') || '';
+    let aiIncidents   = [];
+    let aiResultData  = null;
+    let aiNoIncident  = false;
 
+    // ══════════════════════════════════════════════
+    // 初始化
+    // ══════════════════════════════════════════════
     async function initLiff() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -405,670 +534,642 @@
           const profile = await liff.getProfile();
           showToast(`歡迎回來，${profile.displayName}`);
         }
-      } catch (error) {
-        console.error("LIFF 初始化失敗:", error);
-      }
+      } catch(e){ console.error('LIFF 初始化失敗:',e); }
     }
 
     async function fetchTodayShift() {
       const today = new Date();
-      const year = parseInt(today.getFullYear());
-      const month = parseInt(today.getMonth() + 1);
-      const day = parseInt(today.getDate());
-
       try {
         const { data, error } = await supabase
           .from('shift_schedules')
-          .select('open, shift') 
-          .eq('year', year)
-          .eq('month', month)
-          .eq('day', day)
+          .select('open, shift')
+          .eq('year',  today.getFullYear())
+          .eq('month', today.getMonth()+1)
+          .eq('day',   today.getDate())
           .maybeSingle();
-
-        if (error) {
-          console.error("Supabase 查詢錯誤:", error);
-          return;
-        }
-
+        if (error){ console.error('Supabase 錯誤:',error); return; }
         if (data) {
-          let allShiftPeople = [];
-          if (data.open)  allShiftPeople.push(...data.open.split('、').map(n => n.trim()));
-          if (data.shift) allShiftPeople.push(...data.shift.split('、').map(n => n.trim()));
+          let allPeople = [];
+          if (data.open)  allPeople.push(...data.open.split('、').map(n=>n.trim()));
+          if (data.shift) allPeople.push(...data.shift.split('、').map(n=>n.trim()));
 
-          const uniqueNames = [...new Set(allShiftPeople.filter(n => n && n !== 'X' && n !== ''&& n !== '可柔'))];
-          EMPLOYEES = ALL_EMPLOYEES.filter(emp => uniqueNames.includes(emp.name));
-          
-          uniqueNames.forEach(name => {
-            if (!EMPLOYEES.find(e => e.name === name) && name !== 'X' && name !== '') {
-              EMPLOYEES.push({ name: name, joinDate: new Date().toISOString().split('T')[0] });
-            }
+          // ── 偵測可柔是否在班 ──
+          isKoujouAbsent = !allPeople.includes('可柔');
+
+          const names = [...new Set(allPeople.filter(n=>n&&n!=='X'&&n!==''&&n!=='可柔'))];
+          EMPLOYEES = ALL_EMPLOYEES.filter(e=>names.includes(e.name));
+          names.forEach(n=>{
+            if(!EMPLOYEES.find(e=>e.name===n))
+              EMPLOYEES.push({ name:n, joinDate:new Date().toISOString().split('T')[0] });
           });
-          renderEmployeeList(); 
+          renderEmployeeList();
         }
-      } catch (err) {
-        console.error('取得班表失敗:', err);
-      }
+      } catch(e){ console.error('取得班表失敗:',e); }
     }
 
     async function initApp() {
       await fetchTodayShift();
-
       if (EMPLOYEES.length === 0) {
-        document.getElementById('employee-list').innerHTML = '<p class="text-[#8FA192] text-sm p-4 text-center border-2 border-dashed border-[#D4DCD5] rounded-2xl">今日查無班表</p>';
-        document.getElementById('evaluate-content').innerHTML = '<div class="h-64 flex items-center justify-center text-[#8FA192]">目前沒有人員可以評分</div>';
+        document.getElementById('employee-list').innerHTML =
+          '<p class="text-[#8FA192] text-sm p-4 text-center border-2 border-dashed border-[#D4DCD5] rounded-2xl">今日查無班表</p>';
+        document.getElementById('evaluate-content').innerHTML =
+          '<div class="h-64 flex items-center justify-center text-[#8FA192]">目前沒有人員可以評分</div>';
         return;
       }
-
       currentSelectedEmp = EMPLOYEES[0].name;
-      await fetchTodayHistory();   // 新增：抓雲端今日紀錄並合併進 currentEvalData / cleaningData
+      await fetchTodayHistory();
       loadDataFromStorage();
       renderEmployeeList();
       selectEmployee(currentSelectedEmp);
       renderStationSelector();
       renderCleaningModule();
       lucide.createIcons();
-      
-      // 給予 150ms 充足時間讓 Tailwind CDN 處理完 DOM 排版，再進行首次完美對齊切換
-      setTimeout(() => {
-        const isCleaningHidden = document.getElementById('section-cleaning').classList.contains('hidden');
-        switchTab(isCleaningHidden ? 'evaluate' : 'cleaning');
+      if (isKoujouAbsent) showAIBanner();
+      setTimeout(()=>{
+        const hidden = document.getElementById('section-cleaning').classList.contains('hidden');
+        switchTab(hidden ? 'evaluate' : 'cleaning');
       }, 150);
     }
 
-    function generateDefaultEval(defaultScore = 5) {
-      let data = {};
-      EMPLOYEES.forEach(emp => {
-        data[emp.name] = { station: STATIONS[0].id, grade: '' };
-        STATIONS.forEach(st => {
-          data[emp.name][st.id] = {};
-          st.criteria.forEach(c => { data[emp.name][st.id][c.id] = { score: defaultScore, note: '' }; });
+    // ══════════════════════════════════════════════
+    // 資料管理
+    // ══════════════════════════════════════════════
+    function generateDefaultEval(s=5) {
+      let d={};
+      EMPLOYEES.forEach(emp=>{
+        d[emp.name]={ station:STATIONS[0].id, grade:'' };
+        STATIONS.forEach(st=>{
+          d[emp.name][st.id]={};
+          st.criteria.forEach(c=>{ d[emp.name][st.id][c.id]={ score:s, note:'' }; });
         });
       });
-      return data;
-    }
-
-    function generateDefaultCleaning() {
-      let d = {};
-      ALL_EMPLOYEES.forEach(emp => { d[emp.name] = { selected: false, stars: 0 }; });
       return d;
     }
-
+    function generateDefaultCleaning() {
+      let d={};
+      ALL_EMPLOYEES.forEach(emp=>{ d[emp.name]={ selected:false, stars:0 }; });
+      return d;
+    }
     function loadDataFromStorage() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
-      if (!storage) {
-        storage = {
-          lastDate: todayString,
-          current: generateDefaultEval(5),
-          currentCleaning: generateDefaultCleaning(),
-          history: {},
-          historyCleaning: {}
-        };
-      } else if (storage.lastDate !== todayString) {
-        storage.history[storage.lastDate] = storage.current;
-        storage.historyCleaning[storage.lastDate] = storage.currentCleaning;
-        storage.current = generateDefaultEval(5);
-        storage.currentCleaning = generateDefaultCleaning();
-        storage.lastDate = todayString;
+      let s = JSON.parse(localStorage.getItem('EvalSystemDB_v2'));
+      if (!s) {
+        s = { lastDate:todayString, current:generateDefaultEval(), currentCleaning:generateDefaultCleaning(), history:{}, historyCleaning:{} };
+      } else if (s.lastDate !== todayString) {
+        s.history[s.lastDate]         = s.current;
+        s.historyCleaning[s.lastDate] = s.currentCleaning;
+        s.current         = generateDefaultEval();
+        s.currentCleaning = generateDefaultCleaning();
+        s.lastDate        = todayString;
       }
-      
-      if(!storage.current) storage.current = {};
-      if(!storage.currentCleaning) storage.currentCleaning = {};
-      
-      EMPLOYEES.forEach(emp => {
-        if(!storage.current[emp.name]) {
-          storage.current[emp.name] = { station: STATIONS[0].id, grade: '' };
-          STATIONS.forEach(st => {
-            storage.current[emp.name][st.id] = {};
-            st.criteria.forEach(c => { storage.current[emp.name][st.id][c.id] = { score: 5, note: '' }; });
-          });
+      if(!s.current)         s.current={};
+      if(!s.currentCleaning) s.currentCleaning={};
+      EMPLOYEES.forEach(emp=>{
+        if(!s.current[emp.name]){
+          s.current[emp.name]={ station:STATIONS[0].id, grade:'' };
+          STATIONS.forEach(st=>{ s.current[emp.name][st.id]={}; st.criteria.forEach(c=>{ s.current[emp.name][st.id][c.id]={ score:5, note:'' }; }); });
         }
       });
-
-      ALL_EMPLOYEES.forEach(emp => {
-        if(!storage.currentCleaning[emp.name]) {
-          storage.currentCleaning[emp.name] = { selected: false, stars: 0 };
-        }
-      });
-
-      currentEvalData = storage.current;
-      cleaningData = storage.currentCleaning;
-      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
+      ALL_EMPLOYEES.forEach(emp=>{ if(!s.currentCleaning[emp.name]) s.currentCleaning[emp.name]={ selected:false, stars:0 }; });
+      currentEvalData = s.current;
+      cleaningData    = s.currentCleaning;
+      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(s));
     }
 
     function getGradeTableKey(tier) {
-      const map = { 'A': '到職1年以內', 'B': '到職1~3年', 'C': '到職3~5年', 'D': '到職5~8年' };
-      return map[tier] || '到職1年以內';
+      return { A:'到職1年以內', B:'到職1~3年', C:'到職3~5年', D:'到職5~8年' }[tier] || '到職1年以內';
     }
-
-    function getSuggestedGrade(empName, score) {
-      const emp = EMPLOYEES.find(e => e.name === empName);
+    function getSuggestedGrade(name, score) {
+      const emp = EMPLOYEES.find(e=>e.name===name);
       if (!emp) return null;
       const label = getGradeTableKey(emp.gradeTier);
-      const table = GRADE_TABLE[label];
-      let grade;
+      const t = GRADE_TABLE[label];
       const s = parseFloat(score);
-      if (s >= 90) grade = table.over90;
-      else if (s >= 80) grade = table.over80;
-      else if (s >= 70) grade = table.over70;
-      else if (s >= 60) grade = table.over60;
-      else grade = table.under60;
-      return { grade, seniorityLabel: label };
+      let grade = s>=90?t.over90 : s>=80?t.over80 : s>=70?t.over70 : s>=60?t.over60 : t.under60;
+      return { grade, seniorityLabel:label };
     }
-
-    function calculateScore(dataObj, empName) {
-      if (dataObj[empName] && dataObj[empName].precalculatedScore !== undefined) {
-        return dataObj[empName].precalculatedScore;
-      }
-      const stationId = dataObj[empName].station || STATIONS[0].id;
-      const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
-      let total = 0;
-      station.criteria.forEach(c => {
-        const d = dataObj[empName][stationId];
-        if (d && d[c.id]) total += (d[c.id].score * 10) * c.weight;
-      });
+    function calculateScore(data, name) {
+      if (data[name]?.precalculatedScore !== undefined) return data[name].precalculatedScore;
+      const stId = data[name].station || STATIONS[0].id;
+      const st   = STATIONS.find(s=>s.id===stId) || STATIONS[0];
+      let total  = 0;
+      st.criteria.forEach(c=>{ const d=data[name][stId]; if(d&&d[c.id]) total+=(d[c.id].score*10)*c.weight; });
       return total.toFixed(1);
     }
 
+    // ══════════════════════════════════════════════
+    // 渲染
+    // ══════════════════════════════════════════════
     function renderStationSelector() {
-      document.getElementById('station-selector').innerHTML = STATIONS.map(st => `
-        <button class="station-btn ${currentEvalData[currentSelectedEmp]?.station === st.id ? 'active' : ''}"
+      document.getElementById('station-selector').innerHTML = STATIONS.map(st=>`
+        <button class="station-btn ${currentEvalData[currentSelectedEmp]?.station===st.id?'active':''}"
           onclick="selectStation('${st.id}')" id="station-btn-${st.id}">
-          <div class="icon-wrapper">
-            <i data-lucide="${st.icon}" class="w-4 h-4 ${st.color}"></i>
-          </div>
+          <div class="icon-wrapper"><i data-lucide="${st.icon}" class="w-4 h-4 ${st.color}"></i></div>
           <span>${st.name}</span>
-        </button>
-      `).join('');
+        </button>`).join('');
       lucide.createIcons();
     }
-
-    function selectStation(stationId) {
-      currentEvalData[currentSelectedEmp].station = stationId;
-      currentStation = stationId;
-      STATIONS.forEach(st => {
-        const btn = document.getElementById(`station-btn-${st.id}`);
-        if (btn) btn.className = `station-btn ${stationId === st.id ? 'active' : ''}`;
-      });
-      renderEvaluationForm();
-      updateTotalAndSuggestion();
+    function selectStation(id) {
+      currentEvalData[currentSelectedEmp].station = id; currentStation = id;
+      STATIONS.forEach(st=>{ const b=document.getElementById(`station-btn-${st.id}`); if(b) b.className=`station-btn ${id===st.id?'active':''}`; });
+      renderEvaluationForm(); updateTotalAndSuggestion();
     }
-
     function renderEmployeeList() {
-      document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp => {
-        const grade = currentEvalData[emp.name]?.grade;
-        const gc = grade ? GRADE_COLORS[grade] : null;
-        const isCompleted = !!grade;
-        
-        let btnClass = "snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border ";
-        let iconBgClass = "w-8 h-8 rounded-full flex items-center justify-center transition-colors ";
-        
-        if (emp.name === currentSelectedEmp) {
-          btnClass += "bg-[#6C8673] text-white border-[#6C8673] shadow-lg shadow-[#6C8673]/20";
-          iconBgClass += "emp-icon-bg bg-[#5A705F]";
-        } else if (isCompleted) {
-          btnClass += "bg-[#EAF0EB] text-[#2D3A31] border-[#D4DCD5] hover:bg-[#DDE3DE] hover:shadow-sm";
-          iconBgClass += "emp-icon-bg bg-[#D4DCD5]/60";
-        } else {
-          btnClass += "bg-white text-[#4F6354] border-[#D4DCD5] hover:bg-[#F8FAF8] hover:shadow-sm";
-          iconBgClass += "emp-icon-bg bg-[#F0F4F1]";
-        }
-
-        return `
-        <button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')" class="${btnClass}">
+      document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp=>{
+        const grade=currentEvalData[emp.name]?.grade, gc=grade?GRADE_COLORS[grade]:null, done=!!grade;
+        let btnC="snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border ";
+        let icoC="w-8 h-8 rounded-full flex items-center justify-center transition-colors ";
+        if(emp.name===currentSelectedEmp){ btnC+="bg-[#6C8673] text-white border-[#6C8673] shadow-lg shadow-[#6C8673]/20"; icoC+="bg-[#5A705F]"; }
+        else if(done){ btnC+="bg-[#EAF0EB] text-[#2D3A31] border-[#D4DCD5] hover:bg-[#DDE3DE] hover:shadow-sm"; icoC+="bg-[#D4DCD5]/60"; }
+        else { btnC+="bg-white text-[#4F6354] border-[#D4DCD5] hover:bg-[#F8FAF8] hover:shadow-sm"; icoC+="bg-[#F0F4F1]"; }
+        return `<button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')" class="${btnC}">
           <div class="flex items-center space-x-2 md:space-x-3">
-            <div class="${iconBgClass}">
-              <i data-lucide="${isCompleted && emp.name !== currentSelectedEmp ? 'check' : 'user'}" class="w-4 h-4"></i>
-            </div>
+            <div class="${icoC}"><i data-lucide="${done&&emp.name!==currentSelectedEmp?'check':'user'}" class="w-4 h-4"></i></div>
             <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp.name}</span>
           </div>
-          <span id="grade-badge-${emp.name}" class="grade-badge ${grade ? 'grade-' + grade : 'hidden'} ml-2" ${grade ? `style="background:${gc.bg};color:${gc.text};"` : ''}>
-            ${grade || ''}
-          </span>
-        </button>
-      `}).join('');
-      lucide.createIcons();
-    }
-
-    function selectEmployee(empName) {
-      currentSelectedEmp = empName;
-      currentStation = currentEvalData[empName].station || STATIONS[0].id;
-      document.getElementById('current-emp-name').innerText = empName;
-      renderEmployeeList();
-      renderStationSelector();
-      renderEvaluationForm();
-      updateTotalAndSuggestion();
-    }
-
-    function renderEvaluationForm() {
-      const stationId = currentEvalData[currentSelectedEmp].station || STATIONS[0].id;
-      const station = STATIONS.find(s => s.id === stationId) || STATIONS[0];
-      const empData = currentEvalData[currentSelectedEmp][stationId];
-
-      document.getElementById('criteria-form').innerHTML = station.criteria.map(c => {
-        const d = empData[c.id] || { score: 5, note: '' };
-        return `
-          <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6] hover:bg-white transition-colors">
-            <div class="lg:w-1/3">
-              <div class="flex items-center space-x-2 mb-1">
-                <h3 class="text-base md:text-lg font-medium text-[#2D3A31]">${c.name}</h3>
-                <span class="px-2 py-0.5 rounded-full bg-[#E5EBE6] text-[#687A6B] text-[10px] font-medium">${Math.round(c.weight * 100)}%</span>
-              </div>
-              <p class="text-xs md:text-sm text-[#687A6B]">${c.desc}</p>
-            </div>
-            <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
-              <div class="flex items-center space-x-3 md:space-x-4">
-                <button onclick="adjustScore('${stationId}', '${c.id}', -1)" class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">-</button>
-                <input type="range" min="1" max="10" value="${d.score}" id="slider-${c.id}" oninput="updateScore('${stationId}', '${c.id}', this.value)" class="flex-1 h-2 bg-[#D4DCD5] rounded-lg cursor-pointer" />
-                <button onclick="adjustScore('${stationId}', '${c.id}', 1)" class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">+</button>
-                <div id="score-display-${c.id}" class="w-10 h-10 ml-2 flex-shrink-0 flex items-center justify-center bg-[#6C8673] text-white rounded-xl shadow-sm text-lg">${d.score}</div>
-              </div>
-              <div class="relative">
-                <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-[#8FA192]"></i>
-                <input type="text" placeholder="新增備註 (選填)..." value="${d.note}" onchange="updateNote('${stationId}', '${c.id}', this.value)" class="w-full pl-9 pr-4 py-2 bg-white border border-[#D4DCD5] rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-[#8FA192]/30 focus:outline-none text-[#2D3A31]" />
-              </div>
-            </div>
-          </div>
-        `;
+          <span id="grade-badge-${emp.name}" class="grade-badge ${grade?'grade-'+grade:'hidden'} ml-2" ${grade?`style="background:${gc.bg};color:${gc.text};"`:''}>${grade||''}</span>
+        </button>`;
       }).join('');
       lucide.createIcons();
     }
-
-    function adjustScore(stationId, cId, delta) {
-      if (!currentEvalData[currentSelectedEmp][stationId]) return;
-      delete currentEvalData[currentSelectedEmp].precalculatedScore;  // 新增
-      let currentScore = currentEvalData[currentSelectedEmp][stationId][cId].score;
-      let newScore = Math.min(10, Math.max(1, currentScore + delta));
-      currentEvalData[currentSelectedEmp][stationId][cId].score = newScore;
-      document.getElementById(`slider-${cId}`).value = newScore;
-      document.getElementById(`score-display-${cId}`).innerText = newScore;
-      updateTotalAndSuggestion();
+    function selectEmployee(name) {
+      currentSelectedEmp=name; currentStation=currentEvalData[name].station||STATIONS[0].id;
+      document.getElementById('current-emp-name').innerText=name;
+      renderEmployeeList(); renderStationSelector(); renderEvaluationForm(); updateTotalAndSuggestion();
     }
-
-    function updateScore(stationId, cId, val) {
-      if (!currentEvalData[currentSelectedEmp][stationId]) return;
-      delete currentEvalData[currentSelectedEmp].precalculatedScore;  // 新增
-      currentEvalData[currentSelectedEmp][stationId][cId].score = parseInt(val, 10);
-      document.getElementById(`score-display-${cId}`).innerText = val;
-      updateTotalAndSuggestion();
-    }
-    
-    function updateNote(stationId, cId, val) {
-      if (currentEvalData[currentSelectedEmp][stationId]) {
-        currentEvalData[currentSelectedEmp][stationId][cId].note = val;
-      }
-    }
-
-    function updateTotalAndSuggestion() {
-      const score = calculateScore(currentEvalData, currentSelectedEmp);
-      document.getElementById('current-total-score').innerText = score;
-      const suggestion = getSuggestedGrade(currentSelectedEmp, score);
-      const el = document.getElementById('seniority-suggestion');
-      
-      let html = `
-        <div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">評定今日等級</span>
-            ${suggestion ? `<span class="text-[10px] bg-[#E5EBE6] text-[#687A6B] px-2 py-0.5 rounded-full">該員工年資級距: ${suggestion.seniorityLabel}</span>` : ''}
+    function renderEvaluationForm() {
+      const stId=currentEvalData[currentSelectedEmp].station||STATIONS[0].id;
+      const st=STATIONS.find(s=>s.id===stId)||STATIONS[0];
+      const ed=currentEvalData[currentSelectedEmp][stId];
+      document.getElementById('criteria-form').innerHTML = st.criteria.map(c=>{
+        const d=ed[c.id]||{ score:5, note:'' };
+        return `<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6 p-5 md:p-6 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6] hover:bg-white transition-colors">
+          <div class="lg:w-1/3">
+            <div class="flex items-center space-x-2 mb-1">
+              <h3 class="text-base md:text-lg font-medium text-[#2D3A31]">${c.name}</h3>
+              <span class="px-2 py-0.5 rounded-full bg-[#E5EBE6] text-[#687A6B] text-[10px] font-medium">${Math.round(c.weight*100)}%</span>
+            </div>
+            <p class="text-xs md:text-sm text-[#687A6B]">${c.desc}</p>
           </div>
-          <div class="flex gap-2 sm:gap-3 flex-wrap">
-      `;
-      
-      ['O', 'A', 'B', 'C', 'D'].forEach(g => {
-        const gc = GRADE_COLORS[g];
-        const isSelected = currentEvalData[currentSelectedEmp]?.grade === g;
-        html += `
-          <button onclick="applyGrade('${g}')" 
-            class="flex-1 min-w-[40px] h-10 sm:h-12 rounded-xl font-bold transition-all border-2 flex items-center justify-center text-sm sm:text-base
-            ${isSelected ? 'ring-2 ring-offset-2 ring-[#8FA192] scale-105 shadow-sm' : 'hover:scale-105 opacity-60 hover:opacity-100'}"
-            style="background:${gc.bg}; color:${gc.text}; border-color:${isSelected ? gc.text : gc.border};">
-            ${g}
-          </button>
-        `;
-      });
-      html += `</div></div>`;
-      el.innerHTML = html;
+          <div class="lg:w-2/3 space-y-4 mt-2 lg:mt-0">
+            <div class="flex items-center space-x-3 md:space-x-4">
+              <button onclick="adjustScore('${stId}','${c.id}',-1)" class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">-</button>
+              <input type="range" min="1" max="10" value="${d.score}" id="slider-${c.id}" oninput="updateScore('${stId}','${c.id}',this.value)" class="flex-1 h-2 bg-[#D4DCD5] rounded-lg cursor-pointer"/>
+              <button onclick="adjustScore('${stId}','${c.id}',1)"  class="w-8 h-8 rounded-full bg-[#D4DCD5] flex items-center justify-center text-[#4F6354] hover:bg-[#C3D0C6] active:scale-95 transition-all">+</button>
+              <div id="score-display-${c.id}" class="w-10 h-10 ml-2 flex-shrink-0 flex items-center justify-center bg-[#6C8673] text-white rounded-xl shadow-sm text-lg">${d.score}</div>
+            </div>
+            <div class="relative">
+              <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-[#8FA192]"></i>
+              <input type="text" placeholder="新增備註 (選填)..." value="${d.note}" onchange="updateNote('${stId}','${c.id}',this.value)"
+                class="w-full pl-9 pr-4 py-2 bg-white border border-[#D4DCD5] rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-[#8FA192]/30 focus:outline-none text-[#2D3A31]"/>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      lucide.createIcons();
     }
-
-    function applyGrade(grade) {
-      currentEvalData[currentSelectedEmp].grade = grade;
-      renderEmployeeList();
+    function adjustScore(stId,cId,delta) {
+      if(!currentEvalData[currentSelectedEmp][stId]) return;
+      delete currentEvalData[currentSelectedEmp].precalculatedScore;
+      let s=Math.min(10,Math.max(1,currentEvalData[currentSelectedEmp][stId][cId].score+delta));
+      currentEvalData[currentSelectedEmp][stId][cId].score=s;
+      document.getElementById(`slider-${cId}`).value=s;
+      document.getElementById(`score-display-${cId}`).innerText=s;
       updateTotalAndSuggestion();
-      showToast(`已成功評定 ${currentSelectedEmp} 今日等級為 ${grade}`);
+    }
+    function updateScore(stId,cId,val) {
+      if(!currentEvalData[currentSelectedEmp][stId]) return;
+      delete currentEvalData[currentSelectedEmp].precalculatedScore;
+      currentEvalData[currentSelectedEmp][stId][cId].score=parseInt(val,10);
+      document.getElementById(`score-display-${cId}`).innerText=val;
+      updateTotalAndSuggestion();
+    }
+    function updateNote(stId,cId,val) {
+      if(currentEvalData[currentSelectedEmp][stId]) currentEvalData[currentSelectedEmp][stId][cId].note=val;
+    }
+    function updateTotalAndSuggestion() {
+      const score=calculateScore(currentEvalData,currentSelectedEmp);
+      document.getElementById('current-total-score').innerText=score;
+      const sug=getSuggestedGrade(currentSelectedEmp,score);
+      const el=document.getElementById('seniority-suggestion');
+      let html=`<div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">評定今日等級</span>
+          ${sug?`<span class="text-[10px] bg-[#E5EBE6] text-[#687A6B] px-2 py-0.5 rounded-full">年資級距: ${sug.seniorityLabel}</span>`:''}
+        </div>
+        <div class="flex gap-2 sm:gap-3 flex-wrap">`;
+      ['O','A','B','C','D'].forEach(g=>{
+        const gc=GRADE_COLORS[g], sel=currentEvalData[currentSelectedEmp]?.grade===g;
+        html+=`<button onclick="applyGrade('${g}')"
+          class="flex-1 min-w-[40px] h-10 sm:h-12 rounded-xl font-bold transition-all border-2 flex items-center justify-center text-sm sm:text-base
+          ${sel?'ring-2 ring-offset-2 ring-[#8FA192] scale-105 shadow-sm':'hover:scale-105 opacity-60 hover:opacity-100'}"
+          style="background:${gc.bg};color:${gc.text};border-color:${sel?gc.text:gc.border};">${g}</button>`;
+      });
+      html+=`</div></div>`;
+      el.innerHTML=html;
+    }
+    function applyGrade(grade) {
+      currentEvalData[currentSelectedEmp].grade=grade;
+      renderEmployeeList(); updateTotalAndSuggestion();
+      showToast(`已評定 ${currentSelectedEmp} 今日等級為 ${grade}`);
     }
 
+    // ══════════════════════════════════════════════
+    // 儲存
+    // ══════════════════════════════════════════════
     async function saveData() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
-      storage.current = currentEvalData;
-      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
-      
-      let records = [];
-      EMPLOYEES.forEach(emp => {
-        const grade = currentEvalData[emp.name]?.grade;
-        if (grade) {
-          const stationId = currentEvalData[emp.name]?.station || STATIONS[0].id;
-          const stationObj = STATIONS.find(s => s.id === stationId);
-          const stationName = stationObj?.name || stationId;
-          const score = calculateScore(currentEvalData, emp.name); 
-          const details = currentEvalData[emp.name][stationId] || {};
-          
-          let detailsTextArr = [];
-          if (stationObj && stationObj.criteria) {
-            stationObj.criteria.forEach(c => {
-              if (details[c.id]) {
-                const cScore = details[c.id].score;
-                const cNote = details[c.id].note ? ` (備註: ${details[c.id].note})` : '';
-                detailsTextArr.push(`【${c.name}】${cScore}分${cNote}`);
-              }
-            });
-          }
-          const detailsString = detailsTextArr.join('\n');
-          const gradeScore = GRADE_SCORES[grade] || 0;
-          const weightedTotal = parseFloat(score);
-          const finalScore = (weightedTotal * 0.7 + gradeScore * 0.3).toFixed(1);
-
-          records.push({
-            date: todayString, name: emp.name, station: stationName,      
-            score: weightedTotal, grade: grade, details: detailsString,    
-            finalScore: parseFloat(finalScore) 
-          });
-        }
-      });
-
-      if (records.length === 0) {
-        showToast('尚未替任何員工設定等級，無資料可儲存');
-        return;
-      }
-
-      const payload = { type: 'evaluation', date: todayString, records: records };
-      const modal = document.getElementById('status-modal');
-      const loading = document.getElementById('modal-loading');
-      const success = document.getElementById('modal-success');
-      
-      modal.showModal();
-      loading.classList.remove('hidden');
-      success.classList.add('hidden');
-
-      try {
-        const response = await fetch(GAS_API_URL, {
-          method: 'POST', redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-        loading.classList.add('hidden');
-        if (result.status === 'success') {
-          success.classList.remove('hidden');
-          lucide.createIcons();
+      let s=JSON.parse(localStorage.getItem('EvalSystemDB_v2'))||{};
+      s.current=currentEvalData;
+      localStorage.setItem('EvalSystemDB_v2',JSON.stringify(s));
+      let records=[];
+      EMPLOYEES.forEach(emp=>{
+        const grade=currentEvalData[emp.name]?.grade;
+        if(!grade) return;
+        const stId=currentEvalData[emp.name]?.station||STATIONS[0].id;
+        const stObj=STATIONS.find(s=>s.id===stId);
+        const score=calculateScore(currentEvalData,emp.name);
+        const details=currentEvalData[emp.name][stId]||{};
+        // 若為 AI 代評，直接用 AI 理由當細項說明；否則用滑桿明細
+        const aiReason=currentEvalData[emp.name].aiReason;
+        let detailsStr;
+        if(aiReason){
+          detailsStr=`【AI代評】${aiReason}`;
         } else {
-          modal.close();
-          showToast('雲端同步失敗，但已存在本機');
+          let arr=[];
+          if(stObj?.criteria) stObj.criteria.forEach(c=>{ if(details[c.id]){ const n=details[c.id].note?` (備註: ${details[c.id].note})`:''; arr.push(`【${c.name}】${details[c.id].score}分${n}`); } });
+          detailsStr=arr.join('\n');
         }
-      } catch (error) {
+        const gradeScore=GRADE_SCORES[grade]||0;
+        const wt=parseFloat(score);
+        records.push({ date:todayString, name:emp.name, station:stObj?.name||stId, score:wt, grade, details:detailsStr, finalScore:parseFloat((wt*0.7+gradeScore*0.3).toFixed(1)) });
+      });
+      if(!records.length){ showToast('尚未替任何員工設定等級，無資料可儲存'); return; }
+      const modal=document.getElementById('status-modal');
+      const loading=document.getElementById('modal-loading');
+      const success=document.getElementById('modal-success');
+      modal.showModal(); loading.classList.remove('hidden'); success.classList.add('hidden');
+      try {
+        const r=await (await fetch(GAS_API_URL,{ method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({ type:'evaluation', date:todayString, records }) })).json();
         loading.classList.add('hidden');
-        modal.close();
-        showToast('網路錯誤：雲端同步失敗，已儲存於本機');
-      }
+        if(r.status==='success'){ success.classList.remove('hidden'); lucide.createIcons(); }
+        else { modal.close(); showToast('雲端同步失敗，但已存在本機'); }
+      } catch(e){ loading.classList.add('hidden'); modal.close(); showToast('網路錯誤：雲端同步失敗，已儲存於本機'); }
     }
-
     async function saveCleaningData() {
-      let storage = JSON.parse(localStorage.getItem('EvalSystemDB_v2')) || {};
-      storage.currentCleaning = cleaningData;
-      localStorage.setItem('EvalSystemDB_v2', JSON.stringify(storage));
-      
-      let records = [];
-      ALL_EMPLOYEES.forEach(emp => {
-        if (cleaningData[emp.name]?.selected) {
-          records.push({ name: emp.name, stars: cleaningData[emp.name].stars || 0 });
-        }
-      });
-
-      if (records.length === 0) {
-        showToast('本機儲存成功 (無人參與清潔)');
-        return;
-      }
-
-      const modal = document.getElementById('status-modal');
-      const loading = document.getElementById('modal-loading');
-      const success = document.getElementById('modal-success');
-      
-      modal.showModal();
-      loading.classList.remove('hidden');
-      success.classList.add('hidden');
-
-      const payload = { type: 'cleaning', date: todayString, records: records };
-
+      let s=JSON.parse(localStorage.getItem('EvalSystemDB_v2'))||{};
+      s.currentCleaning=cleaningData;
+      localStorage.setItem('EvalSystemDB_v2',JSON.stringify(s));
+      let records=[];
+      ALL_EMPLOYEES.forEach(emp=>{ if(cleaningData[emp.name]?.selected) records.push({ name:emp.name, stars:cleaningData[emp.name].stars||0 }); });
+      if(!records.length){ showToast('本機儲存成功 (無人參與清潔)'); return; }
+      const modal=document.getElementById('status-modal');
+      const loading=document.getElementById('modal-loading');
+      const success=document.getElementById('modal-success');
+      modal.showModal(); loading.classList.remove('hidden'); success.classList.add('hidden');
       try {
-        const response = await fetch(GAS_API_URL, { 
-          method: 'POST', redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload) 
-        });
-        const result = await response.json();
-        loading.classList.add('hidden'); 
-        if (result.status === 'success') {
-          success.classList.remove('hidden');
-          lucide.createIcons();
-        } else {
-          modal.close();
-          showToast('雲端同步失敗');
-        }
-      } catch (error) {
-        loading.classList.add('hidden'); 
-        modal.close();
-        showToast('網路錯誤，請檢查連線');
-      }
+        const r=await (await fetch(GAS_API_URL,{ method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({ type:'cleaning', date:todayString, records }) })).json();
+        loading.classList.add('hidden');
+        if(r.status==='success'){ success.classList.remove('hidden'); lucide.createIcons(); }
+        else { modal.close(); showToast('雲端同步失敗'); }
+      } catch(e){ loading.classList.add('hidden'); modal.close(); showToast('網路錯誤，請檢查連線'); }
     }
 
+    // ══════════════════════════════════════════════
+    // 清潔模組
+    // ══════════════════════════════════════════════
     function renderCleaningModule() {
-      const sel = document.getElementById('cleaning-emp-selector');
-      sel.innerHTML = ALL_EMPLOYEES.map(emp => {
-        const isSelected = cleaningData[emp.name]?.selected;
-        return `
-          <button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
-            class="px-3 py-1.5 rounded-full text-sm border transition-all ${isSelected
-              ? 'bg-[#6C8673] text-white border-[#6C8673]'
-              : 'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">
-            ${emp.name}
-          </button>
-        `;
+      document.getElementById('cleaning-emp-selector').innerHTML = ALL_EMPLOYEES.map(emp=>{
+        const sel=cleaningData[emp.name]?.selected;
+        return `<button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
+          class="px-3 py-1.5 rounded-full text-sm border transition-all ${sel?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${emp.name}</button>`;
       }).join('');
       renderCleaningSelectedList();
     }
-
-    function toggleCleaningEmp(empName) {
-      cleaningData[empName].selected = !cleaningData[empName].selected;
-      if (!cleaningData[empName].selected) cleaningData[empName].stars = 0;
+    function toggleCleaningEmp(name) {
+      cleaningData[name].selected=!cleaningData[name].selected;
+      if(!cleaningData[name].selected) cleaningData[name].stars=0;
       renderCleaningModule();
     }
-
     function renderCleaningSelectedList() {
-      const selectedEmps = ALL_EMPLOYEES.filter(e => cleaningData[e.name]?.selected);
-      const container = document.getElementById('cleaning-selected-list');
-      if (selectedEmps.length === 0) {
-        container.innerHTML = `<p class="text-center text-[#8FA192] text-sm py-8">請從上方選擇今日例行清潔人員</p>`;
-        return;
-      }
-      container.innerHTML = selectedEmps.map(emp => {
-        const stars = cleaningData[emp.name].stars || 0;
-        return `
-          <div class="flex items-center justify-between p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-[#E5EBE6] flex items-center justify-center text-[#3F5144] font-medium text-sm">
-                ${emp.name.charAt(0)}
-              </div>
-              <span class="font-medium text-[#2D3A31]">${emp.name}</span>
-            </div>
-            <div class="star-rating" id="stars-${emp.name}">
-              ${[1,2,3,4,5].map(n => `
-                <button class="star-btn ${n <= stars ? 'active' : ''}" onclick="setStars('${emp.name}', ${n})" title="${n}星">
-                  <i data-lucide="star" class="w-6 h-6 ${n <= stars ? 'fill-current' : ''}"></i>
-                </button>
-              `).join('')}
-            </div>
+      const sel=ALL_EMPLOYEES.filter(e=>cleaningData[e.name]?.selected);
+      const c=document.getElementById('cleaning-selected-list');
+      if(!sel.length){ c.innerHTML=`<p class="text-center text-[#8FA192] text-sm py-8">請從上方選擇今日例行清潔人員</p>`; return; }
+      c.innerHTML=sel.map(emp=>{
+        const stars=cleaningData[emp.name].stars||0;
+        return `<div class="flex items-center justify-between p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-[#E5EBE6] flex items-center justify-center text-[#3F5144] font-medium text-sm">${emp.name.charAt(0)}</div>
+            <span class="font-medium text-[#2D3A31]">${emp.name}</span>
           </div>
-        `;
+          <div class="star-rating" id="stars-${emp.name}">
+            ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=stars?'active':''}" onclick="setStars('${emp.name}',${n})"><i data-lucide="star" class="w-6 h-6 ${n<=stars?'fill-current':''}"></i></button>`).join('')}
+          </div>
+        </div>`;
       }).join('');
       lucide.createIcons();
     }
-
-    function setStars(empName, n) {
-      cleaningData[empName].stars = n;
-      const container = document.getElementById(`stars-${empName}`);
-      if (container) {
-        container.querySelectorAll('.star-btn').forEach((btn, i) => {
-          btn.classList.toggle('active', i < n);
-          const icon = btn.querySelector('svg');
-          if (icon) {
-            if (i < n) icon.classList.add('fill-current');
-            else icon.classList.remove('fill-current');
-          }
-        });
-      }
+    function setStars(name,n) {
+      cleaningData[name].stars=n;
+      const c=document.getElementById(`stars-${name}`);
+      if(c) c.querySelectorAll('.star-btn').forEach((b,i)=>{ b.classList.toggle('active',i<n); const ic=b.querySelector('svg'); if(ic){ if(i<n) ic.classList.add('fill-current'); else ic.classList.remove('fill-current'); } });
     }
 
-    function toggleGlobalMenu() {
-      document.getElementById('global-nav-menu').classList.toggle('hidden');
-    }
-
-    // 更新底線寬度與位置的統一函式
+    // ══════════════════════════════════════════════
+    // Tab & Nav
+    // ══════════════════════════════════════════════
+    function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
     function updateTabIndicator() {
-      const evaluateBtn = document.getElementById('tab-evaluate');
-      const cleaningBtn = document.getElementById('tab-cleaning');
-      const indicator = document.getElementById('tab-indicator');
-      const sectionCleaning = document.getElementById('section-cleaning');
-      
-      if (!indicator || !evaluateBtn || !cleaningBtn || !sectionCleaning) return;
-
-      const isEvaluate = sectionCleaning.classList.contains('hidden');
-      const activeBtn = isEvaluate ? evaluateBtn : cleaningBtn;
-
-      // 💡 優化點：如果寬度尚未被彈性排版撐開（為 0），先不要更新寬度，有效防止抓到初始 block 的錯誤大寬度
-      if (activeBtn.offsetWidth === 0) return;
-
-      indicator.style.width = `${activeBtn.offsetWidth}px`;
-      indicator.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+      const eb=document.getElementById('tab-evaluate'), cb=document.getElementById('tab-cleaning');
+      const ind=document.getElementById('tab-indicator'), sc=document.getElementById('section-cleaning');
+      if(!ind||!eb||!cb||!sc) return;
+      const act=sc.classList.contains('hidden')?eb:cb;
+      if(!act.offsetWidth) return;
+      ind.style.width=`${act.offsetWidth}px`; ind.style.transform=`translateX(${act.offsetLeft}px)`;
     }
-
-    // 💡 優化點：只保留視窗縮放的即時對齊，徹底移除 window.load，改由 initApp 進行最終定型
     window.addEventListener('resize', updateTabIndicator);
-
     function switchTab(tab) {
-      const evaluateBtn = document.getElementById('tab-evaluate');
-      const cleaningBtn = document.getElementById('tab-cleaning');
-      const sectionEvaluate = document.getElementById('section-evaluate');
-      const sectionCleaning = document.getElementById('section-cleaning');
-      const indicator = document.getElementById('tab-indicator');
-
-      if (tab === 'evaluate') {
-        sectionEvaluate.classList.remove('hidden');
-        sectionCleaning.classList.add('hidden');
-        evaluateBtn.classList.remove('text-[#8FA192]', 'hover:text-[#4F6354]');
-        evaluateBtn.classList.add('text-[#2D3A31]');
-        cleaningBtn.classList.remove('text-[#2D3A31]');
-        cleaningBtn.classList.add('text-[#8FA192]', 'hover:text-[#4F6354]');
+      const eb=document.getElementById('tab-evaluate'), cb=document.getElementById('tab-cleaning');
+      const se=document.getElementById('section-evaluate'), sc=document.getElementById('section-cleaning');
+      const ind=document.getElementById('tab-indicator');
+      if(tab==='evaluate'){
+        se.classList.remove('hidden'); sc.classList.add('hidden');
+        eb.classList.remove('text-[#8FA192]','hover:text-[#4F6354]'); eb.classList.add('text-[#2D3A31]');
+        cb.classList.remove('text-[#2D3A31]'); cb.classList.add('text-[#8FA192]','hover:text-[#4F6354]');
       } else {
-        sectionEvaluate.classList.add('hidden');
-        sectionCleaning.classList.remove('hidden');
-        cleaningBtn.classList.remove('text-[#8FA192]', 'hover:text-[#4F6354]');
-        cleaningBtn.classList.add('text-[#2D3A31]');
-        evaluateBtn.classList.remove('text-[#2D3A31]');
-        evaluateBtn.classList.add('text-[#8FA192]', 'hover:text-[#4F6354]');
+        se.classList.add('hidden'); sc.classList.remove('hidden');
+        cb.classList.remove('text-[#8FA192]','hover:text-[#4F6354]'); cb.classList.add('text-[#2D3A31]');
+        eb.classList.remove('text-[#2D3A31]'); eb.classList.add('text-[#8FA192]','hover:text-[#4F6354]');
         renderCleaningModule();
       }
-      
-      // 計算並移動到底部標籤正確位置
       updateTabIndicator();
-      
-      // 💡 優化點：如果底線還是透明狀態（代表初次進入網頁且排版已完成），給予 50ms 小緩衝確保寬度已精準寫入樣式，再淡入顯示
-      if (indicator && indicator.classList.contains('opacity-0')) {
-        setTimeout(() => {
-          indicator.classList.remove('opacity-0');
-        }, 50);
-      }
+      if(ind&&ind.classList.contains('opacity-0')) setTimeout(()=>ind.classList.remove('opacity-0'),50);
     }
-
-    function showToast(msg, isWarning = false) {
-      document.getElementById('toast-msg').innerText = msg;
-      const toast = document.getElementById('toast');
-      if (isWarning) {
-        toast.classList.remove('bg-[#3F5144]/95');
-        toast.classList.add('bg-orange-500/95');
-      } else {
-        toast.classList.add('bg-[#3F5144]/95');
-        toast.classList.remove('bg-orange-500/95');
-      }
-      toast.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
-      setTimeout(() => toast.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none'), 3000);
+    function showToast(msg, warn=false) {
+      document.getElementById('toast-msg').innerText=msg;
+      const t=document.getElementById('toast');
+      if(warn){ t.classList.remove('bg-[#3F5144]/95'); t.classList.add('bg-orange-500/95'); }
+      else     { t.classList.add('bg-[#3F5144]/95');   t.classList.remove('bg-orange-500/95'); }
+      t.classList.remove('opacity-0','-translate-y-6','pointer-events-none');
+      setTimeout(()=>t.classList.add('opacity-0','-translate-y-6','pointer-events-none'),3000);
     }
-
-     async function fetchTodayHistory() {
+    async function fetchTodayHistory() {
       try {
-        const response = await fetch(`${GAS_API_URL}?action=getHistory`);
-        const result = await response.json();
-        if (result.status !== 'success') return;
-
-        const todayEval = result.data.history?.[todayString] || {};
-        const todayCleaning = result.data.historyCleaning?.[todayString] || {};
-
-        // 合併績效評分
-        Object.keys(todayEval).forEach(name => {
-          if (!currentEvalData[name]) return;
-          const rec = todayEval[name];
-          const stationId = rec.station;
-          const station = STATIONS.find(s => s.id === stationId);
-          if (!station) return;
-
-          currentEvalData[name].station = stationId;
-          currentEvalData[name].grade = rec.grade;
-          currentEvalData[name].precalculatedScore = rec.precalculatedScore;
-
-          if (!currentEvalData[name][stationId]) currentEvalData[name][stationId] = {};
-
-          if (rec.detailsText) {
-            station.criteria.forEach(c => {
-              const regex = new RegExp(`【${c.name}】(\\d+)分(?:\\s*\\(備註:\\s*([^)]*)\\))?`);
-              const m = rec.detailsText.match(regex);
-              if (m) {
-                currentEvalData[name][stationId][c.id] = {
-                  score: parseInt(m[1], 10),
-                  note: m[2] || ''
-                };
-              }
-            });
-          }
+        const r=await (await fetch(`${GAS_API_URL}?action=getHistory`)).json();
+        if(r.status!=='success') return;
+        const te=r.data.history?.[todayString]||{};
+        const tc=r.data.historyCleaning?.[todayString]||{};
+        Object.keys(te).forEach(name=>{
+          if(!currentEvalData[name]) return;
+          const rec=te[name], stId=rec.station, st=STATIONS.find(s=>s.id===stId);
+          if(!st) return;
+          currentEvalData[name].station=stId; currentEvalData[name].grade=rec.grade; currentEvalData[name].precalculatedScore=rec.precalculatedScore;
+          if(!currentEvalData[name][stId]) currentEvalData[name][stId]={};
+          if(rec.detailsText) st.criteria.forEach(c=>{
+            const m=rec.detailsText.match(new RegExp(`【${c.name}】(\\d+)分(?:\\s*\\(備註:\\s*([^)]*)\\))?`));
+            if(m) currentEvalData[name][stId][c.id]={ score:parseInt(m[1],10), note:m[2]||'' };
+          });
         });
-
-      // 合併清潔評分
-      Object.keys(todayCleaning).forEach(name => {
-        if (!cleaningData[name]) return;
-        cleaningData[name].selected = todayCleaning[name].selected;
-        cleaningData[name].stars = todayCleaning[name].stars;
-      });
-
-    } catch (err) {
-      console.error('讀取今日雲端紀錄失敗:', err);
+        Object.keys(tc).forEach(name=>{ if(cleaningData[name]){ cleaningData[name].selected=tc[name].selected; cleaningData[name].stars=tc[name].stars; } });
+      } catch(e){ console.error('讀取今日雲端紀錄失敗:',e); }
     }
-  }
-
-    // 點擊空白處關閉選單
-    document.addEventListener('click', function(event) {
-        const menu = document.getElementById('global-nav-menu');
-        const btn = document.querySelector('button[onclick="toggleGlobalMenu()"]');
-        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
-            menu.classList.add('hidden');
-        }
+    document.addEventListener('click', e=>{
+      const m=document.getElementById('global-nav-menu'), b=document.querySelector('button[onclick="toggleGlobalMenu()"]');
+      if(m&&b&&!m.contains(e.target)&&!b.contains(e.target)) m.classList.add('hidden');
     });
 
-    window.onload = async () => {
-      try {
-        await Promise.race([
-          initLiff(),
-          new Promise(resolve => setTimeout(resolve, 3000))
-        ]);
-        initApp();
-      } catch (err) {
-        console.error("嚴重錯誤:", err);
+    // ══════════════════════════════════════════════
+    // AI 代評功能
+    // ══════════════════════════════════════════════
+    function showAIBanner() {
+      const b=document.getElementById('ai-mode-banner');
+      if(b){ b.classList.remove('hidden'); lucide.createIcons(); }
+    }
+
+    function showAIStep(step) {
+      ['key','form','loading','results'].forEach(s=>{
+        document.getElementById(`ai-step-${s}`)?.classList.add('hidden');
+        document.getElementById(`ai-step-${s}-footer`)?.classList.add('hidden');
+      });
+      document.getElementById(`ai-step-${step}`)?.classList.remove('hidden');
+      document.getElementById(`ai-step-${step}-footer`)?.classList.remove('hidden');
+      const labels={ key:'Step 1 — 設定 API Key', form:'Step 2 — 填寫今日事件', loading:'分析中，請稍候...', results:'Step 3 — 確認並套用' };
+      const el=document.getElementById('ai-modal-subtitle');
+      if(el) el.innerText=labels[step]||'';
+    }
+
+    function openAIEvalModal() {
+      aiIncidents=[]; aiResultData=null; aiNoIncident=false;
+      document.getElementById('ai-eval-modal').showModal();
+      showAIStep('form'); renderIncidentForm(); updateNoIncidentUI();
+      lucide.createIcons();
+    }
+    function closeAIModal() { document.getElementById('ai-eval-modal').close(); }
+
+    function saveGroqKey() {
+      const inp=document.getElementById('groq-key-input');
+      const key=(inp?.value||'').trim();
+      if(!key||!key.startsWith('gsk_')){ showToast('請輸入正確的 Groq API Key（以 gsk_ 開頭）',true); return; }
+      groqApiKey=key; localStorage.setItem('groq_api_key',groqApiKey);
+      showToast('API Key 已儲存');
+      showAIStep('form'); renderIncidentForm(); updateNoIncidentUI(); lucide.createIcons();
+    }
+    function resetGroqKey() {
+      localStorage.removeItem('groq_api_key'); groqApiKey='';
+      showAIStep('key');
+      const inp=document.getElementById('groq-key-input'); if(inp) inp.value='';
+      lucide.createIcons();
+    }
+
+    function toggleNoIncident() {
+      aiNoIncident=!aiNoIncident;
+      if(aiNoIncident) aiIncidents=[];
+      updateNoIncidentUI(); renderIncidentForm();
+    }
+    function updateNoIncidentUI() {
+      const label=document.getElementById('no-incident-label');
+      const check=document.getElementById('no-incident-check');
+      const sec=document.getElementById('incident-section');
+      if(!label||!check) return;
+      if(aiNoIncident){
+        label.style.borderColor='#6C8673'; label.style.background='#F0F4F1';
+        check.style.borderColor='#6C8673'; check.style.background='#6C8673';
+        check.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        sec.classList.add('hidden');
+      } else {
+        label.style.borderColor='#D4DCD5'; label.style.background='white';
+        check.style.borderColor='#D4DCD5'; check.style.background='white';
+        check.innerHTML=''; sec.classList.remove('hidden');
       }
+    }
+
+    function addIncident() {
+      aiNoIncident=false; updateNoIncidentUI();
+      aiIncidents.push({ id:Date.now(), who:[], description:'', severity:'中等' });
+      renderIncidentForm();
+    }
+    function removeIncident(id) {
+      aiIncidents=aiIncidents.filter(i=>i.id!==id); renderIncidentForm();
+    }
+    function toggleIncidentPerson(incId, name) {
+      const inc=aiIncidents.find(i=>i.id===incId); if(!inc) return;
+      if(inc.who.includes(name)) inc.who=inc.who.filter(n=>n!==name); else inc.who.push(name);
+      renderIncidentForm();
+    }
+    function setIncidentDesc(incId, val) { const i=aiIncidents.find(i=>i.id===incId); if(i) i.description=val; }
+    function setIncidentSeverity(incId, sev) {
+      const inc=aiIncidents.find(i=>i.id===incId); if(!inc) return;
+      inc.severity=sev; renderIncidentForm();
+    }
+
+    function renderIncidentForm() {
+      const c=document.getElementById('incident-list'); if(!c) return;
+      if(!aiIncidents.length){
+        c.innerHTML=`<p class="text-center text-[#8FA192] text-xs py-6 border-2 border-dashed border-[#D4DCD5] rounded-2xl">尚無事件 — 點擊「新增事件」或勾選無特殊事件</p>`;
+        lucide.createIcons(); return;
+      }
+      c.innerHTML=aiIncidents.map((inc,idx)=>`
+        <div class="border border-[#D4DCD5] rounded-2xl p-4 space-y-3.5 bg-[#F8FAF8]">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-[#2D3A31] flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-[#6C8673] text-white text-xs flex items-center justify-center">${idx+1}</span> 事件
+            </span>
+            <button onclick="removeIncident(${inc.id})" class="w-7 h-7 rounded-full bg-[#FEE2E2] text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-[#8FA192] uppercase tracking-widest mb-2">涉及人員（可多選）</p>
+            <div class="flex flex-wrap gap-1.5">
+              ${EMPLOYEES.map(emp=>`<button onclick="toggleIncidentPerson(${inc.id},'${emp.name}')"
+                class="px-3 py-1 rounded-full text-xs font-medium border transition-all ${inc.who.includes(emp.name)?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${emp.name}</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-[#8FA192] uppercase tracking-widest mb-2">事件描述</p>
+            <input type="text" placeholder="例：遺漏打包餐具、客人抱怨等候過久..."
+              value="${inc.description}" oninput="setIncidentDesc(${inc.id},this.value)"
+              class="w-full px-3 py-2.5 rounded-xl border border-[#D4DCD5] text-sm text-[#2D3A31] focus:outline-none focus:ring-2 focus:ring-[#6C8673]/25 bg-white"/>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-[#8FA192] uppercase tracking-widest mb-2">嚴重程度</p>
+            <div class="flex gap-2">
+              <button onclick="setIncidentSeverity(${inc.id},'輕微')" class="severity-btn mild   ${inc.severity==='輕微'?'active':''}">😅 輕微</button>
+              <button onclick="setIncidentSeverity(${inc.id},'中等')" class="severity-btn medium ${inc.severity==='中等'?'active':''}">😬 中等</button>
+              <button onclick="setIncidentSeverity(${inc.id},'嚴重')" class="severity-btn severe ${inc.severity==='嚴重'?'active':''}">🚨 嚴重</button>
+            </div>
+          </div>
+        </div>`).join('');
+      lucide.createIcons();
+    }
+
+    async function submitToAI() {
+      if(!aiNoIncident){
+        for(const inc of aiIncidents){
+          if(!inc.who.length){ showToast('請為每個事件選擇涉及人員',true); return; }
+          if(!inc.description.trim()){ showToast('請填寫每個事件的描述內容',true); return; }
+        }
+      }
+      showAIStep('loading');
+      try {
+        const result=await callGroqAPI(aiNoIncident?[]:aiIncidents);
+        aiResultData=result; renderAIResults(result); showAIStep('results');
+      } catch(e){
+        console.error('Groq 錯誤:',e);
+        showAIStep('form'); renderIncidentForm(); updateNoIncidentUI();
+        showToast('AI 分析失敗：'+(e.message||'請確認 API Key 是否正確'),true);
+      }
+      lucide.createIcons();
+    }
+
+    async function callGroqAPI(incidents) {
+      const empList=EMPLOYEES.map(e=>e.name).join('、');
+      const sys=`你是一家連鎖早餐店的人事評分助理。今天店長可柔休假，請根據今日事件報告，為每位值班員工打績效分數。
+
+【評分規則】分數範圍：40~75 分
+• 無事件員工：60~75 分（以 66±4 為中心浮動）
+• 輕微問題（小失誤、小遲到、小誤差）：扣 3~8 分
+• 中等問題（客訴、品質失誤、協調不足）：扣 8~15 分
+• 嚴重問題（重大失誤、態度不佳、造成損失）：扣 15~25 分
+• 同一員工多事件：累積扣分，最低 40 分
+• 必須為每一位值班員工給分
+• 理由請用繁體中文，20字以內`;
+
+      const usr=`今日值班員工：${empList}
+
+今日事件：
+${incidents.length===0?'今日無任何特殊事件，所有員工表現正常。':incidents.map((inc,i)=>`事件${i+1}：涉及【${inc.who.join('、')}】，${inc.description}（嚴重程度：${inc.severity}）`).join('\n')}
+
+只輸出 JSON，不要說明或 markdown：
+{"scores":{"姓名":{"score":數字,"reason":"繁體中文理由"}}}`;
+
+      const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{ 'Authorization':`Bearer ${groqApiKey}`, 'Content-Type':'application/json' },
+        body:JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:600, temperature:0.25,
+          messages:[{ role:'system', content:sys },{ role:'user', content:usr }] })
+      });
+      if(!resp.ok){
+        const err=await resp.json().catch(()=>({}));
+        if(resp.status===401) throw new Error('API Key 無效，請重新設定');
+        throw new Error(err.error?.message||`HTTP ${resp.status}`);
+      }
+      const data=await resp.json();
+      const text=data.choices?.[0]?.message?.content?.trim()||'';
+      const match=text.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error('AI 回覆格式無法解析，請再試一次');
+      return JSON.parse(match[0]);
+    }
+
+    function renderAIResults(result) {
+      const c=document.getElementById('ai-results-list');
+      if(!c||!result?.scores) return;
+      let total=0, count=0;
+      c.innerHTML=EMPLOYEES.map(emp=>{
+        const r=result.scores[emp.name];
+        if(!r) return `<div class="ai-score-card"><div class="ai-score-bubble bg-[#E5EBE6] text-[#8FA192]">?</div><div class="flex-1"><p class="font-semibold text-[#2D3A31] text-sm">${emp.name}</p><p class="text-xs text-[#8FA192] mt-0.5">AI 未返回此員工評分</p></div></div>`;
+        const score=Math.round(r.score); total+=score; count++;
+        let bg,tc;
+        if(score>=70){ bg='#dcfce7'; tc='#166534'; }
+        else if(score>=60){ bg='#dbeafe'; tc='#1e40af'; }
+        else if(score>=50){ bg='#fef9c3'; tc='#854d0e'; }
+        else { bg='#fee2e2'; tc='#991b1b'; }
+        return `<div class="ai-score-card">
+          <div class="ai-score-bubble" style="background:${bg};color:${tc}">${score}</div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-[#2D3A31] text-sm">${emp.name}</p>
+            <p class="text-xs text-[#687A6B] mt-0.5 leading-relaxed">${r.reason}</p>
+          </div>
+        </div>`;
+      }).join('');
+      if(count>0){
+        const s=document.getElementById('ai-result-summary');
+        if(s){ s.textContent=`今日平均分：${(total/count).toFixed(1)} 分（${count} 人）`; s.classList.remove('hidden'); }
+      }
+    }
+
+    function applyAIScores() {
+      if(!aiResultData?.scores) return;
+      EMPLOYEES.forEach(emp=>{
+        const r=aiResultData.scores[emp.name]; if(!r) return;
+        const score=parseFloat(r.score);
+        currentEvalData[emp.name].precalculatedScore=score.toFixed(1);
+        currentEvalData[emp.name].aiReason=r.reason||'';   // ← 儲存 AI 理由
+        const sug=getSuggestedGrade(emp.name,score);
+        if(sug) currentEvalData[emp.name].grade=sug.grade;
+      });
+      document.getElementById('ai-eval-modal').close();
+      renderEmployeeList(); selectEmployee(currentSelectedEmp);
+      showToast(`AI 代評已套用 ${EMPLOYEES.length} 人分數，請確認後點擊儲存`);
+    }
+
+    function resetAIForm() {
+      aiIncidents=[]; aiResultData=null; aiNoIncident=false;
+      showAIStep('form'); renderIncidentForm(); updateNoIncidentUI(); lucide.createIcons();
+    }
+
+    // ── 啟動 ──
+    window.onload=async()=>{
+      try { await Promise.race([initLiff(), new Promise(r=>setTimeout(r,3000))]); initApp(); }
+      catch(e){ console.error('嚴重錯誤:',e); }
     };
   </script>
 </body>

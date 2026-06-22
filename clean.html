@@ -833,10 +833,67 @@ function buildShiftCells(row) {
     <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||' '}</div></td>`;
 }
 
+// 修改原本的 saveShiftField
 function saveShiftField(key, field, value) {
+  // 1. 先更新網頁本地端的資料，讓畫面反應不卡頓
   if(!shiftData[key]) shiftData[key]={};
   shiftData[key][field] = value;
-  saveToSupabase('shift', key, shiftData[key]);
+  
+  // 2. 解析 key (格式為 YYYY-MM-D)
+  const parts = key.split('-');
+  const year = parseInt(parts[0]);
+  const jsMonth = parseInt(parts[1]);
+  const day = parseInt(parts[2]);
+  
+  // 資料庫的月份是 1-12，所以加 1
+  const dbMonth = jsMonth + 1;
+
+  // 3. 非同步背景寫入資料庫
+  saveToShiftSchedulesDB(year, dbMonth, day, field, value);
+}
+
+// 新增一個專門寫入 shift_schedules 資料表的非同步函數
+async function saveToShiftSchedulesDB(year, month, day, field, value) {
+  // 欄位對應表 (將前端變數對應到 Supabase 欄位名稱)
+  let dbColumn = '';
+  if (field === 'opener') dbColumn = 'open';
+  else if (field === 'duty') dbColumn = 'shift';
+  else if (field === 'at20') dbColumn = 't20';     // 根據你的截圖推測欄位名
+  else if (field === 'close') dbColumn = 'close'; // 請確保資料庫有關帳欄位(假設叫 close)
+
+  if (!dbColumn) return;
+
+  try {
+    // 檢查該日期是否已經有資料紀錄
+    const { data: existingData } = await supabaseClient
+      .from('shift_schedules')
+      .select('year')
+      .eq('year', year)
+      .eq('month', month)
+      .eq('day', day);
+
+    if (existingData && existingData.length > 0) {
+      // 該天已有資料，執行局部更新 (Update)
+      await supabaseClient
+        .from('shift_schedules')
+        .update({ [dbColumn]: value })
+        .eq('year', year)
+        .eq('month', month)
+        .eq('day', day);
+    } else {
+      // 該天尚無資料，建立新紀錄 (Insert)
+      await supabaseClient
+        .from('shift_schedules')
+        .insert({ 
+          year: year, 
+          month: month, 
+          day: day, 
+          [dbColumn]: value 
+        });
+    }
+  } catch (error) {
+    console.error('更新排班資料至資料庫失敗:', error);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1122,13 +1179,30 @@ async function initApp() {
   updateShiftLabels();
   initQuickInput(); 
   
-  const { data, error } = await supabaseClient.from('schedule_data').select('*');
-  if (!error && data) {
-    data.forEach(row => {
+  // 1. 讀取其他資料 (人員、清潔、洗餐具) - 排除舊的 shift
+  const { data: generalData, error: generalErr } = await supabaseClient.from('schedule_data').select('*');
+  if (!generalErr && generalData) {
+    generalData.forEach(row => {
       if (row.type === 'staff') staff = row.data || [];
       if (row.type === 'clean') cleanData[row.date_key] = row.data;
       if (row.type === 'dish') dishData[row.date_key] = row.data;
-      if (row.type === 'shift') shiftData[row.date_key] = row.data;
+    });
+  }
+  
+  // 2. 新增：從 shift_schedules 資料表抓取排班資料
+  const { data: shiftDBData, error: shiftErr } = await supabaseClient.from('shift_schedules').select('*');
+  if (!shiftErr && shiftDBData) {
+    shiftDBData.forEach(row => {
+      // JS 的月份是 0-11，資料庫顯示為 1-12，所以轉換時要減 1
+      const jsMonth = row.month - 1; 
+      const key = `${row.year}-${jsMonth}-${row.day}`;
+      
+      shiftData[key] = {
+        opener: row.open || '',      // 對應資料庫 open -> 網頁「開店」
+        duty: row.shift || '',       // 對應資料庫 shift -> 網頁「當天值班」
+        at20: row.t20 || '',         // 對應資料庫 t20 -> 網頁「20:00」(根據截圖推測)
+        close: row.close || ''       // 對應資料庫 close -> 網頁「關帳」(推測欄位名)
+      };
     });
   }
   
