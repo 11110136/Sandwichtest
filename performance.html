@@ -174,7 +174,6 @@
           <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">                                  <i data-lucide="clipboard-list"   class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統</a>
         </div>
       </div>
-      <!-- AI 代評快捷按鈕（永遠可見） -->
       <button onclick="openAIEvalModal()" class="ai-topbar-btn">
         <i data-lucide="bot" class="w-3.5 h-3.5"></i>
         <span class="hidden sm:inline">AI 代評</span>
@@ -199,7 +198,6 @@
 
   <main class="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-12">
 
-    <!-- AI 代評橫幅（可柔未排班時自動出現） -->
     <div id="ai-mode-banner" class="hidden mb-6 ai-banner">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5">
         <div class="flex items-center gap-3">
@@ -218,7 +216,6 @@
       </div>
     </div>
 
-    <!-- 店長評分 Section -->
     <div id="section-evaluate" class="block">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
         <div class="md:col-span-4 lg:col-span-3 space-y-2 md:space-y-4">
@@ -256,7 +253,6 @@
       </div>
     </div>
 
-    <!-- 清潔評分 Section -->
     <div id="section-cleaning" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
       <div class="text-center mb-6 md:mb-10">
         <h2 class="text-2xl md:text-3xl font-light text-[#2D3A31] tracking-wide mb-2 md:mb-3">今日例行清潔評分</h2>
@@ -276,7 +272,6 @@
       </div>
     </div>
 
-    <!-- 儲存狀態 Modal -->
     <dialog id="status-modal" class="backdrop:bg-[#2D3A31]/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-[#E5EBE6] w-[90%] max-w-sm">
       <div class="p-8 text-center">
         <div id="modal-loading" class="hidden">
@@ -296,10 +291,8 @@
       </div>
     </dialog>
 
-    <!-- ══ AI 代評 Modal ══ -->
     <dialog id="ai-eval-modal">
 
-      <!-- 共用 Header -->
       <div class="ai-modal-header">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
@@ -315,7 +308,6 @@
         </button>
       </div>
 
-      <!-- Step: API Key -->
       <div id="ai-step-key" class="hidden ai-modal-body p-6 space-y-5">
         <div class="text-center pt-2 pb-1">
           <div class="w-14 h-14 bg-[#F0F4F1] rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -340,14 +332,12 @@
         </button>
       </div>
 
-      <!-- Step: 事件表單 -->
       <div id="ai-step-form" class="hidden ai-modal-body p-6 space-y-5">
         <div>
           <h3 class="font-bold text-[#2D3A31] text-base mb-1">今日有發生任何問題嗎？</h3>
           <p class="text-[#687A6B] text-xs">記錄今日事件，AI 會據此計算每人分數。沒有問題就直接送出。</p>
         </div>
 
-        <!-- 快速選項：無特殊事件 -->
         <div id="no-incident-label"
           onclick="toggleNoIncident()"
           class="flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all select-none"
@@ -361,7 +351,6 @@
           </div>
         </div>
 
-        <!-- 事件列表 -->
         <div id="incident-section">
           <div class="flex items-center justify-between mb-3">
             <p class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">事件記錄</p>
@@ -389,7 +378,6 @@
         </button>
       </div>
 
-      <!-- Step: 處理中 -->
       <div id="ai-step-loading" class="hidden ai-modal-body p-10 text-center">
         <div class="w-16 h-16 border-4 border-[#D4DCD5] border-t-[#6C8673] rounded-full animate-spin mx-auto mb-5"></div>
         <h3 class="font-bold text-[#2D3A31] text-lg mb-2">AI 正在分析</h3>
@@ -401,7 +389,6 @@
         </div>
       </div>
 
-      <!-- Step: 結果預覽 -->
       <div id="ai-step-results" class="hidden ai-modal-body p-6 space-y-4">
         <div>
           <h3 class="font-bold text-[#2D3A31] text-base mb-1">AI 評分結果預覽</h3>
@@ -512,6 +499,7 @@
       '到職5~8年':  { over90:'O', over80:'A', over70:'B', over60:'C', under60:'D' },
     };
     const GRADE_SCORES = { O:100, A:90, B:80, C:70, D:60 };
+    const GRADE_LIMITS = { O: 1, A: 2, B: 4, C: 3, D: 2 }; // 加入等級人數上限
 
     let currentEvalData = {}, cleaningData = {};
     let currentSelectedEmp = '', currentStation = STATIONS[0].id;
@@ -751,23 +739,57 @@
       document.getElementById('current-total-score').innerText=score;
       const sug=getSuggestedGrade(currentSelectedEmp,score);
       const el=document.getElementById('seniority-suggestion');
+
+      // ── 計算目前各級別已使用人數 ──
+      let currentCounts = { O: 0, A: 0, B: 0, C: 0, D: 0 };
+      EMPLOYEES.forEach(emp => {
+        const g = currentEvalData[emp.name]?.grade;
+        if (g) currentCounts[g]++;
+      });
+
       let html=`<div class="flex flex-col gap-2 mt-3 p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
         <div class="flex items-center gap-2 mb-1">
           <span class="text-xs font-semibold text-[#8FA192] uppercase tracking-widest">評定今日等級</span>
           ${sug?`<span class="text-[10px] bg-[#E5EBE6] text-[#687A6B] px-2 py-0.5 rounded-full">年資級距: ${sug.seniorityLabel}</span>`:''}
         </div>
         <div class="flex gap-2 sm:gap-3 flex-wrap">`;
+
       ['O','A','B','C','D'].forEach(g=>{
-        const gc=GRADE_COLORS[g], sel=currentEvalData[currentSelectedEmp]?.grade===g;
-        html+=`<button onclick="applyGrade('${g}')"
-          class="flex-1 min-w-[40px] h-10 sm:h-12 rounded-xl font-bold transition-all border-2 flex items-center justify-center text-sm sm:text-base
-          ${sel?'ring-2 ring-offset-2 ring-[#8FA192] scale-105 shadow-sm':'hover:scale-105 opacity-60 hover:opacity-100'}"
-          style="background:${gc.bg};color:${gc.text};border-color:${sel?gc.text:gc.border};">${g}</button>`;
+        const gc=GRADE_COLORS[g];
+        const sel=currentEvalData[currentSelectedEmp]?.grade===g;
+        
+        // 算出剩餘名額 (如果當前員工已經是這個等級，不算佔用額外名額，以便正確呈現他的剩餘配額)
+        let used = currentCounts[g] || 0;
+        if (sel) used--;
+        const remain = Math.max(0, GRADE_LIMITS[g] - used);
+        const disabled = !sel && remain <= 0;
+
+        html+=`<button onclick="${disabled ? '' : `applyGrade('${g}')`}"
+          class="flex-1 min-w-[40px] h-12 sm:h-14 rounded-xl font-bold transition-all border-2 flex flex-col items-center justify-center
+          ${sel?'ring-2 ring-offset-2 ring-[#8FA192] scale-105 shadow-sm': (disabled ? 'bg-[#E5EBE6] text-[#8FA192] border-[#D4DCD5] cursor-not-allowed opacity-50' : 'hover:scale-105 opacity-60 hover:opacity-100')}"
+          style="${disabled ? '' : `background:${gc.bg};color:${gc.text};border-color:${sel?gc.text:gc.border};`}">
+            <span class="text-sm sm:text-base">${g}</span>
+            <span class="text-[10px] font-normal leading-none mt-1 opacity-80">${remain}/${GRADE_LIMITS[g]}</span>
+          </button>`;
       });
       html+=`</div></div>`;
       el.innerHTML=html;
     }
+    
     function applyGrade(grade) {
+      // ── 檢查人數限制 ──
+      let count = 0;
+      EMPLOYEES.forEach(emp => {
+        if (emp.name !== currentSelectedEmp && currentEvalData[emp.name]?.grade === grade) {
+          count++;
+        }
+      });
+
+      if (count >= GRADE_LIMITS[grade]) {
+        showToast(`${grade}級名額已達上限！最多只能評價 ${GRADE_LIMITS[grade]} 位`, true);
+        return;
+      }
+
       currentEvalData[currentSelectedEmp].grade=grade;
       renderEmployeeList(); updateTotalAndSuggestion();
       showToast(`已評定 ${currentSelectedEmp} 今日等級為 ${grade}`);
@@ -1148,17 +1170,47 @@ ${incidents.length===0?'今日無任何特殊事件，所有員工表現正常�
 
     function applyAIScores() {
       if(!aiResultData?.scores) return;
-      EMPLOYEES.forEach(emp=>{
-        const r=aiResultData.scores[emp.name]; if(!r) return;
-        const score=parseFloat(r.score);
-        currentEvalData[emp.name].precalculatedScore=score.toFixed(1);
-        currentEvalData[emp.name].aiReason=r.reason||'';   // ← 儲存 AI 理由
-        const sug=getSuggestedGrade(emp.name,score);
-        if(sug) currentEvalData[emp.name].grade=sug.grade;
+      
+      let currentCounts = { O: 0, A: 0, B: 0, C: 0, D: 0 };
+
+      // 依 AI 分數高低進行排序，讓高分者優先取得有限的名額
+      const sortedEmps = EMPLOYEES.slice().sort((a, b) => {
+        const scoreA = parseFloat(aiResultData.scores[a.name]?.score || 0);
+        const scoreB = parseFloat(aiResultData.scores[b.name]?.score || 0);
+        return scoreB - scoreA;
       });
+
+      sortedEmps.forEach(emp => {
+        const r = aiResultData.scores[emp.name];
+        if (!r) return;
+        const score = parseFloat(r.score);
+        currentEvalData[emp.name].precalculatedScore = score.toFixed(1);
+        currentEvalData[emp.name].aiReason = r.reason || '';
+
+        let sug = getSuggestedGrade(emp.name, score);
+        if (sug) {
+          let targetGrade = sug.grade;
+          const grades = ['O', 'A', 'B', 'C', 'D'];
+          let idx = grades.indexOf(targetGrade);
+
+          // 若該等級名額已滿，自動往下遞延尋找空位 (Cascade)
+          while (idx < grades.length && currentCounts[grades[idx]] >= GRADE_LIMITS[grades[idx]]) {
+            idx++;
+          }
+          if (idx < grades.length) {
+            targetGrade = grades[idx];
+          } else {
+            targetGrade = 'D'; // 若全部滿額，強制保底給 D
+          }
+
+          currentEvalData[emp.name].grade = targetGrade;
+          currentCounts[targetGrade]++;
+        }
+      });
+
       document.getElementById('ai-eval-modal').close();
       renderEmployeeList(); selectEmployee(currentSelectedEmp);
-      showToast(`AI 代評已套用 ${EMPLOYEES.length} 人分數，請確認後點擊儲存`);
+      showToast(`AI 代評已套用，並自動依各等級人數上限完成分配`);
     }
 
     function resetAIForm() {
