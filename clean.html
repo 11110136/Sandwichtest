@@ -205,7 +205,7 @@
 
   /* ── PRINT STYLES ── */
   @media print {
-    @page { margin: 8mm 10mm; }
+    @page { size: landscape; margin: 8mm 5mm; } /* 強制橫向印製，縮小左右邊界以容納新欄位 */
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: #fff !important; margin: 0; padding: 0; }
     
@@ -216,7 +216,8 @@
     .panel { display: none !important; }
 
     #cleanPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-after: always !important; break-after: page !important; }
-    #shiftPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-before: always !important; break-before: page !important; }
+    /* 取消 shiftPanel 的 height 限制，避免列印時因內容變多被截斷 */
+    #shiftPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: auto !important; page-break-before: always !important; break-before: page !important; }
 
     #shiftPanel .section-header { display: flex !important; justify-content: center !important; width: 100% !important; margin-top: 5mm !important; margin-bottom: 10px !important; }
     #shiftPanel .section-header h2 { text-align: center !important; width: 100% !important; }
@@ -239,16 +240,20 @@
 
     .shift-wrap { flex: 1 !important; display: block !important; height: 100% !important; width: 100% !important; border: none !important;}
     .shift-table { min-width: auto !important; width: 100% !important; height: auto !important; }
-    .shift-table th, .shift-table td { padding: 4px 3px !important; font-size: 13px !important; word-break: break-word !important; white-space: normal !important; }
-
-    .shift-table td input, .shift-input-div { padding: 1px !important; font-size: 13px !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; border: none !important; background: transparent !important; text-align: center !important; }
     
-    .opener-badge { padding: 2px 4px !important; font-size: 12px !important; white-space: nowrap !important; }
-    
+    /* 微調 Padding 與字體，讓畫面能塞下 15 個欄位 */
+    .shift-table th, .shift-table td { padding: 4px 2px !important; font-size: 12px !important; word-break: break-word !important; white-space: normal !important; }
+    .shift-table td input, .shift-input-div { padding: 1px !important; font-size: 12px !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; border: none !important; background: transparent !important; text-align: center !important; }
+    .opener-badge { padding: 2px 4px !important; font-size: 11px !important; white-space: nowrap !important; }
     h2, h3, .section-header { page-break-after: avoid !important; break-after: avoid !important; }
 
-    .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 85px !important; max-width: 85px !important; white-space: normal !important; word-break: break-all !important; }
-    .shift-table th:nth-child(4), .shift-table td:nth-child(4), .shift-table th:nth-child(11), .shift-table td:nth-child(11) { width: 250px !important; max-width: 250px !important; white-space: normal !important; word-break: break-word !important; }
+    /* 更新 nth-child 以對應新的欄位順序 */
+    /* 第 5、13 欄為 20:00 */
+    .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(13), .shift-table td:nth-child(13) { width: 65px !important; max-width: 65px !important; white-space: normal !important; word-break: break-all !important; }
+    /* 第 4、12 欄為 當天值班 */
+    .shift-table th:nth-child(4), .shift-table td:nth-child(4), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 160px !important; max-width: 160px !important; white-space: normal !important; word-break: break-word !important; }
+    /* 第 7、15 欄為 備註 */
+    .shift-table th:nth-child(7), .shift-table td:nth-child(7), .shift-table th:nth-child(15), .shift-table td:nth-child(15) { width: 80px !important; max-width: 80px !important; white-space: normal !important; word-break: break-word !important; }
   }
 
   /* ── Toast 通知 ── */
@@ -380,11 +385,11 @@
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
         <thead>
-          <tr><th colspan="13" id="shiftTableTitle"></th></tr>
+          <tr><th colspan="15" id="shiftTableTitle"></th></tr>
           <tr>
-            <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
+            <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th><th>備註</th>
             <th style="width:8px;background:var(--cream); border-top:none; border-bottom:none;"></th>
-            <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th>
+            <th>日期</th><th>星期</th><th>開店</th><th>當天值班</th><th>20:00</th><th>關帳</th><th>備註</th>
           </tr>
         </thead>
         <tbody id="shiftBody"></tbody>
@@ -809,9 +814,9 @@ function renderShiftTable() {
   let html = '';
   for(let i=0;i<Math.max(left.length, right.length);i++) {
     html += `<tr>`;
-    html += left[i] ? buildShiftCells(left[i]) : `<td colspan="6"></td>`;
+    html += left[i] ? buildShiftCells(left[i]) : `<td colspan="7"></td>`;
     html += `<td style="width:8px;background:var(--cream); border-top:none; border-bottom:none;"></td>`;
-    html += right[i] ? buildShiftCells(right[i]) : `<td colspan="6"></td>`;
+    html += right[i] ? buildShiftCells(right[i]) : `<td colspan="7"></td>`;
     html += `</tr>`;
   }
   document.getElementById('shiftBody').innerHTML = html;
@@ -819,7 +824,7 @@ function renderShiftTable() {
 }
 
 function buildShiftCells(row) {
-  if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="4">店休</td>`;
+  if(row.closed) return `<td><b>${row.d}.</b></td><td>(${row.weekName})</td><td class="closed-cell" colspan="5">店休</td>`;
   
   const openerClass = !row.opener ? 'missing-opener' : '';
   const openerStyle = getStaffStyle(row.opener);
@@ -830,7 +835,8 @@ function buildShiftCells(row) {
     <td class="${openerClass}"><div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${row.opener||'未填'}</div></td>
     <td class="open-cell"><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftField('${row.key}','duty',this.innerHTML); updateShiftStats();">${row.duty||''}</div></td>
     <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftField('${row.key}','at20',this.innerHTML); updateShiftStats();">${row.at20||''}</div></td>
-    <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||' '}</div></td>`;
+    <td><div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${row.close||' '}</div></td>
+    <td><div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="note" data-placeholder="備註" onblur="saveShiftField('${row.key}','note',this.innerHTML);">${row.note||''}</div></td>`;
 }
 
 // 修改原本的 saveShiftField
@@ -860,6 +866,7 @@ async function saveToShiftSchedulesDB(year, month, day, field, value) {
   else if (field === 'duty') dbColumn = 'shift';
   else if (field === 'at20') dbColumn = 't20';     // 根據你的截圖推測欄位名
   else if (field === 'close') dbColumn = 'close'; // 請確保資料庫有關帳欄位(假設叫 close)
+  else if (field === 'note') dbColumn = 'note';
 
   if (!dbColumn) return;
 
@@ -1201,7 +1208,8 @@ async function initApp() {
         opener: row.open || '',      // 對應資料庫 open -> 網頁「開店」
         duty: row.shift || '',       // 對應資料庫 shift -> 網頁「當天值班」
         at20: row.t20 || '',         // 對應資料庫 t20 -> 網頁「20:00」(根據截圖推測)
-        close: row.close || ''       // 對應資料庫 close -> 網頁「關帳」(推測欄位名)
+        close: row.close || '',       // 對應資料庫 close -> 網頁「關帳」(推測欄位名)
+        note: row.note || ''
       };
     });
   }
