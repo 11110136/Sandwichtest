@@ -103,14 +103,14 @@
 
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         
-        /* 縮小電腦版標題與內文字體、間距 */
-        th { background: var(--sage); color: #fff; font-size: 14px; font-weight: 700; padding: 8px 10px; letter-spacing: 1px; border: 1px solid var(--border); white-space: nowrap; text-align: center; }
-        td { padding: 6px 10px; border: 1px solid var(--border); vertical-align: middle; transition: background 0.2s; font-size: 14px; text-align: center; }
+        /* ✅ 放大電腦版標題與內文字體、間距 */
+        th { background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; padding: 12px 14px; letter-spacing: 1px; border: 1px solid var(--border); white-space: nowrap; text-align: center; }
+        td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: middle; transition: background 0.2s; font-size: 15px; text-align: center; }
 
         /* 可編輯區域樣式 */
         .editable {
-            min-height: 26px; border-radius: 6px; padding: 4px 6px; outline: none; transition: all 0.2s;
-            white-space: pre-wrap; word-break: break-word; line-height: 1.3; background: var(--cream); border: 1px solid transparent;
+            min-height: 28px; border-radius: 6px; padding: 4px 6px; outline: none; transition: all 0.2s;
+            white-space: pre-wrap; word-break: break-word; line-height: 1.4; background: var(--cream); border: 1px solid transparent;
         }
         .editable:hover { border-color: var(--border-dark); background: #fff; }
         .editable:focus { background-color: #fff; border-color: var(--sage); box-shadow: inset 0 0 0 1.5px var(--sage-light); }
@@ -119,8 +119,9 @@
         .is-today { background-color: var(--highlight-bg) !important; border-left: 4px solid var(--sage); }
         .warning-cell { background-color: #fee2e2 !important; border: 1.5px solid var(--accent-red) !important; }
 
-        /* 底部滑動按鈕基礎設定 */
-        .view-btn { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
+        /* ✅ 底部切換按鈕顏色修正 - 用 CSS class 取代 Tailwind 動態 class */
+        .view-btn { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; color: var(--ink-muted); }
+        .view-btn.active { color: white !important; }
 
         /* 手機響應式優化 (Card View) - 縮小字體與間距 */
         @media screen and (max-width: 900px) {
@@ -287,13 +288,13 @@
         </div>
     </main>
 
+    <!-- 底部切換列：slider 位置由 JS 動態計算，顏色用 CSS .active 控制 -->
     <div class="fixed-bottom-bar fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 no-print">
-        <div class="flex p-1 bg-white/95 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-[var(--border)] relative w-[240px] h-[44px]">
-            <div id="view-slider" class="absolute top-1 bottom-1 left-1 bg-[var(--sage)] rounded-lg transition-transform duration-300 ease-out shadow-sm" style="width: calc(33.333% - 2.66px); transform: translateX(0);"></div>
-            
-            <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm transition-colors duration-300 whitespace-nowrap text-white" onclick="switchView('day', 0)" id="btn-day">今日</button>
-            <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm transition-colors duration-300 whitespace-nowrap text-[var(--ink-muted)]" onclick="switchView('week', 1)" id="btn-week">本週</button>
-            <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm transition-colors duration-300 whitespace-nowrap text-[var(--ink-muted)]" onclick="switchView('month', 2)" id="btn-month">全月</button>
+        <div id="view-switcher" class="flex p-1 bg-white/95 backdrop-blur-md rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] border border-[var(--border)] relative w-[240px] h-[44px]">
+            <div id="view-slider" class="absolute top-1 bottom-1 bg-[var(--sage)] rounded-lg transition-all duration-300 ease-out shadow-sm" style="left:4px; width:0;"></div>
+            <button class="view-btn active flex-1 relative z-10 text-center font-semibold text-sm whitespace-nowrap" onclick="switchView('day', 0)" id="btn-day">今日</button>
+            <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm whitespace-nowrap" onclick="switchView('week', 1)" id="btn-week">本週</button>
+            <button class="view-btn flex-1 relative z-10 text-center font-semibold text-sm whitespace-nowrap" onclick="switchView('month', 2)" id="btn-month">全月</button>
         </div>
     </div>
 
@@ -557,26 +558,28 @@
             initLiff();
         }
 
+        // ✅ 修正：用 JS 動態取得按鈕的實際位置與寬度，精確移動 slider
         function switchView(viewMode, index) {
             currentView = viewMode;
-            
-            // 處理橫向滑動底塊特效
+
+            const btns = document.querySelectorAll('.view-btn');
             const slider = document.getElementById('view-slider');
-            if (slider) {
-                slider.style.transform = `translateX(calc(${index * 100}% + ${index * 4}px))`;
+            const container = document.getElementById('view-switcher');
+
+            if (slider && container && btns[index]) {
+                const containerRect = container.getBoundingClientRect();
+                const btnRect = btns[index].getBoundingClientRect();
+                // slider 相對於 container 的位置
+                slider.style.left = (btnRect.left - containerRect.left) + 'px';
+                slider.style.width = btnRect.width + 'px';
             }
 
-            // 更新文字顏色 (只有選中者為白色)
-            document.querySelectorAll('.view-btn').forEach((btn, i) => {
-                if (i === index) {
-                    btn.classList.add('text-white');
-                    btn.classList.remove('text-[var(--ink-muted)]');
-                } else {
-                    btn.classList.remove('text-white');
-                    btn.classList.add('text-[var(--ink-muted)]');
-                }
+            // 顏色切換：.active → white，其餘 → var(--ink-muted)
+            btns.forEach((btn, i) => {
+                if (i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
-            
+
             renderTable();
         }
 
@@ -1020,14 +1023,12 @@
 
         function showQuickInput(cell) {
             const panel = document.getElementById('quick-input-panel');
-            // 先解除 hidden 才能正確量到高度/寬度
             panel.classList.remove('hidden');
 
             const rect = cell.getBoundingClientRect();
             const panelHeight = panel.offsetHeight || 250;
             const panelWidth = panel.offsetWidth || 280;
 
-            // 加上 scrollY / scrollX，因為面板是 absolute（相對文件），rect 是相對視窗
             let topPos = rect.bottom + window.scrollY + 5;
             let leftPos = rect.left + window.scrollX;
 
@@ -1121,7 +1122,8 @@
         }
 
         initQuickInput();
-        init();
+        // 延遲一幀讓 DOM 完全渲染，確保 slider 能正確量到按鈕位置
+        requestAnimationFrame(() => init());
 
         function toggleGlobalMenu() {
             document.getElementById('global-nav-menu').classList.toggle('hidden');
