@@ -1123,7 +1123,7 @@
       只輸出 JSON，不要說明或 markdown：
       {"scores":{"姓名":{"score":數字,"reason":"繁體中文理由"}}}`;
 
-        const resp = await fetch('https://你的ngrok網址/api/groq-chat', {
+        const resp = await fetch('https://handsfree-proposal-lugged.ngrok-free.dev/api/groq-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: [
