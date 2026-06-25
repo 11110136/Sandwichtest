@@ -1106,40 +1106,39 @@
       const empList=EMPLOYEES.map(e=>e.name).join('、');
       const sys=`你是一家連鎖早餐店的人事評分助理。今天店長可柔休假，請根據今日事件報告，為每位值班員工打績效分數。
 
-【評分規則】分數範圍：40~75 分
-• 無事件員工：60~75 分（以 66±4 為中心浮動）
-• 輕微問題（小失誤、小遲到、小誤差）：扣 3~8 分
-• 中等問題（客訴、品質失誤、協調不足）：扣 8~15 分
-• 嚴重問題（重大失誤、態度不佳、造成損失）：扣 15~25 分
-• 同一員工多事件：累積扣分，最低 40 分
-• 必須為每一位值班員工給分
-• 理由請用繁體中文，20字以內`;
+      【評分規則】分數範圍：40~75 分
+      • 無事件員工：60~75 分（以 66±4 為中心浮動）
+      • 輕微問題（小失誤、小遲到、小誤差）：扣 3~8 分
+      • 中等問題（客訴、品質失誤、協調不足）：扣 8~15 分git add performance.html
+      • 嚴重問題（重大失誤、態度不佳、造成損失）：扣 15~25 分
+      • 同一員工多事件：累積扣分，最低 40 分
+      • 必須為每一位值班員工給分
+      • 理由請用繁體中文，20字以內`;
 
-      const usr=`今日值班員工：${empList}
+            const usr=`今日值班員工：${empList}
 
-今日事件：
-${incidents.length===0?'今日無任何特殊事件，所有員工表現正常。':incidents.map((inc,i)=>`事件${i+1}：涉及【${inc.who.join('、')}】，${inc.description}（嚴重程度：${inc.severity}）`).join('\n')}
+      今日事件：
+      ${incidents.length===0?'今日無任何特殊事件，所有員工表現正常。':incidents.map((inc,i)=>`事件${i+1}：涉及【${inc.who.join('、')}】，${inc.description}（嚴重程度：${inc.severity}）`).join('\n')}
 
-只輸出 JSON，不要說明或 markdown：
-{"scores":{"姓名":{"score":數字,"reason":"繁體中文理由"}}}`;
+      只輸出 JSON，不要說明或 markdown：
+      {"scores":{"姓名":{"score":數字,"reason":"繁體中文理由"}}}`;
 
-      const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-        method:'POST',
-        headers:{ 'Authorization':`Bearer ${groqApiKey}`, 'Content-Type':'application/json' },
-        body:JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:600, temperature:0.25,
-          messages:[{ role:'system', content:sys },{ role:'user', content:usr }] })
-      });
-      if(!resp.ok){
-        const err=await resp.json().catch(()=>({}));
-        if(resp.status===401) throw new Error('API Key 無效，請重新設定');
-        throw new Error(err.error?.message||`HTTP ${resp.status}`);
+        const resp = await fetch('https://你的ngrok網址/api/groq-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [
+            { role: 'system', content: sys },
+            { role: 'user',   content: usr }
+          ]})
+        });
+
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.json();
+          const text = data.choices?.[0]?.message?.content?.trim() || '';
+          const match = text.match(/\{[\s\S]*\}/);
+          if (!match) throw new Error('AI 回覆格式無法解析');
+          return JSON.parse(match[0]);
       }
-      const data=await resp.json();
-      const text=data.choices?.[0]?.message?.content?.trim()||'';
-      const match=text.match(/\{[\s\S]*\}/);
-      if(!match) throw new Error('AI 回覆格式無法解析，請再試一次');
-      return JSON.parse(match[0]);
-    }
 
     function renderAIResults(result) {
       const c=document.getElementById('ai-results-list');
