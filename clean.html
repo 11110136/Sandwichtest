@@ -329,7 +329,6 @@
 </head>
 <body>
 
-<!-- ══════════════════ TOP BAR ══════════════════ -->
 <div class="topbar no-print">
   <div class="topbar-left relative">
     <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
@@ -359,10 +358,6 @@
   </div>
 
   <div class="hidden md:flex items-center gap-2 text-xs">
-    <!-- ★ 新增：休假人員按鈕 -->
-    <button onclick="openLeaveModal()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all border border-white/30">
-      <i data-lucide="calendar-heart" class="w-4 h-4"></i>休假人員
-    </button>
     <button onclick="toggleFontSize()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all">
       <i data-lucide="a-large-small" class="w-4 h-4"></i>字體大小
     </button>
@@ -375,7 +370,6 @@
   </div>
 </div>
 
-<!-- ══════════════════ TAB BAR ══════════════════ -->
 <div id="tab-bar-container" class="bg-white border-b border-[var(--border-dark)] no-print">
   <div class="max-w-[1400px] mx-auto px-4 md:px-6 relative flex">
     <div class="relative flex overflow-x-auto hide-scrollbar flex-1" id="tab-container">
@@ -391,20 +385,14 @@
       <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[var(--sage)] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width:0;transform:translateX(0);"></div>
     </div>
     <div class="md:hidden flex items-center gap-1 ml-auto pl-2">
-      <!-- 手機版休假按鈕 -->
-      <button onclick="openLeaveModal()" class="p-2 text-[var(--accent-red)] hover:bg-red-50 rounded-lg transition-colors" title="休假人員">
-        <i data-lucide="calendar-heart" class="w-4 h-4"></i>
-      </button>
       <button onclick="toggleFontSize()" class="p-2 text-[var(--ink-muted)] hover:bg-[var(--sage-pale)] rounded-lg transition-colors"><i data-lucide="a-large-small" class="w-4 h-4"></i></button>
       <button onclick="printSchedule()" class="p-2 text-[var(--ink-muted)] hover:bg-[var(--sage-pale)] rounded-lg transition-colors"><i data-lucide="printer" class="w-4 h-4"></i></button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════ MAIN PANELS ══════════════════ -->
 <div class="main">
 
-  <!-- 清潔與洗餐具 -->
   <div class="panel active" id="cleanPanel">
     <div class="section-header">
       <h2 id="cleanTitle"></h2>
@@ -438,7 +426,6 @@
     </div>
   </div>
 
-  <!-- 開店關帳排班 -->
   <div class="panel" id="shiftPanel">
     <div class="section-header">
       <h2>開店關帳人員排班表</h2>
@@ -465,7 +452,6 @@
     </div>
   </div>
 
-  <!-- 人員管理 -->
   <div class="panel" id="staffPanel">
     <div class="section-header"><h2>人員管理</h2></div>
     <p class="tip">新增或刪除排班人員，變更會立即套用至所有表格並儲存至資料庫。</p>
@@ -477,7 +463,6 @@
   </div>
 </div>
 
-<!-- ══════════════════ 快速輸入面板 ══════════════════ -->
 <div id="quick-input-panel" class="hidden">
   <div class="quick-section" id="quick-color-section" style="display:none;">
     <div class="quick-title"><i data-lucide="palette" class="w-4 h-4 text-[var(--sage)]"></i> 標記顏色 (請先反白選取文字)</div>
@@ -499,13 +484,11 @@
   </div>
 </div>
 
-<!-- ══════════════════ 休假人員 Modal ══════════════════ -->
 <div id="leaveModal" class="fixed inset-0 z-[100] hidden">
   <div class="fixed inset-0 bg-[var(--ink)]/50 backdrop-blur-sm" onclick="closeLeaveModal()"></div>
-  <div class="fixed inset-0 z-10 overflow-y-auto flex items-start justify-center p-4 pt-8">
-    <div class="relative bg-white rounded-3xl shadow-2xl border border-[var(--border)] w-full max-w-3xl pointer-events-auto">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+  <div class="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6" style="padding-top: 70px;">
+  <div class="relative bg-white rounded-3xl shadow-2xl border border-[var(--border)] w-full max-w-3xl pointer-events-auto flex flex-col" style="max-height: calc(100vh - 90px); height: auto;">
+      <div class="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center border border-[#fecaca]">
             <i data-lucide="calendar-heart" class="w-5 h-5 text-[var(--accent-red)]"></i>
@@ -520,8 +503,7 @@
         </button>
       </div>
 
-      <!-- 月份切換 -->
-      <div class="flex items-center justify-center gap-4 py-3 border-b border-[var(--border)] bg-[var(--cream)]">
+      <div class="flex-shrink-0 flex items-center justify-center gap-4 py-3 border-b border-[var(--border)] bg-[var(--cream)]">
         <button onclick="changeLeaveMonth(-1)" class="p-2 rounded-lg bg-white border border-[var(--border)] text-[var(--sage)] hover:bg-[var(--sage-pale)] transition-colors">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
@@ -531,8 +513,7 @@
         </button>
       </div>
 
-      <!-- 人員快選區（點選日期後出現） -->
-      <div id="leaveNamePickerArea" class="hidden px-5 py-3 border-b border-[var(--border)] bg-[#fff8f8]">
+      <div id="leaveNamePickerArea" class="flex-shrink-0 hidden px-5 py-3 border-b border-[var(--border)] bg-[#fff8f8]">
         <div class="flex items-center gap-2 mb-2">
           <i data-lucide="user-x" class="w-4 h-4 text-[var(--accent-red)]"></i>
           <span id="leavePickerDateLabel" class="text-sm font-bold text-[var(--accent-red)]"></span>
@@ -541,8 +522,7 @@
         <div id="leaveNameBtns" class="flex flex-wrap gap-2"></div>
       </div>
 
-      <!-- 日曆主體 -->
-      <div class="p-4">
+      <div class="overflow-y-auto p-4 flex-1 min-h-0">
         <div class="border border-[var(--border)] rounded-xl overflow-hidden">
           <div class="leave-cal-header">
             <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
@@ -551,11 +531,9 @@
         </div>
       </div>
 
-      <!-- 統計區 -->
-      <div id="leaveStats" class="px-5 pb-4 flex flex-wrap gap-2"></div>
+      <div id="leaveStats" class="flex-shrink-0 px-5 pt-2 pb-4 flex flex-wrap gap-2"></div>
 
-      <!-- 關閉按鈕 -->
-      <div class="px-5 pb-5">
+      <div class="flex-shrink-0 px-5 pb-5">
         <button onclick="closeLeaveModal()" class="w-full py-3 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] transition-colors">
           完成設定
         </button>
