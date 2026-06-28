@@ -543,6 +543,21 @@
 </div>
 
 <div id="toast"></div>
+<div id="leave-warn-modal" class="fixed inset-0 z-[200] hidden">
+  <div class="fixed inset-0 bg-black/40"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-6 z-10">
+    <div class="bg-white rounded-2xl shadow-2xl border border-[var(--border)] max-w-sm w-full p-6 text-center">
+      <div class="w-12 h-12 rounded-full bg-red-50 border border-[#fecaca] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="user-x" class="w-6 h-6 text-[var(--accent-red)]"></i>
+      </div>
+      <p id="leave-warn-msg" class="text-[var(--ink)] font-semibold text-sm mb-5 leading-relaxed"></p>
+      <button onclick="closeLeaveWarnModal()"
+        class="w-full py-2.5 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] transition-colors">
+        確定
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════
@@ -566,6 +581,23 @@ function showToast(msg) {
   toast.innerText = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function showLeaveWarn(msg) {
+  document.getElementById('leave-warn-msg').innerText = msg;
+  document.getElementById('leave-warn-modal').classList.remove('hidden');
+  lucide.createIcons();
+}
+function closeLeaveWarnModal() {
+  document.getElementById('leave-warn-modal').classList.add('hidden');
+}
+
+// 檢查某日某人是否已排休假，回傳 true 表示有衝突
+function checkLeaveConflict(year, jsMonth, day, name) {
+  const leaveVal = getCacheField(year, jsMonth, day, 'leave');
+  if (!leaveVal) return false;
+  const names = leaveVal.split('、').map(n => n.trim());
+  return names.includes(name);
 }
 
 // ══════════════════════════════════════════
@@ -859,6 +891,13 @@ async function saveCleanField(key, el) {
   const parts = key.split('-');
   const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
   const val = el.innerText;
+
+  // 手打衝突檢查
+  const conflicts = staff.filter(n => val.includes(n) && checkLeaveConflict(y, jm, d, n));
+  if (conflicts.length > 0) {
+    showLeaveWarn(`${conflicts.join('、')} 在 ${jm+1}/${d} 已排休假，請確認是否填寫錯誤。`);
+  }
+
   setCacheField(y, jm, d, 'clean', val);
   await saveFieldToShiftSchedules(y, jm + 1, d, 'clean', val);
   updateCleanStats();
@@ -1340,6 +1379,19 @@ async function insertTextToCell(text, type) {
   let currentVal = activeCell.innerText;
   if (currentVal === '未填' || currentVal === ' ') currentVal = '';
   let newVal = currentVal;
+
+  // ── 休假衝突檢查（只對人名類型） ──
+  if (type === 'name' && text && text !== '店休' && text !== '') {
+    const key = activeCell.getAttribute('data-key');
+    if (key) {
+      const parts = key.split('-');
+      const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
+      if (checkLeaveConflict(y, jm, d, text)) {
+        showLeaveWarn(`${text} 在 ${jm + 1}/${d} 已排休假，無法安排當天班表。`);
+        return;
+      }
+    }
+  }
 
   if (type === 'clear') newVal = '';
   else if (field === 'opener') {
