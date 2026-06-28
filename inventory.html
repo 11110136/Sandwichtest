@@ -165,6 +165,12 @@
       </div>
     </div>
 
+    <div id="back-to-select-wrap" class="mb-4 hidden fade-in">
+      <button onclick="backToSelection()" class="flex items-center justify-center w-full sm:w-auto gap-2 text-sm font-bold text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--sage-pale)] transition-all bg-white px-4 py-3 rounded-xl border border-[var(--border-dark)] shadow-sm active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        返回選擇畫面
+      </button>
+    </div>
     <div id="item-list" class="space-y-2"></div>
 
     <div id="save-section" class="mt-8 flex justify-end hidden">
@@ -302,6 +308,7 @@
     <button onclick="document.getElementById('restock-success-modal').close()" class="w-full py-3 bg-[var(--sage)] text-white rounded-xl font-semibold hover:bg-[var(--olive)] transition-all">確認</button>
   </div>
 </dialog>
+
 <dialog id="status-modal" class="backdrop:bg-[#2D3A31]/50 backdrop:backdrop-blur-sm p-0 rounded-3xl shadow-2xl border border-[#E5EBE6] w-[90%] max-w-sm">
   <div class="p-8 text-center">
     <div id="modal-loading" class="hidden">
@@ -337,72 +344,83 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── DATA ───
 const ITEMS = [
-  { id:1,  name:'火腿S',      spec:'20條/箱',         unit:'箱', subUnit:'條', conv:20, sys:1.2,  alert:0.5, tag:'每日', cat:'食材' },
+  // ================= 每日 =================
+  { id:1,  name:'火腿S',      spec:'21條/箱',         unit:'箱', subUnit:'條', conv:21, sys:1.2,  alert:0.5, tag:'每日', cat:'食材' },
   { id:2,  name:'沙拉S',      spec:'600公克/包',       unit:'包', sys:56.0, alert:50, tag:'每日', cat:'食材' },
-  { id:3,  name:'水煮蛋',     spec:'50顆/包',         unit:'顆', sys:1200, alert:400, tag:'每日', cat:'食材' },
-  { id:4,  name:'涼麵條',     spec:'3公斤/包',        unit:'包', sys:22,   alert:12, tag:'每日', cat:'食材' },
+  { id:3,  name:'水煮蛋',     spec:'50顆/包',         unit:'包', sys:1200, alert:400, tag:'每日', cat:'食材' },
+  { id:4,  name:'涼麵條',     spec:'5斤/包',        unit:'包', sys:22,   alert:12, tag:'每日', cat:'食材' },
   { id:5,  name:'涼麵',       spec:'206公克/盒',      unit:'盒', sys:66,   alert:35, tag:'每日', cat:'食材' },
   { id:6,  name:'小黃瓜(箱)', spec:'15~18公斤/箱',   unit:'箱', sys:0,    alert:2,  tag:'每日', cat:'食材' },
-  { id:7,  name:'番茄(箱)',   spec:'8公斤/箱',        unit:'箱', sys:0,    alert:2,  tag:'每日', cat:'食材' },
-  { id:8,  name:'鮮乳',       spec:'936毫升/罐',      unit:'罐', sys:17,   alert:20, tag:'每日', cat:'茶飲' },
-  { id:9,  name:'豆腐',       spec:'看有幾盒',        unit:'盒', sys:7,    alert:3,  tag:'每日', cat:'食材' },
+  { id:7,  name:'番茄(箱)',   spec:'200克/顆，8公斤/箱', unit:'箱', sys:0,    alert:2,  tag:'每日', cat:'食材' },
+  { id:8,  name:'鮮乳',       spec:'936毫升/瓶',      unit:'瓶', sys:17,   alert:20, tag:'每日', cat:'茶飲' },
+  { id:9,  name:'豆腐',       spec:'4盒/袋',        unit:'袋', sys:7,    alert:3,  tag:'每日', cat:'食材' },
   { id:10, name:'木瓜(顆)',   spec:'13顆/箱',         unit:'顆', sys:31,   alert:1,  tag:'每日', cat:'茶飲' },
-  { id:11, name:'涼麵醬(原味)',spec:'80g/包',         unit:'包', sys:185,  alert:103,tag:'每日', cat:'調味' },
-  { id:12, name:'涼麵醬(辣味)',spec:'80g/包',         unit:'包', sys:197,  alert:94, tag:'每日', cat:'調味' },
-  { id:13, name:'二砂',        spec:'50公斤/包',      unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
-  { id:14, name:'金蘭甲級醬油',spec:'5公升/罐',      unit:'罐', sys:0, alert:2,   tag:'每周', cat:'調味' },
-  { id:15, name:'鹽S',         spec:'1000公克/包',    unit:'包', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:16, name:'幸福醋',      spec:'5.5公升/罐',     unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:17, name:'芝麻醬',      spec:'3公升/罐',       unit:'罐', sys:0, alert:2,   tag:'每周', cat:'調味' },
-  { id:18, name:'金味王醬油',  spec:'5公升/罐',       unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:19, name:'金梅油膏',    spec:'4.5公斤/罐',     unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:20, name:'細砂糖S',     spec:'25公斤/包',      unit:'包', sys:0, alert:0.2, tag:'每周', cat:'調味' },
+  { id:11, name:'涼麵醬(原味)',spec:'80克/包',         unit:'包', sys:185,  alert:103,tag:'每日', cat:'調味' },
+  { id:12, name:'涼麵醬(辣味)',spec:'89克/包',         unit:'包', sys:197,  alert:94, tag:'每日', cat:'調味' },
+
+  // ================= 一樓 =================
+  { id:54, name:'筷子',        spec:'80雙/包',        unit:'包', sys:6, alert:1,   tag:'每周', cat:'包材' },
+  { id:45, name:'大茶匙',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:42, name:'2杯加大袋',   spec:'32個/包',      unit:'包', sys:8, alert:2,   tag:'每周', cat:'包材' },
+  { id:49, name:'390湯碗',     spec:'50個/條',        unit:'條', sys:0, alert:3,   tag:'每周', cat:'包材' },
+  { id:50, name:'390湯蓋',     spec:'50個/條',        unit:'條', sys:0, alert:1,   tag:'每周', cat:'包材' },
+  { id:51, name:'520湯碗',     spec:'50個/條，1箱/20條',unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:52, name:'520湯蓋',     spec:'50個/條，1箱/20條',unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:44, name:'粗吸管',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:53, name:'湯匙',        spec:'100支/包，1箱/20包',unit:'箱', sys:0, alert:1,   tag:'每周', cat:'包材' },
+  { id:46, name:'手扒雞手套',  spec:'100支/包，10包/袋',unit:'袋', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:55, name:'橡皮筋',      spec:'',               unit:'包', sys:0, alert:5,   tag:'每周', cat:'包材' },
+  { id:47, name:'細吸管',      spec:'100支/包，1箱/18包', unit:'箱', sys:0, alert:0.5, tag:'每周', cat:'包材' },
+  { id:48, name:'4兩耐熱袋',   spec:'100個/包',       unit:'包', sys:0, alert:3,   tag:'每周', cat:'包材' },
+  { id:43, name:'OPS 3H盒',    spec:'100個/包，1箱/20包', unit:'箱', sys:21,alert:3,  tag:'每周', cat:'包材' },
+  { id:60, name:'沙拉脫',      spec:'3.4公斤/桶，1箱/4桶',unit:'箱', sys:4, alert:3,   tag:'每周', cat:'備品' },
+  { id:58, name:'廚房擦手紙',  spec:'12捲/袋',        unit:'袋', sys:4, alert:0.3, tag:'每周', cat:'備品' },
+  { id:66, name:'飲料標籤貼紙',spec:'1000/捲，100捲/箱',unit:'箱', sys:0, alert:4,   tag:'每周', cat:'備品' },
+  { id:63, name:'悠遊卡感熱紙',spec:'2捲/包，1箱/40捲',unit:'箱', sys:44,alert:3,  tag:'每周', cat:'備品' },
+  { id:57, name:'發票感熱紙',  spec:'75捲/箱',        unit:'箱', sys:7, alert:1,   tag:'每周', cat:'備品' },
+
+  // ================= 廚房 =================
+  { id:13, name:'二砂',        spec:'50公斤/袋',      unit:'袋', sys:0, alert:0.3, tag:'每周', cat:'調味' },
+  { id:16, name:'幸福醋',      spec:'5.5公斤/桶',     unit:'桶', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:19, name:'金梅油膏',    spec:'4.5公斤/桶',     unit:'桶', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:18, name:'金味王醬油',  spec:'5公斤/桶',       unit:'桶', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:14, name:'金蘭甲等醬油',spec:'5公斤/桶，1箱4桶',  unit:'箱', sys:0, alert:2,   tag:'每周', cat:'調味' },
+  { id:23, name:'香油',        spec:'3公斤/桶',       unit:'桶', sys:0, alert:1.5, tag:'每周', cat:'調味' },
+  { id:25, name:'辣椒油',      spec:'3公斤/桶',       unit:'桶', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:24, name:'乾辣椒',      spec:'600克/包',       unit:'包', sys:0, alert:1.5, tag:'每周', cat:'調味' },
+  { id:29, name:'奶精粉',      spec:'25公斤/袋，1公斤1小包', unit:'袋',sys:0,alert:5,  tag:'每周', cat:'茶飲' },
+  { id:31, name:'古早味酸梅湯',spec:'3公斤/桶，1箱4桶',unit:'箱', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:38, name:'味增',        spec:'9公斤/箱',       unit:'箱', sys:0, alert:0.8, tag:'每周', cat:'調味' },
+  { id:35, name:'奶精球',      spec:'50顆/包',        unit:'包', sys:0, alert:1,   tag:'每周', cat:'茶飲' },
+
+  // ================= 二樓 食品 =================
+  { id:30, name:'特選阿薩姆紅茶',spec:'600公克/包',     unit:'包', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:28, name:'特級阿薩姆紅茶',spec:'600公克/包',     unit:'包',sys:0, alert:2,   tag:'每周', cat:'茶飲' },
+  { id:17, name:'芝麻醬',      spec:'3公斤/桶，1箱6桶',unit:'箱', sys:0, alert:2,   tag:'每周', cat:'調味' },
+  { id:34, name:'仙草原汁',    spec:'3公斤/桶，1箱6桶',unit:'箱', sys:0, alert:4,   tag:'每周', cat:'茶飲' },
+  { id:15, name:'鹽巴',         spec:'1公斤/包，1袋24包',unit:'袋', sys:0, alert:1,   tag:'每周', cat:'調味' },
+  { id:32, name:'冬瓜磚',      spec:'550公克/塊，1箱30塊',unit:'箱', sys:0, alert:6,   tag:'每周', cat:'茶飲' },
+  { id:33, name:'綠豆',        spec:'25公斤/袋，5公斤/小包', unit:'袋',sys:0,alert:5,  tag:'每周', cat:'食材' },
+  { id:37, name:'紅豆',        spec:'25公斤/袋，3公斤/小包', unit:'袋',sys:0,alert:5,  tag:'每周', cat:'食材' },
+  { id:26, name:'熟芝麻',      spec:'3公斤/袋',       unit:'袋', sys:0, alert:0.2, tag:'每周', cat:'調味' },
   { id:21, name:'八角',        spec:'600公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
   { id:22, name:'花椒',        spec:'600公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'調味' },
-  { id:23, name:'香油',        spec:'3公升/罐',       unit:'罐', sys:0, alert:1.5, tag:'每周', cat:'調味' },
-  { id:24, name:'乾辣椒',      spec:'600公克/包',     unit:'包', sys:0, alert:1.5, tag:'每周', cat:'調味' },
-  { id:25, name:'辣椒油',      spec:'3公升/罐',       unit:'罐', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:26, name:'熟芝麻',      spec:'3公斤/包',       unit:'包', sys:0, alert:0.2, tag:'每周', cat:'調味' },
-  { id:27, name:'果糖',        spec:'25公斤/桶',      unit:'桶', sys:0, alert:0.3, tag:'每周', cat:'茶飲' },
-  { id:28, name:'特級阿薩姆紅茶葉',spec:'600公克/包', unit:'包',sys:0, alert:2,   tag:'每周', cat:'茶飲' },
-  { id:29, name:'奶精粉',      spec:'1公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'茶飲' },
-  { id:30, name:'特A紅茶(立)', spec:'600公克/包',     unit:'包', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
-  { id:31, name:'古早味酸梅湯',spec:'12.4公升/罐',    unit:'箱', sys:0, alert:2,   tag:'每周', cat:'茶飲' },
-  { id:32, name:'冬瓜磚',      spec:'30塊/箱',        unit:'箱', sys:0, alert:6,   tag:'每周', cat:'茶飲' },
-  { id:33, name:'綠豆粒',      spec:'5公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'食材' },
-  { id:34, name:'仙草液',      spec:'3.2公升/罐',     unit:'罐', sys:0, alert:4,   tag:'每周', cat:'茶飲' },
-  { id:35, name:'奶精球',      spec:'50顆/包',        unit:'包', sys:0, alert:1,   tag:'每周', cat:'茶飲' },
+  { id:20, name:'細紗',        spec:'25公斤/袋',      unit:'袋', sys:0, alert:0.2, tag:'每周', cat:'調味' },
+
+  // ================= 二樓 印刷袋 =================
+  { id:61, name:'九如印刷袋(紅)',spec:'3570/包，25公斤/袋',unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:62, name:'常ㄧ嚐印刷袋(橘)',spec:'2500/包，25公斤/袋',unit:'袋', sys:0, alert:0,   tag:'每周', cat:'包材' },
+  { id:65, name:'常ㄧ嚐印刷袋(黑)',spec:'2500/包，25公斤/袋',unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
+  { id:59, name:'5斤印刷袋(黃)',spec:'2500/包，25公斤/袋',unit:'袋', sys:0, alert:20,  tag:'每周', cat:'包材' },
+  { id:64, name:'芝麻醬包裝袋',spec:'18cm✖️400m/捲，4捲/1箱',unit:'箱', sys:0, alert:3,   tag:'每周', cat:'包材' },
+
+  // ================= 其他未明確指定區域 =================
   { id:36, name:'樹薯粉',      spec:'400公克/包',     unit:'包', sys:0, alert:0.3, tag:'每周', cat:'食材' },
-  { id:37, name:'紅豆粒',      spec:'3公斤/小包',     unit:'小包',sys:0,alert:5,  tag:'每周', cat:'食材' },
-  { id:38, name:'味噌',        spec:'9公斤/箱',       unit:'箱', sys:0, alert:0.8, tag:'每周', cat:'調味' },
+  { id:27, name:'果糖',        spec:'25公斤/桶',      unit:'桶', sys:0, alert:0.3, tag:'每周', cat:'茶飲' },
   { id:39, name:'洋蔥',        spec:'250公克/顆',     unit:'顆', sys:0, alert:2,   tag:'每周', cat:'食材' },
   { id:40, name:'冰沙粉',      spec:'1公斤/包',       unit:'包', sys:11,alert:2,  tag:'每周', cat:'茶飲' },
   { id:41, name:'烹大師',      spec:'1000公克/包',    unit:'包', sys:0, alert:1,   tag:'每周', cat:'調味' },
-  { id:42, name:'2杯加大袋(3碗)',spec:'32個/包',      unit:'包', sys:8, alert:2,   tag:'每周', cat:'包材' },
-  { id:43, name:'OPS 3H',      spec:'100個/包',       unit:'包', sys:21,alert:3,  tag:'每周', cat:'包材' },
-  { id:44, name:'粗吸管',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
-  { id:45, name:'大茶匙',      spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
-  { id:46, name:'手扒雞手套',  spec:'100支/包',       unit:'包', sys:0, alert:0,   tag:'每周', cat:'包材' },
-  { id:47, name:'吸管',        spec:'100支/包',       unit:'箱', sys:0, alert:0.5, tag:'每周', cat:'包材' },
-  { id:48, name:'耐熱袋(4兩)', spec:'100個/包',       unit:'包', sys:0, alert:3,   tag:'每周', cat:'包材' },
-  { id:49, name:'紙390湯杯',   spec:'50個/條',        unit:'條', sys:0, alert:3,   tag:'每周', cat:'包材' },
-  { id:50, name:'紙390蓋',     spec:'50個/條',        unit:'條', sys:0, alert:1,   tag:'每周', cat:'包材' },
-  { id:51, name:'紙520湯杯',   spec:'50個/條',        unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
-  { id:52, name:'紙520蓋',     spec:'50個/條',        unit:'箱', sys:0, alert:2,   tag:'每周', cat:'包材' },
-  { id:53, name:'湯匙',        spec:'100支/包',       unit:'箱', sys:0, alert:1,   tag:'每周', cat:'包材' },
-  { id:54, name:'筷子',        spec:'80雙/包',        unit:'包', sys:6, alert:1,   tag:'每周', cat:'包材' },
-  { id:55, name:'橡皮筋',      spec:'',               unit:'包', sys:0, alert:5,   tag:'每周', cat:'包材' },
-  { id:56, name:'洗衣粉',      spec:'',               unit:'包', sys:0.7,alert:2,  tag:'每周', cat:'備品' },
-  { id:57, name:'熱感應發票紙',spec:'75捲/箱',        unit:'箱', sys:7, alert:1,   tag:'每周', cat:'備品' },
-  { id:58, name:'廚房紙巾',    spec:'12捲/包',        unit:'包', sys:4, alert:0.3, tag:'每周', cat:'備品' },
-  { id:59, name:'5斤印刷袋',   spec:'',               unit:'袋', sys:0, alert:20,  tag:'每周', cat:'包材' },
-  { id:60, name:'沙拉脫S',     spec:'3.4公升/桶',     unit:'箱', sys:4, alert:3,   tag:'每周', cat:'備品' },
-  { id:61, name:'九如印刷袋35',spec:'70/包',          unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
-  { id:62, name:'常一嚐印刷袋(橘)',spec:'2500/包',    unit:'袋', sys:0, alert:0,   tag:'每周', cat:'包材' },
-  { id:63, name:'悠遊感熱紙',  spec:'4捲/條',         unit:'捲', sys:44,alert:3,  tag:'每周', cat:'備品' },
-  { id:64, name:'芝麻醬包裝袋',spec:'18cm*400m',      unit:'捲', sys:0, alert:3,   tag:'每周', cat:'包材' },
-  { id:65, name:'常一嚐印刷袋(黑)',spec:'2500/包',    unit:'袋', sys:0, alert:2,   tag:'每周', cat:'包材' },
-  { id:66, name:'飲料標籤貼紙',spec:'1000/捲',        unit:'捲', sys:0, alert:4,   tag:'每周', cat:'備品' },
+  { id:56, name:'洗衣粉',      spec:'',               unit:'包', sys:0.7,alert:2,  tag:'每周', cat:'備品' }
 ];
 
 // ─── STATE ───
@@ -481,7 +499,7 @@ function updateTabLine() {
   line.classList.remove('opacity-0');
 }
 
-// ─── QUICK LOAD ───
+// ─── QUICK LOAD (載入盤點區域) ───
 async function quickLoad(tag) {
   const tagItems = ITEMS.filter(i => i.tag === tag);
   const newIds = tagItems.filter(i => todayCounts[i.id] === undefined).map(i => i.id);
@@ -489,22 +507,69 @@ async function quickLoad(tag) {
   loadedTags.add(tag);
 
   document.getElementById('quick-load-wrap').classList.add('hidden');
+  document.getElementById('back-to-select-wrap').classList.remove('hidden'); // 顯示返回按鈕
   document.getElementById('progress-bar-wrap').classList.remove('hidden');
+  
+  closeKeypad(); // <--- 新增：確保載入新畫面時鍵盤是關閉的
   renderItemList();
   updateProgress();
+}
+
+// ─── 返回選擇畫面 ───
+function backToSelection() {
+  // 清除尚未盤點（沒輸入數字）的暫存項目，讓使用者可以真正「重新選擇」或「取消」
+  Object.keys(todayCounts).forEach(id => {
+    if (todayCounts[id] === '') {
+      delete todayCounts[id];
+    }
+  });
+  
+  // 重新結算目前有載入的 tags
+  loadedTags.clear();
+  ITEMS.forEach(i => {
+    if (todayCounts[i.id] !== undefined && todayCounts[i.id] !== '') {
+      loadedTags.add(i.tag);
+    }
+  });
+
+  const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+
+  // 切換 UI 狀態
+  closeKeypad(); // <--- 新增：返回首頁時強制收起小鍵盤
+
+  // 切換 UI 狀態
+  document.getElementById('quick-load-wrap').classList.remove('hidden');
+  document.getElementById('back-to-select-wrap').classList.add('hidden');
+  document.getElementById('item-list').classList.add('hidden');
+  document.getElementById('save-section').classList.add('hidden');
+  
+  if (loadedItems.length === 0) {
+    document.getElementById('progress-bar-wrap').classList.add('hidden');
+  } else {
+    updateProgress(); 
+  }
 }
 
 // ─── RENDER ITEM LIST ───
 function renderItemList() {
   const container = document.getElementById('item-list');
+  container.classList.remove('hidden'); // 確保列表在切換分頁時是顯示的
+
   const loadedItems = ITEMS.filter(i => todayCounts[i.id] !== undefined);
+  const backWrap = document.getElementById('back-to-select-wrap');
 
   if (loadedItems.length === 0) {
     document.getElementById('quick-load-wrap').classList.remove('hidden');
+    if (backWrap) backWrap.classList.add('hidden');
     container.innerHTML = '';
+    
+    const saveSection = document.getElementById('save-section');
+    if (saveSection) saveSection.classList.add('hidden');
     return;
   }
+  
   document.getElementById('quick-load-wrap').classList.add('hidden');
+  if (backWrap) backWrap.classList.remove('hidden');
 
   const groups = {};
   loadedItems.forEach(i => {
@@ -527,7 +592,6 @@ function renderItemList() {
 
   container.innerHTML = html || `<div class="text-center py-12 text-[var(--ink-muted)]">🎉 全部品項盤點完成！</div>`;
 
-  // === 新增：控制儲存按鈕的顯示與隱藏 ===
   const saveSection = document.getElementById('save-section');
   if (saveSection) {
     if (loadedItems.length > 0) {
