@@ -26,117 +26,51 @@
     --shadow: 0 4px 20px rgba(108, 134, 115, 0.08);
     --radius: 12px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans TC', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    transition: font-size 0.2s ease;
-  }
-
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; transition: font-size 0.2s ease; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
-
-  /* ── TOP NAV ── */
-  .topbar {
-    background: var(--sage); color: #fff; padding: 0 16px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 990; box-shadow: 0 1px 3px rgba(0,0,0,.05);
-  }
+  .topbar { background: var(--sage); color: #fff; padding: 0 16px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 990; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
   .topbar-left { display: flex; align-items: center; gap: 8px; }
   .topbar h1 { font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 0; padding-left: 4px; }
-  .nav-btn {
-    display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
-    background: transparent; border: none; outline: none; cursor: pointer; color: white; transition: all 0.2s;
-  }
+  .nav-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: transparent; border: none; outline: none; cursor: pointer; color: white; transition: all 0.2s; }
   .nav-btn:hover { color: rgba(255,255,255,0.8); transform: scale(1.05); }
   .nav-btn:active { transform: scale(0.95); }
-
-  /* ── MAIN ── */
   .main { padding: 24px; max-width: 1400px; margin: 0 auto; width: 100%; }
   .panel { display: none; }
   .panel.active { display: block; }
   .tip { margin-bottom: 16px; color: var(--ink-muted); font-size: 14px; font-weight: 500; }
-
-  /* ── TOOLBAR & STATS ── */
   .month-tool-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-  .stats-container {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
-    background: #fff; padding: 12px 16px; border-radius: var(--radius);
-    border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  }
-  .stat-card {
-    background: var(--sage-pale); padding: 6px 14px; border-radius: 20px;
-    font-size: 13px; font-weight: 700; color: var(--sage); border: 1px solid var(--sage-light);
-  }
-
-  /* ── SECTION HEADER ── */
+  .stats-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; background: #fff; padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .stat-card { background: var(--sage-pale); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--sage); border: 1px solid var(--sage-light); }
   .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
   .section-header h2 { font-family: 'Noto Serif TC', serif; font-size: 22px; color: var(--ink); font-weight: 700; }
   .month-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-  .month-nav button {
-    background: var(--sage-pale); border: 1px solid var(--border); border-radius: 8px;
-    width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--sage);
-    font-weight: 700; line-height: 1; transition: all 0.2s;
-  }
+  .month-nav button { background: var(--sage-pale); border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--sage); font-weight: 700; line-height: 1; transition: all 0.2s; }
   .month-nav button:hover { background: var(--sage-light); color: #fff; }
   .month-nav span { font-size: 15px; font-weight: 700; color: var(--ink); min-width: 90px; text-align: center; }
-
-  /* ── BUTTONS ── */
-  .btn-custom {
-    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-dark);
-    cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;
-    transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
-    background: #fff; color: var(--ink-soft);
-  }
+  .btn-custom { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-dark); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; background: #fff; color: var(--ink-soft); }
   .btn-custom:hover { background: var(--sage-pale); border-color: var(--sage-light); color: var(--sage); }
   .btn-custom-sage { background: var(--sage); color: #fff; border-color: var(--sage); }
   .btn-custom-sage:hover { background: var(--olive); border-color: var(--olive); color: #fff; }
-  /* 休假按鈕特別樣式 */
-  .btn-leave {
-    background: #fff0f0; color: var(--accent-red); border-color: #fecaca;
-  }
+  .btn-leave { background: #fff0f0; color: var(--accent-red); border-color: #fecaca; }
   .btn-leave:hover { background: #fee2e2; border-color: var(--accent-red); color: var(--accent-red); }
-
-  /* ── STAFF MANAGER ── */
   .staff-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-  .staff-tag {
-    display: flex; align-items: center; gap: 6px; background: var(--sage-pale);
-    border: 1.5px solid var(--sage-light); border-radius: 20px;
-    padding: 6px 14px; font-size: 14px; font-weight: 600; color: var(--ink);
-  }
+  .staff-tag { display: flex; align-items: center; gap: 6px; background: var(--sage-pale); border: 1.5px solid var(--sage-light); border-radius: 20px; padding: 6px 14px; font-size: 14px; font-weight: 600; color: var(--ink); }
   .staff-tag .del { background: none; border: none; cursor: pointer; color: var(--accent-red); font-size: 16px; line-height: 1; padding: 0 2px; }
   .add-staff-row { display: flex; gap: 8px; }
-  .add-staff-row input {
-    padding: 8px 14px; border: 1.5px solid var(--border-dark); border-radius: 8px;
-    font-family: inherit; font-size: 14px; outline: none; width: 180px; transition: border .2s;
-  }
+  .add-staff-row input { padding: 8px 14px; border: 1.5px solid var(--border-dark); border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; width: 180px; transition: border .2s; }
   .add-staff-row input:focus { border-color: var(--sage); }
-
-  /* ── CALENDAR GRIDS ── */
   .calendars-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .cal-section h3 {
-    font-family: 'Noto Serif TC', serif; font-size: 18px; color: var(--sage);
-    margin-bottom: 12px; font-weight: 700; letter-spacing: 1px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
+  .cal-section h3 { font-family: 'Noto Serif TC', serif; font-size: 18px; color: var(--sage); margin-bottom: 12px; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .calendar { background: var(--warm-white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
-  .cal-weekday .cal-header, .cal-full .cal-header {
-    background: var(--sage); color: #fff; font-size: 15px; font-weight: 700; display: grid;
-  }
+  .cal-weekday .cal-header, .cal-full .cal-header { background: var(--sage); color: #fff; font-size: 15px; font-weight: 700; display: grid; }
   .cal-weekday .cal-header { grid-template-columns: repeat(5, 1fr); }
   .cal-full .cal-header { grid-template-columns: repeat(7, 1fr); }
   .cal-weekday .cal-body { display: grid; grid-template-columns: repeat(5, 1fr); }
   .cal-full .cal-body { display: grid; grid-template-columns: repeat(7, 1fr); }
   .cal-header div { text-align: center; padding: 10px 4px; letter-spacing: 1px; }
-  .cal-cell {
-    min-height: 120px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    padding: 8px; font-size: 14px; position: relative; transition: background .15s;
-    display: flex; flex-direction: column; align-items: center;
-  }
+  .cal-cell { min-height: 120px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; font-size: 14px; position: relative; transition: background .15s; display: flex; flex-direction: column; align-items: center; }
   .cal-cell:last-child { border-right: none; }
   .cal-weekday .cal-cell:nth-child(5n) { border-right: none; }
   .cal-full .cal-cell:nth-child(7n) { border-right: none; }
@@ -144,88 +78,52 @@
   .cal-cell.today { background: #eaf0eb; border-bottom: 2px solid var(--sage); }
   .cal-cell.weekend { background: #f8faf8; }
   .cal-cell.highlighted { background: var(--sage-pale); }
-  .cal-cell .date-num { font-size: 16px; font-weight: 700; color: var(--ink-soft); margin-bottom: 6px; text-align: center; }
+  .cal-cell .date-num { font-size: 16px; font-weight: 700; color: var(--ink-soft); margin-bottom: 4px; text-align: center; }
   .cal-cell.other-month .date-num { color: #bbb; }
-
-  /* ── INLINE EDIT BOX ── */
-  .inline-edit {
-    flex: 1; width: 100%; outline: none; font-size: 14px; font-weight: 700; color: var(--ink);
-    text-align: center; white-space: pre-wrap; word-break: break-word;
-    padding: 6px; border-radius: 6px; transition: background 0.2s, box-shadow 0.2s;
-    line-height: 1.5; border: 1px solid transparent;
-  }
+  /* 休假標記 */
+  .leave-indicator { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin-bottom: 4px; }
+  .leave-dot { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 8px; background: #fee2e2; color: var(--accent-red); border: 1px solid #fecaca; line-height: 1.4; }
+  .inline-edit { flex: 1; width: 100%; outline: none; font-size: 14px; font-weight: 700; color: var(--ink); text-align: center; white-space: pre-wrap; word-break: break-word; padding: 6px; border-radius: 6px; transition: background 0.2s, box-shadow 0.2s; line-height: 1.5; border: 1px solid transparent; }
   .inline-edit:empty:before { content: attr(data-placeholder); color: #a1a1aa; pointer-events: none; font-weight: normal; }
   .inline-edit:focus { background: #fff; border-color: var(--sage-light); box-shadow: inset 0 0 0 1px var(--sage-pale); }
   .dish-edit.closed-label { color: var(--accent-red); font-size: 15px; }
-
-  /* ── SHIFT TABLE ── */
-  .shift-wrap {
-    width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border);
-  }
+  .shift-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
   .shift-table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 14px; background: var(--warm-white); }
   .shift-table th, .shift-table td { border: 1px solid var(--border); padding: 10px 12px; text-align: center; vertical-align: middle; }
   .shift-table thead tr:first-child th { background: var(--sage); color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 2px; border: none; }
   .shift-table thead tr:nth-child(2) th { background: var(--sage-pale); color: var(--ink-soft); font-weight: 700; font-size: 14px; border-top: 1px solid var(--border); }
   .shift-table td.closed-cell { color: var(--accent-red); font-weight: 700; font-size: 15px; }
   .shift-table td.open-cell { min-width: 120px; }
-  .shift-input-div {
-    font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
-    border: 1px solid var(--border-dark); border-radius: 6px; padding: 6px 8px;
-    width: 100%; min-height: 32px; outline: none; background: var(--cream);
-    transition: border .2s; text-align: center; word-break: break-word; line-height: 1.4;
-  }
+  .shift-input-div { font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); border: 1px solid var(--border-dark); border-radius: 6px; padding: 6px 8px; width: 100%; min-height: 32px; outline: none; background: var(--cream); transition: border .2s; text-align: center; word-break: break-word; line-height: 1.4; }
   .shift-input-div:focus { border-color: var(--sage); background: #fff; box-shadow: inset 0 0 0 1px var(--sage-pale); }
   .shift-input-div:empty:before { content: attr(data-placeholder); color: #a1a1aa; pointer-events: none; font-weight: normal; }
   .missing-opener { background-color: #fee2e2 !important; border: 2px solid var(--accent-red) !important; }
-  .opener-badge {
-    display: inline-block; padding: 6px 12px; border-radius: 12px;
-    font-size: 13px; font-weight: 700; cursor: pointer; border: none;
-    font-family: inherit; outline: none; transition: box-shadow 0.2s;
-  }
+  .opener-badge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; outline: none; transition: box-shadow 0.2s; }
   .opener-badge:focus { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--sage-light); }
-
-  /* ── 快速輸入面板 ── */
-  #quick-input-panel {
-    position: absolute; z-index: 2000; background: rgba(255,255,255,0.98);
-    border: 1px solid var(--border); border-radius: 12px; padding: 14px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12); width: 280px; pointer-events: auto;
-    transition: all 0.2s ease; transform-origin: top left;
-  }
+  /* 排班表休假提示 */
+  .shift-leave-tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: #fee2e2; color: var(--accent-red); border: 1px solid #fecaca; display: inline-block; margin-top: 3px; }
+  #quick-input-panel { position: absolute; z-index: 2000; background: rgba(255,255,255,0.98); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); width: 280px; pointer-events: auto; transition: all 0.2s ease; transform-origin: top left; }
   #quick-input-panel.hidden { opacity: 0; visibility: hidden; transform: scale(0.95); pointer-events: none; }
   .quick-section { margin-bottom: 12px; }
   .quick-section:last-child { margin-bottom: 0; }
-  .quick-title {
-    font-size: 13px; font-weight: 700; color: var(--ink-muted); margin-bottom: 8px;
-    border-bottom: 1px solid var(--border); padding-bottom: 4px;
-    display: flex; align-items: center; gap: 4px;
-  }
+  .quick-title { font-size: 13px; font-weight: 700; color: var(--ink-muted); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; display: flex; align-items: center; gap: 4px; }
   .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; }
-  .quick-btn {
-    padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--border); background: var(--cream);
-    color: var(--ink-soft); transition: all 0.15s; font-family: inherit;
-  }
+  .quick-btn { padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--cream); color: var(--ink-soft); transition: all 0.15s; font-family: inherit; }
   .quick-btn:hover { background: var(--sage-pale); border-color: var(--sage-light); color: var(--sage); }
-  .quick-btn.task-btn { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+  .quick-btn.task-btn { background: #f0fdf4; border-color: #bbf7d0; color: #166634; }
   .quick-btn.task-btn:hover { background: #dcfce7; }
-
-  /* ── 大字體模式 ── */
+  /* 休假中人員按鈕樣式 */
+  .quick-btn.on-leave { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; cursor: not-allowed !important; opacity: 0.55; position: relative; }
+  .quick-btn.on-leave::after { content: '休'; font-size: 9px; font-weight: 900; background: var(--accent-red); color: white; border-radius: 4px; padding: 0 3px; position: absolute; top: -5px; right: -5px; }
   body.large-font .inline-edit { font-size: 18px; line-height: 1.6; }
   body.large-font .shift-input-div { font-size: 16px; padding: 8px; }
   body.large-font .shift-table th, body.large-font .shift-table td { font-size: 16px; }
   body.large-font .opener-badge { font-size: 15px; padding: 8px 14px; }
   body.large-font .cal-cell .date-num { font-size: 18px; }
-
-  /* ── 休假日曆 Modal ── */
   .leave-cal-header { background: var(--sage); color: #fff; display: grid; grid-template-columns: repeat(7, 1fr); }
   .leave-cal-body { display: grid; grid-template-columns: repeat(7, 1fr); }
   .leave-cal-header div { text-align: center; padding: 10px 4px; font-size: 14px; font-weight: 700; letter-spacing: 1px; }
-  .leave-cal-cell {
-    min-height: 80px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px;
-    transition: background .15s; cursor: pointer;
-  }
+  .leave-cal-cell { min-height: 80px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: background .15s; cursor: pointer; }
   .leave-cal-cell:nth-child(7n) { border-right: none; }
   .leave-cal-cell.other-month { background: #fbfbfc; opacity: 0.5; pointer-events: none; }
   .leave-cal-cell.today-leave { background: #eaf0eb; border-bottom: 2px solid var(--sage); }
@@ -233,23 +131,16 @@
   .leave-cal-cell .leave-date-num { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
   .leave-cal-cell.other-month .leave-date-num { color: #bbb; }
   .leave-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
-  .leave-tag {
-    font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;
-    background: #fee2e2; color: var(--accent-red); border: 1px solid #fecaca;
-    cursor: pointer; transition: all 0.15s;
-  }
+  .leave-tag { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: #fee2e2; color: var(--accent-red); border: 1px solid #fecaca; cursor: pointer; transition: all 0.15s; }
   .leave-tag:hover { background: var(--accent-red); color: #fff; }
-
-  /* 快速人員按鈕（休假用） */
-  .leave-name-btn {
-    padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
-    cursor: pointer; border: 1.5px solid var(--border-dark); background: var(--cream);
-    color: var(--ink-soft); transition: all 0.15s; font-family: inherit;
-  }
+  .leave-name-btn { padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border-dark); background: var(--cream); color: var(--ink-soft); transition: all 0.15s; font-family: inherit; }
   .leave-name-btn:hover { background: #fee2e2; border-color: #fecaca; color: var(--accent-red); }
   .leave-name-btn.selected { background: #fee2e2; border-color: var(--accent-red); color: var(--accent-red); }
-
-  /* ── MOBILE STYLES ── */
+  /* 休假警告 Modal */
+  #leave-warn-modal { animation: lwFadeIn 0.15s ease; }
+  @keyframes lwFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .leave-warn-card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); border: 1px solid var(--border); max-width: 340px; width: 100%; padding: 28px 24px; text-align: center; }
+  .leave-warn-icon { width: 56px; height: 56px; border-radius: 50%; background: #fff0f0; border: 2px solid #fecaca; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
   @media (max-width: 900px) {
     .calendars-wrap { grid-template-columns: 1fr; gap: 20px; }
     .main { padding: 16px 12px; }
@@ -268,7 +159,6 @@
     .leave-cal-cell .leave-date-num { font-size: 13px; }
     .leave-tag { font-size: 10px; padding: 1px 5px; }
   }
-
   @media (max-width: 400px) {
     .cal-full .cal-header div { font-size: 13px; padding: 6px 0; }
     .cal-full .cal-cell { padding: 4px 2px; min-height: 75px; }
@@ -276,15 +166,11 @@
     .stat-card { font-size: 12px; padding: 6px 10px; }
     .quick-btn { padding: 6px 10px; font-size: 12px; }
   }
-
-  /* ── PRINT STYLES ── */
   @media print {
     @page { size: landscape; margin: 8mm 5mm; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { background: #fff !important; margin: 0; padding: 0; }
-    .topbar, .section-header .month-nav, .btn-custom, .add-staff-row, .tip,
-    #staffPanel, .global-nav, #quick-input-panel, .month-tool-bar, #shiftStats,
-    #cleanStats, #toast, #tab-bar-container, #leaveModal { display: none !important; }
+    .topbar, .section-header .month-nav, .btn-custom, .add-staff-row, .tip, #staffPanel, .global-nav, #quick-input-panel, .month-tool-bar, #shiftStats, #cleanStats, #toast, #tab-bar-container, #leaveModal, #leave-warn-modal { display: none !important; }
     .main { padding: 0 !important; margin: 0 !important; max-width: none !important; }
     .panel { display: none !important; }
     #cleanPanel { display: flex !important; flex-direction: column !important; width: 100% !important; height: 98vh !important; max-height: 98vh !important; page-break-after: always !important; break-after: page !important; }
@@ -314,16 +200,9 @@
     .shift-table th:nth-child(5), .shift-table td:nth-child(5), .shift-table th:nth-child(13), .shift-table td:nth-child(13) { width: 65px !important; max-width: 65px !important; }
     .shift-table th:nth-child(4), .shift-table td:nth-child(4), .shift-table th:nth-child(12), .shift-table td:nth-child(12) { width: 160px !important; max-width: 160px !important; }
     .shift-table th:nth-child(7), .shift-table td:nth-child(7), .shift-table th:nth-child(15), .shift-table td:nth-child(15) { width: 80px !important; max-width: 80px !important; }
+    .leave-indicator, .shift-leave-tag { display: none !important; }
   }
-
-  /* ── Toast ── */
-  #toast {
-    position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px);
-    background: rgba(45,58,49,0.95); color: white; padding: 10px 24px; border-radius: 50px;
-    transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); opacity: 0;
-    font-size: 14px; font-weight: 500; z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none;
-  }
+  #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(45,58,49,0.95); color: white; padding: 10px 24px; border-radius: 50px; transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); opacity: 0; font-size: 14px; font-weight: 500; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none; }
   #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 </head>
@@ -339,49 +218,26 @@
       <h1 class="text-base md:text-xl font-bold tracking-widest text-white uppercase">清潔與排班系統</h1>
     </div>
     <div id="global-nav-menu" class="hidden absolute top-full left-0 mt-3 w-52 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-[var(--border)] overflow-hidden transition-all origin-top-left z-[1000]">
-      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-        <i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統
-      </a>
-      <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-        <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算
-      </a>
-      <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-        <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
-      </a>
-      <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-        <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
-      </a>
-      <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
-        <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
-      </a>
+      <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="calendar" class="w-4 h-4 text-[var(--ink-muted)]"></i> 值班系統</a>
+      <a href="cash.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="circle-dollar-sign" class="w-4 h-4 text-[var(--ink-muted)]"></i> 每週金庫結算</a>
+      <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點</a>
+      <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors"><i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理</a>
+      <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors"><i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統</a>
     </div>
   </div>
-
   <div class="hidden md:flex items-center gap-2 text-xs">
-    <button onclick="toggleFontSize()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all">
-      <i data-lucide="a-large-small" class="w-4 h-4"></i>字體大小
-    </button>
-    <button onclick="switchTab('staffPanel')" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all">
-      <i data-lucide="users" class="w-4 h-4"></i>管理人員
-    </button>
-    <button onclick="printSchedule()" class="flex items-center gap-1.5 bg-white text-[var(--sage)] hover:bg-[var(--sage-pale)] font-bold px-3 py-1.5 rounded-lg transition-all">
-      <i data-lucide="printer" class="w-4 h-4"></i>列印排班表
-    </button>
+    <button onclick="toggleFontSize()" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all"><i data-lucide="a-large-small" class="w-4 h-4"></i>字體大小</button>
+    <button onclick="switchTab('staffPanel')" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg transition-all"><i data-lucide="users" class="w-4 h-4"></i>管理人員</button>
+    <button onclick="printSchedule()" class="flex items-center gap-1.5 bg-white text-[var(--sage)] hover:bg-[var(--sage-pale)] font-bold px-3 py-1.5 rounded-lg transition-all"><i data-lucide="printer" class="w-4 h-4"></i>列印排班表</button>
   </div>
 </div>
 
 <div id="tab-bar-container" class="bg-white border-b border-[var(--border-dark)] no-print">
   <div class="max-w-[1400px] mx-auto px-4 md:px-6 relative flex">
     <div class="relative flex overflow-x-auto hide-scrollbar flex-1" id="tab-container">
-      <button id="tab-cleanPanel" onclick="switchTab('cleanPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink)]">
-        <i data-lucide="sparkles" class="w-4 h-4 opacity-80"></i> 清潔與洗餐具
-      </button>
-      <button id="tab-shiftPanel" onclick="switchTab('shiftPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]">
-        <i data-lucide="store" class="w-4 h-4 opacity-80"></i> 開店關帳排班
-      </button>
-      <button id="tab-staffPanel" onclick="switchTab('staffPanel')" class="hidden whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]">
-        <i data-lucide="users" class="w-4 h-4 opacity-80"></i> 人員管理
-      </button>
+      <button id="tab-cleanPanel" onclick="switchTab('cleanPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink)]"><i data-lucide="sparkles" class="w-4 h-4 opacity-80"></i> 清潔與洗餐具</button>
+      <button id="tab-shiftPanel" onclick="switchTab('shiftPanel')" class="whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]"><i data-lucide="store" class="w-4 h-4 opacity-80"></i> 開店關帳排班</button>
+      <button id="tab-staffPanel" onclick="switchTab('staffPanel')" class="hidden whitespace-nowrap flex-1 py-3.5 px-4 md:px-6 text-sm md:text-base font-medium flex justify-center items-center gap-1.5 transition-all duration-300 text-[var(--ink-muted)] hover:text-[var(--ink-soft)]"><i data-lucide="users" class="w-4 h-4 opacity-80"></i> 人員管理</button>
       <div id="tab-line" class="absolute bottom-0 left-0 h-[3px] bg-[var(--sage)] rounded-t-full transition-all duration-300 ease-out z-10 opacity-0" style="width:0;transform:translateX(0);"></div>
     </div>
     <div class="md:hidden flex items-center gap-1 ml-auto pl-2">
@@ -392,7 +248,6 @@
 </div>
 
 <div class="main">
-
   <div class="panel active" id="cleanPanel">
     <div class="section-header">
       <h2 id="cleanTitle"></h2>
@@ -407,7 +262,7 @@
       <button class="btn-custom btn-leave" onclick="openLeaveModal()"><i data-lucide="calendar-heart" class="w-4 h-4"></i> 休假人員</button>
     </div>
     <div id="cleanStats" class="stats-container"></div>
-    <p class="tip">點擊下方日曆空白處即可輸入，或利用跳出的「快速面板」直接點選名字與事項。</p>
+    <p class="tip">點擊下方日曆空白處即可輸入，或利用跳出的「快速面板」直接點選名字與事項。日期上的紅色小標籤代表該日有人休假。</p>
     <div class="calendars-wrap">
       <div class="cal-section">
         <h3><i data-lucide="spray-can" class="w-5 h-5"></i>清潔</h3>
@@ -436,7 +291,7 @@
       </div>
     </div>
     <div id="shiftStats" class="stats-container"></div>
-    <p class="tip">提示：紅底表示尚未填寫開店人員。</p>
+    <p class="tip">提示：紅底表示尚未填寫開店人員；星期欄的紅色標籤顯示當日休假人員。</p>
     <div class="shift-wrap">
       <table class="shift-table" id="shiftTable">
         <thead>
@@ -484,10 +339,11 @@
   </div>
 </div>
 
+<!-- 休假人員 Modal -->
 <div id="leaveModal" class="fixed inset-0 z-[100] hidden">
   <div class="fixed inset-0 bg-[var(--ink)]/50 backdrop-blur-sm" onclick="closeLeaveModal()"></div>
   <div class="fixed inset-0 z-10 flex items-center justify-center p-4 sm:p-6" style="padding-top: 70px;">
-  <div class="relative bg-white rounded-3xl shadow-2xl border border-[var(--border)] w-full max-w-3xl pointer-events-auto flex flex-col" style="max-height: calc(100vh - 90px); height: auto;">
+    <div class="relative bg-white rounded-3xl shadow-2xl border border-[var(--border)] w-full max-w-3xl pointer-events-auto flex flex-col" style="max-height: calc(100vh - 90px); height: auto;">
       <div class="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center border border-[#fecaca]">
@@ -502,17 +358,11 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
       <div class="flex-shrink-0 flex items-center justify-center gap-4 py-3 border-b border-[var(--border)] bg-[var(--cream)]">
-        <button onclick="changeLeaveMonth(-1)" class="p-2 rounded-lg bg-white border border-[var(--border)] text-[var(--sage)] hover:bg-[var(--sage-pale)] transition-colors">
-          <i data-lucide="chevron-left" class="w-4 h-4"></i>
-        </button>
+        <button onclick="changeLeaveMonth(-1)" class="p-2 rounded-lg bg-white border border-[var(--border)] text-[var(--sage)] hover:bg-[var(--sage-pale)] transition-colors"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
         <span id="leaveMonthLabel" class="font-bold text-lg text-[var(--ink)] min-w-[120px] text-center"></span>
-        <button onclick="changeLeaveMonth(1)" class="p-2 rounded-lg bg-white border border-[var(--border)] text-[var(--sage)] hover:bg-[var(--sage-pale)] transition-colors">
-          <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </button>
+        <button onclick="changeLeaveMonth(1)" class="p-2 rounded-lg bg-white border border-[var(--border)] text-[var(--sage)] hover:bg-[var(--sage-pale)] transition-colors"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
       </div>
-
       <div id="leaveNamePickerArea" class="flex-shrink-0 hidden px-5 py-3 border-b border-[var(--border)] bg-[#fff8f8]">
         <div class="flex items-center gap-2 mb-2">
           <i data-lucide="user-x" class="w-4 h-4 text-[var(--accent-red)]"></i>
@@ -521,48 +371,37 @@
         </div>
         <div id="leaveNameBtns" class="flex flex-wrap gap-2"></div>
       </div>
-
       <div class="overflow-y-auto p-4 flex-1 min-h-0">
         <div class="border border-[var(--border)] rounded-xl overflow-hidden">
-          <div class="leave-cal-header">
-            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-          </div>
+          <div class="leave-cal-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
           <div class="leave-cal-body" id="leaveCalBody"></div>
         </div>
       </div>
-
       <div id="leaveStats" class="flex-shrink-0 px-5 pt-2 pb-4 flex flex-wrap gap-2"></div>
-
       <div class="flex-shrink-0 px-5 pb-5">
-        <button onclick="closeLeaveModal()" class="w-full py-3 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] transition-colors">
-          完成設定
-        </button>
+        <button onclick="closeLeaveModal()" class="w-full py-3 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] transition-colors">完成設定</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 休假衝突警告 Modal -->
+<div id="leave-warn-modal" class="fixed inset-0 z-[200] hidden">
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-6 z-10">
+    <div class="leave-warn-card">
+      <div class="leave-warn-icon">
+        <i data-lucide="user-x" class="w-6 h-6 text-[var(--accent-red)]"></i>
+      </div>
+      <p id="leave-warn-msg" class="text-[var(--ink)] font-semibold text-sm mb-6 leading-relaxed"></p>
+      <button onclick="closeLeaveWarnModal()" class="w-full py-3 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] active:scale-95 transition-all">確定</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
-<div id="leave-warn-modal" class="fixed inset-0 z-[200] hidden">
-  <div class="fixed inset-0 bg-black/40"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-6 z-10">
-    <div class="bg-white rounded-2xl shadow-2xl border border-[var(--border)] max-w-sm w-full p-6 text-center">
-      <div class="w-12 h-12 rounded-full bg-red-50 border border-[#fecaca] flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="user-x" class="w-6 h-6 text-[var(--accent-red)]"></i>
-      </div>
-      <p id="leave-warn-msg" class="text-[var(--ink)] font-semibold text-sm mb-5 leading-relaxed"></p>
-      <button onclick="closeLeaveWarnModal()"
-        class="w-full py-2.5 rounded-xl bg-[var(--sage)] text-white font-bold hover:bg-[var(--olive)] transition-colors">
-        確定
-      </button>
-    </div>
-  </div>
-</div>
 
 <script>
-// ══════════════════════════════════════════
-//  LIFF 初始化
-// ══════════════════════════════════════════
 const LIFF_ID = '2010172685-1n2pPU2d';
 
 async function initLiff() {
@@ -583,6 +422,7 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+// ── 休假衝突警告 ──
 function showLeaveWarn(msg) {
   document.getElementById('leave-warn-msg').innerText = msg;
   document.getElementById('leave-warn-modal').classList.remove('hidden');
@@ -591,82 +431,51 @@ function showLeaveWarn(msg) {
 function closeLeaveWarnModal() {
   document.getElementById('leave-warn-modal').classList.add('hidden');
 }
-
-// 檢查某日某人是否已排休假，回傳 true 表示有衝突
 function checkLeaveConflict(year, jsMonth, day, name) {
   const leaveVal = getCacheField(year, jsMonth, day, 'leave');
   if (!leaveVal) return false;
-  const names = leaveVal.split('、').map(n => n.trim());
-  return names.includes(name);
+  return leaveVal.split('、').map(n => n.trim()).includes(name);
+}
+function getLeaveNames(year, jsMonth, day) {
+  const leaveVal = getCacheField(year, jsMonth, day, 'leave');
+  if (!leaveVal) return [];
+  return leaveVal.split('、').map(n => n.trim()).filter(n => n);
 }
 
-// ══════════════════════════════════════════
-//  SUPABASE — 統一使用 shift_schedules
-// ══════════════════════════════════════════
+// ── Supabase ──
 const { createClient } = supabase;
 const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/**
- * 統一寫入 shift_schedules 資料表
- * field: 'clean' | 'dish' | 'leave' | 'open' | 'shift' | 't20' | 'close' | 'note'
- */
 async function saveFieldToShiftSchedules(year, month, day, field, value) {
-  // month 傳入已是 1-12（DB 格式）
   try {
-    const { data: existing } = await supabaseClient
-      .from('shift_schedules')
-      .select('year')
-      .eq('year', year).eq('month', month).eq('day', day)
-      .limit(1);
-
+    const { data: existing } = await supabaseClient.from('shift_schedules').select('year').eq('year', year).eq('month', month).eq('day', day).limit(1);
     if (existing && existing.length > 0) {
-      await supabaseClient
-        .from('shift_schedules')
-        .update({ [field]: value })
-        .eq('year', year).eq('month', month).eq('day', day);
+      await supabaseClient.from('shift_schedules').update({ [field]: value }).eq('year', year).eq('month', month).eq('day', day);
     } else {
-      await supabaseClient
-        .from('shift_schedules')
-        .insert({ year, month, day, [field]: value });
+      await supabaseClient.from('shift_schedules').insert({ year, month, day, [field]: value });
     }
   } catch (e) { console.error('saveFieldToShiftSchedules 失敗:', e); }
 }
 
-// ══════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════
+// ── STATE ──
 let staff = [];
 const WEEKDAYS = ['日','一','二','三','四','五','六'];
-
-// cleanYear/cleanMonth: 清潔、洗餐具頁面月份
-let cleanYear  = new Date().getFullYear(), cleanMonth  = new Date().getMonth();
-// shiftYear/shiftMonth: 排班頁面月份
-let shiftYear  = new Date().getFullYear(), shiftMonth  = new Date().getMonth();
-// leaveYear/leaveMonth: 休假 Modal 月份（預設同 cleanYear/cleanMonth）
-let leaveYear  = new Date().getFullYear(), leaveMonth  = new Date().getMonth();
-
-// 統一的本地資料快取：key 格式 "YYYY-M-D"（jsMonth 0-11）
-// 欄位：{ clean, dish, leave, opener, duty, at20, close, note }
+let cleanYear = new Date().getFullYear(), cleanMonth = new Date().getMonth();
+let shiftYear = new Date().getFullYear(), shiftMonth = new Date().getMonth();
+let leaveYear = new Date().getFullYear(), leaveMonth = new Date().getMonth();
 let dayCache = {};
-
 let isLargeFont = false;
-let activeLeaveDay = null; // 目前在 Modal 中選取的日期 key
+let activeLeaveDay = null;
 
 const STAFF_COLORS = [
-  { bg: '#ffe0b2', text: '#b26a00' },
-  { bg: '#d1c4e9', text: '#4a148c' },
-  { bg: '#b3e5fc', text: '#01579b' },
-  { bg: '#c8e6c9', text: '#1b5e20' },
-  { bg: '#f8bbd0', text: '#880e4f' },
-  { bg: '#dcedc8', text: '#33691e' },
-  { bg: '#f0f4c3', text: '#827717' },
-  { bg: '#ffd54f', text: '#5d4037' },
-  { bg: '#ffcdd2', text: '#b71c1c' },
-  { bg: '#b2dfdb', text: '#004d40' },
-  { bg: '#cfd8dc', text: '#263238' },
-  { bg: '#f48fb1', text: '#880e4f' }
+  { bg: '#ffe0b2', text: '#b26a00' }, { bg: '#d1c4e9', text: '#4a148c' },
+  { bg: '#b3e5fc', text: '#01579b' }, { bg: '#c8e6c9', text: '#1b5e20' },
+  { bg: '#f8bbd0', text: '#880e4f' }, { bg: '#dcedc8', text: '#33691e' },
+  { bg: '#f0f4c3', text: '#827717' }, { bg: '#ffd54f', text: '#5d4037' },
+  { bg: '#ffcdd2', text: '#b71c1c' }, { bg: '#b2dfdb', text: '#004d40' },
+  { bg: '#cfd8dc', text: '#263238' }, { bg: '#f48fb1', text: '#880e4f' }
 ];
 
 function getStaffStyle(name, isUnified = false) {
@@ -683,53 +492,35 @@ function getStaffStyle(name, isUnified = false) {
   return `background-color:${c.bg};color:${c.text};border:1px solid rgba(0,0,0,0.05);`;
 }
 
-// ── 快取存取輔助 ──
 function cacheKey(year, jsMonth, day) { return `${year}-${jsMonth}-${day}`; }
-
 function getCacheField(year, jsMonth, day, field) {
   const k = cacheKey(year, jsMonth, day);
   return (dayCache[k] && dayCache[k][field]) ? dayCache[k][field] : '';
 }
-
 function setCacheField(year, jsMonth, day, field, value) {
   const k = cacheKey(year, jsMonth, day);
   if (!dayCache[k]) dayCache[k] = {};
   dayCache[k][field] = value;
 }
 
-// ══════════════════════════════════════════
-//  字體大小
-// ══════════════════════════════════════════
 function toggleFontSize() {
   isLargeFont = !isLargeFont;
   document.body.classList.toggle('large-font', isLargeFont);
   setTimeout(updateTabLine, 50);
 }
 
-// ══════════════════════════════════════════
-//  TABS & MENU
-// ══════════════════════════════════════════
 function switchTab(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'staffPanel') {
-    document.getElementById('tab-staffPanel').classList.remove('hidden');
-    renderStaff();
-  }
+  if (id === 'staffPanel') { document.getElementById('tab-staffPanel').classList.remove('hidden'); renderStaff(); }
   ['cleanPanel','shiftPanel','staffPanel'].forEach(tabId => {
     const btn = document.getElementById('tab-' + tabId);
     if (!btn) return;
-    if (tabId === id) {
-      btn.classList.add('text-[var(--ink)]');
-      btn.classList.remove('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]');
-    } else {
-      btn.classList.remove('text-[var(--ink)]');
-      btn.classList.add('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]');
-    }
+    if (tabId === id) { btn.classList.add('text-[var(--ink)]'); btn.classList.remove('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]'); }
+    else { btn.classList.remove('text-[var(--ink)]'); btn.classList.add('text-[var(--ink-muted)]','hover:text-[var(--ink-soft)]'); }
   });
   updateTabLine();
 }
-
 function updateTabLine() {
   const activePanel = document.querySelector('.panel.active');
   if (!activePanel) return;
@@ -740,9 +531,7 @@ function updateTabLine() {
   line.style.transform = `translateX(${btn.offsetLeft}px)`;
   if (line.classList.contains('opacity-0')) setTimeout(() => line.classList.remove('opacity-0'), 50);
 }
-
 window.addEventListener('resize', updateTabLine);
-
 function toggleGlobalMenu() { document.getElementById('global-nav-menu').classList.toggle('hidden'); }
 document.addEventListener('click', function(e) {
   const nav = document.querySelector('.topbar-left');
@@ -750,57 +539,47 @@ document.addEventListener('click', function(e) {
   if (nav && !nav.contains(e.target) && !menu.classList.contains('hidden')) menu.classList.add('hidden');
 });
 
-// ══════════════════════════════════════════
-//  STAFF
-// ══════════════════════════════════════════
+// ── STAFF ──
 function renderStaff() {
   const g = document.getElementById('staffGrid');
   g.innerHTML = staff.map((s, i) => {
     const style = getStaffStyle(s);
     return `<div class="staff-tag" style="${style}">${s}<button class="del" style="color:inherit;opacity:0.7;" onclick="removeStaff(${i})">×</button></div>`;
   }).join('');
-  updateQuickNamesPanel();
+  updateQuickNamesPanel(null);
 }
-
 async function addStaff() {
   const inp = document.getElementById('newStaffInput');
   const name = inp.value.trim();
   if (name && !staff.includes(name)) {
     staff.push(name);
     renderStaff();
-    // 人員名單仍存在 schedule_data（不影響 shift_schedules）
-    await supabaseClient.from('schedule_data').upsert(
-      { id: 'staff_all', type: 'staff', date_key: 'all', data: staff },
-      { onConflict: 'id' }
-    );
+    await supabaseClient.from('schedule_data').upsert({ id: 'staff_all', type: 'staff', date_key: 'all', data: staff }, { onConflict: 'id' });
   }
   inp.value = '';
 }
-
 async function removeStaff(i) {
   staff.splice(i, 1);
   renderStaff();
-  await supabaseClient.from('schedule_data').upsert(
-    { id: 'staff_all', type: 'staff', date_key: 'all', data: staff },
-    { onConflict: 'id' }
-  );
+  await supabaseClient.from('schedule_data').upsert({ id: 'staff_all', type: 'staff', date_key: 'all', data: staff }, { onConflict: 'id' });
 }
 
-// ══════════════════════════════════════════
-//  清潔日曆
-// ══════════════════════════════════════════
+// ── 休假標記 HTML ──
+function buildLeaveIndicator(year, jsMonth, day) {
+  return '';
+}
+
+// ── 清潔日曆 ──
 function changeMonth(d) {
   cleanMonth += d;
   if (cleanMonth > 11) { cleanMonth = 0; cleanYear++; }
   if (cleanMonth < 0)  { cleanMonth = 11; cleanYear--; }
   updateCleanLabels(); renderCleanCal(); renderDishCal(); updateCleanStats();
 }
-
 function updateCleanLabels() {
   document.getElementById('monthLabel').textContent = `${cleanYear} 年 ${cleanMonth + 1} 月`;
   document.getElementById('cleanTitle').textContent = `${cleanYear} 年 ${cleanMonth + 1} 月 清潔與洗餐具`;
 }
-
 function renderCleanCal() { renderWeekdayCal('cleanCalBody', cleanYear, cleanMonth); }
 function renderDishCal()  { renderFullCal('dishCalBody', cleanYear, cleanMonth); }
 
@@ -815,7 +594,6 @@ function renderWeekdayCal(bodyId, year, month) {
   const lastDow = lastDay.getDay();
   const offsetFromFri = lastDow === 0 ? 2 : (lastDow <= 5 ? 5 - lastDow : 0);
   const endDate = new Date(year, month, daysInMonth + offsetFromFri);
-
   let html = '';
   while (cur <= endDate) {
     const dow = cur.getDay();
@@ -825,16 +603,12 @@ function renderWeekdayCal(bodyId, year, month) {
       const key = cacheKey(cur.getFullYear(), cur.getMonth(), day);
       const isToday = cur.getFullYear() === today.getFullYear() && cur.getMonth() === today.getMonth() && day === today.getDate();
       const hl = getWeekIndex(cur, year, month) % 2 === 1;
-
       let cls = !isCurrentMonth ? 'other-month' : isToday ? 'today' : hl ? 'highlighted' : '';
       let content = '';
-
       if (isCurrentMonth) {
         const val = getCacheField(cur.getFullYear(), cur.getMonth(), day, 'clean');
-        content = `<div class="inline-edit editable-cell" contenteditable="true"
-          data-key="${key}" data-field-type="clean"
-          onblur="saveCleanField('${key}', this)"
-          data-placeholder="點擊輸入">${val}</div>`;
+        const leaveHtml = buildLeaveIndicator(cur.getFullYear(), cur.getMonth(), day);
+        content = `${leaveHtml}<div class="inline-edit editable-cell" contenteditable="true" data-key="${key}" data-field-type="clean" onblur="saveCleanField('${key}', this)" data-placeholder="點擊輸入">${val}</div>`;
       }
       html += `<div class="cal-cell ${cls}"><span class="date-num">${day}</span>${content}</div>`;
     }
@@ -858,7 +632,6 @@ function renderFullCal(bodyId, year, month) {
   const today = new Date();
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
   let html = '';
-
   for (let i = 0; i < totalCells; i++) {
     const weekRow = Math.floor(i / 7);
     const hl = weekRow % 2 === 1;
@@ -874,40 +647,30 @@ function renderFullCal(bodyId, year, month) {
       let cls = isToday ? 'today' : hl ? 'highlighted' : isWeekend ? 'weekend' : '';
       const val = getCacheField(year, month, day, 'dish');
       const isClosed = val === '店休';
-      html += `<div class="cal-cell ${cls}">
-        <span class="date-num">${day}</span>
-        <div class="inline-edit dish-edit editable-cell ${isClosed ? 'closed-label' : ''}"
-          contenteditable="true" data-key="${key}" data-field-type="dish"
-          onblur="saveDishField('${key}', this)"
-          data-placeholder="輸入人員">${val}</div>
-      </div>`;
+      const leaveHtml = buildLeaveIndicator(year, month, day);
+      html += `<div class="cal-cell ${cls}"><span class="date-num">${day}</span>${leaveHtml}<div class="inline-edit dish-edit editable-cell ${isClosed ? 'closed-label' : ''}" contenteditable="true" data-key="${key}" data-field-type="dish" onblur="saveDishField('${key}', this)" data-placeholder="輸入人員">${val}</div></div>`;
     }
   }
   body.innerHTML = html;
 }
 
-// ── 儲存清潔欄位 ──
 async function saveCleanField(key, el) {
   const parts = key.split('-');
   const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
   const val = el.innerText;
-
-  // 手打衝突檢查
   const conflicts = staff.filter(n => val.includes(n) && checkLeaveConflict(y, jm, d, n));
-  if (conflicts.length > 0) {
-    showLeaveWarn(`${conflicts.join('、')} 在 ${jm+1}/${d} 已排休假，請確認是否填寫錯誤。`);
-  }
-
+  if (conflicts.length > 0) showLeaveWarn(`注意：${conflicts.join('、')} 在 ${jm+1}/${d} 已排休假，請確認是否填寫錯誤。`);
   setCacheField(y, jm, d, 'clean', val);
   await saveFieldToShiftSchedules(y, jm + 1, d, 'clean', val);
   updateCleanStats();
 }
 
-// ── 儲存洗餐具欄位 ──
 async function saveDishField(key, el) {
   const parts = key.split('-');
   const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
   const val = el.innerText.trim();
+  const conflicts = staff.filter(n => val.includes(n) && checkLeaveConflict(y, jm, d, n));
+  if (conflicts.length > 0) showLeaveWarn(`注意：${conflicts.join('、')} 在 ${jm+1}/${d} 已排休假，請確認是否填寫錯誤。`);
   setCacheField(y, jm, d, 'dish', val);
   await saveFieldToShiftSchedules(y, jm + 1, d, 'dish', val);
   if (val === '店休') el.classList.add('closed-label');
@@ -915,9 +678,6 @@ async function saveDishField(key, el) {
   updateCleanStats();
 }
 
-// ══════════════════════════════════════════
-//  週期性清潔預填
-// ══════════════════════════════════════════
 async function autoFillPeriodicClean() {
   const task = prompt("請輸入要預填的任務（例如：刷地、廁所）", "刷地");
   if (!task) return;
@@ -939,13 +699,9 @@ async function autoFillPeriodicClean() {
   alert(`已將「${task}」自動填入本月所有週${WEEKDAYS[dayOfWeek]}！`);
 }
 
-// ══════════════════════════════════════════
-//  清潔統計
-// ══════════════════════════════════════════
 function updateCleanStats() {
   const stats = {};
   staff.forEach(n => { stats[n] = { clean: 0, dish: 0 }; });
-
   const daysInMonth = new Date(cleanYear, cleanMonth + 1, 0).getDate();
   for (let d = 1; d <= daysInMonth; d++) {
     const cleanVal = getCacheField(cleanYear, cleanMonth, d, 'clean');
@@ -954,34 +710,23 @@ function updateCleanStats() {
     if (dow >= 1 && dow <= 5 && cleanVal) staff.forEach(n => { if (cleanVal.includes(n)) stats[n].clean++; });
     if (dishVal) staff.forEach(n => { if (dishVal.includes(n)) stats[n].dish++; });
   }
-
-  const html = Object.entries(stats)
-    .filter(([, c]) => c.clean > 0 || c.dish > 0)
-    .map(([n, c]) => {
-      const parts = [];
-      if (c.clean > 0) parts.push(`清潔: ${c.clean}`);
-      if (c.dish  > 0) parts.push(`洗餐具: ${c.dish}`);
-      return `<div class="stat-card">${n} (${parts.join(' | ')})</div>`;
-    }).join('');
+  const html = Object.entries(stats).filter(([, c]) => c.clean > 0 || c.dish > 0)
+    .map(([n, c]) => { const parts = []; if (c.clean > 0) parts.push(`清潔: ${c.clean}`); if (c.dish > 0) parts.push(`洗餐具: ${c.dish}`); return `<div class="stat-card">${n} (${parts.join(' | ')})</div>`; }).join('');
   const container = document.getElementById('cleanStats');
   if (container) container.innerHTML = html || '<span style="color:var(--ink-muted)">本月尚無清潔與洗餐具統計資料</span>';
 }
 
-// ══════════════════════════════════════════
-//  排班表
-// ══════════════════════════════════════════
+// ── 排班表 ──
 function changeShiftMonth(d) {
   shiftMonth += d;
   if (shiftMonth > 11) { shiftMonth = 0; shiftYear++; }
   if (shiftMonth < 0)  { shiftMonth = 11; shiftYear--; }
   updateShiftLabels(); renderShiftTable();
 }
-
 function updateShiftLabels() {
   document.getElementById('shiftMonthLabel').textContent = `${shiftYear} 年 ${shiftMonth + 1} 月`;
   document.getElementById('shiftTableTitle').textContent = `${shiftYear} 年 ${shiftMonth + 1} 月 開店關帳排班表`;
 }
-
 function updateShiftStats() {
   const stats = {};
   staff.forEach(n => { stats[n] = { close: 0, at20: 0 }; });
@@ -992,17 +737,10 @@ function updateShiftStats() {
     if (close && staff.includes(close)) stats[close].close++;
     if (at20) staff.forEach(n => { if (at20.includes(n)) stats[n].at20++; });
   }
-  const html = Object.entries(stats)
-    .filter(([, c]) => c.close > 0 || c.at20 > 0)
-    .map(([n, c]) => {
-      const parts = [];
-      if (c.close > 0) parts.push(`關帳: ${c.close}`);
-      if (c.at20  > 0) parts.push(`20:00: ${c.at20}`);
-      return `<div class="stat-card">${n} (${parts.join(' | ')})</div>`;
-    }).join('');
+  const html = Object.entries(stats).filter(([, c]) => c.close > 0 || c.at20 > 0)
+    .map(([n, c]) => { const parts = []; if (c.close > 0) parts.push(`關帳: ${c.close}`); if (c.at20 > 0) parts.push(`20:00: ${c.at20}`); return `<div class="stat-card">${n} (${parts.join(' | ')})</div>`; }).join('');
   document.getElementById('shiftStats').innerHTML = html || '<span style="color:var(--ink-muted)">本月尚無排班統計資料</span>';
 }
-
 function renderShiftTable() {
   const daysInMonth = new Date(shiftYear, shiftMonth + 1, 0).getDate();
   const rows = [];
@@ -1024,102 +762,78 @@ function renderShiftTable() {
   document.getElementById('shiftBody').innerHTML = html;
   updateShiftStats();
 }
-
 function buildShiftCells(row) {
   const opener = getCacheField(shiftYear, shiftMonth, row.d, 'opener');
   const duty   = getCacheField(shiftYear, shiftMonth, row.d, 'duty');
   const at20   = getCacheField(shiftYear, shiftMonth, row.d, 'at20');
   const close  = getCacheField(shiftYear, shiftMonth, row.d, 'close');
   const note   = getCacheField(shiftYear, shiftMonth, row.d, 'note');
-
   const openerClass = !opener ? 'missing-opener' : '';
   const openerStyle = getStaffStyle(opener);
   const closerStyle = getStaffStyle(close);
-
   return `
     <td><b>${row.d}.</b></td>
     <td style="color:var(--ink-muted)">(${row.weekName})</td>
     <td class="${openerClass}">
-      <div class="editable-cell opener-badge" tabindex="0"
-        style="${openerStyle}" data-key="${row.key}" data-field="opener">${opener || '未填'}</div>
+      <div class="editable-cell opener-badge" tabindex="0" style="${openerStyle}" data-key="${row.key}" data-field="opener">${opener || '未填'}</div>
     </td>
     <td class="open-cell">
-      <div class="editable-cell shift-input-div" contenteditable="true"
-        data-key="${row.key}" data-field="duty"
-        data-placeholder="當天值班人員"
-        onblur="saveShiftCell(this)">${duty}</div>
+      <div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="duty" data-placeholder="當天值班人員" onblur="saveShiftCell(this)">${duty}</div>
     </td>
     <td>
-      <div class="editable-cell shift-input-div" contenteditable="true"
-        data-key="${row.key}" data-field="at20"
-        data-placeholder="20:00"
-        onblur="saveShiftCell(this); updateShiftStats();">${at20}</div>
+      <div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="at20" data-placeholder="20:00" onblur="saveShiftCell(this); updateShiftStats();">${at20}</div>
     </td>
     <td>
-      <div class="editable-cell opener-badge" tabindex="0"
-        style="${closerStyle}" data-key="${row.key}" data-field="close">${close || ' '}</div>
+      <div class="editable-cell opener-badge" tabindex="0" style="${closerStyle}" data-key="${row.key}" data-field="close">${close || ' '}</div>
     </td>
     <td>
-      <div class="editable-cell shift-input-div" contenteditable="true"
-        data-key="${row.key}" data-field="note"
-        data-placeholder="備註"
-        onblur="saveShiftCell(this);">${note}</div>
+      <div class="editable-cell shift-input-div" contenteditable="true" data-key="${row.key}" data-field="note" data-placeholder="備註" onblur="saveShiftCell(this);">${note}</div>
     </td>`;
 }
 
-// ── 統一儲存 shift 欄位 ──
 async function saveShiftCell(el) {
   const key   = el.getAttribute('data-key');
   const field = el.getAttribute('data-field');
   const value = el.innerHTML !== undefined ? el.innerHTML : el.innerText;
   const parts = key.split('-');
   const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
+  // 手打衝突檢查（提醒但不阻止）
+  const valText = el.innerText || '';
+  const conflicts = staff.filter(n => valText.includes(n) && checkLeaveConflict(y, jm, d, n));
+  if (conflicts.length > 0) showLeaveWarn(`注意：${conflicts.join('、')} 在 ${jm+1}/${d} 已排休假，請確認是否填寫錯誤。`);
   setCacheField(y, jm, d, field, el.innerText || '');
-  // 欄位對應：opener→open, duty→shift, at20→t20, close→close, note→notes
   const dbField = field === 'opener' ? 'open' : field === 'duty' ? 'shift' : field === 'at20' ? 't20' : field === 'note' ? 'notes' : field;
-  // 對 contenteditable 存 innerHTML (支援顏色)，純 badge 存 innerText
   const dbValue = (field === 'duty') ? value : (el.innerText || '');
   await saveFieldToShiftSchedules(y, jm + 1, d, dbField, dbValue);
 }
 
-// ══════════════════════════════════════════
-//  休假 Modal
-// ══════════════════════════════════════════
+// ── 休假 Modal ──
 function openLeaveModal() {
-  leaveYear  = cleanYear;
-  leaveMonth = cleanMonth;
+  leaveYear = cleanYear; leaveMonth = cleanMonth;
   activeLeaveDay = null;
   document.getElementById('leaveNamePickerArea').classList.add('hidden');
-  updateLeaveModalLabels();
-  renderLeaveCal();
-  updateLeaveStats();
+  updateLeaveModalLabels(); renderLeaveCal(); updateLeaveStats();
   document.getElementById('leaveModal').classList.remove('hidden');
   lucide.createIcons();
 }
-
 function closeLeaveModal() {
   document.getElementById('leaveModal').classList.add('hidden');
   activeLeaveDay = null;
-  // 關閉後重新渲染清潔/洗餐具（反映可能新增的休假標記）
-  renderCleanCal(); renderDishCal();
+  // 關閉後同步刷新三個視圖
+  renderCleanCal(); renderDishCal(); renderShiftTable();
 }
-
 function changeLeaveMonth(d) {
   leaveMonth += d;
   if (leaveMonth > 11) { leaveMonth = 0; leaveYear++; }
   if (leaveMonth < 0)  { leaveMonth = 11; leaveYear--; }
   activeLeaveDay = null;
   document.getElementById('leaveNamePickerArea').classList.add('hidden');
-  updateLeaveModalLabels();
-  renderLeaveCal();
-  updateLeaveStats();
+  updateLeaveModalLabels(); renderLeaveCal(); updateLeaveStats();
 }
-
 function updateLeaveModalLabels() {
   document.getElementById('leaveMonthLabel').textContent = `${leaveYear} 年 ${leaveMonth + 1} 月`;
   document.getElementById('leaveModalTitle').textContent = `${leaveYear} 年 ${leaveMonth + 1} 月 休假人員`;
 }
-
 function renderLeaveCal() {
   const body = document.getElementById('leaveCalBody');
   const firstDay = new Date(leaveYear, leaveMonth, 1).getDay();
@@ -1128,7 +842,6 @@ function renderLeaveCal() {
   const today = new Date();
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
   let html = '';
-
   for (let i = 0; i < totalCells; i++) {
     if (i < firstDay || i >= firstDay + daysInMonth) {
       const d = i < firstDay ? prevDays - firstDay + i + 1 : i - firstDay - daysInMonth + 1;
@@ -1141,35 +854,24 @@ function renderLeaveCal() {
       const key = cacheKey(leaveYear, leaveMonth, day);
       const leaveVal = getCacheField(leaveYear, leaveMonth, day, 'leave');
       const names = leaveVal ? leaveVal.split('、').filter(n => n.trim()) : [];
-
       let cls = isToday ? 'today-leave' : isWeekend ? 'weekend-leave' : '';
       const isActive = (activeLeaveDay === key) ? 'ring-2 ring-[var(--sage)] ring-inset' : '';
-
-      const tags = names.map(n =>
-        `<span class="leave-tag" onclick="toggleLeaveName('${key}', '${n}', event)">${n} ×</span>`
-      ).join('');
-
-      html += `<div class="leave-cal-cell ${cls} ${isActive}" onclick="selectLeaveDay('${key}', ${day})">
-        <span class="leave-date-num">${day}</span>
-        <div class="leave-tags">${tags}</div>
-      </div>`;
+      const tags = names.map(n => `<span class="leave-tag" onclick="toggleLeaveName('${key}', '${n}', event)">${n} ×</span>`).join('');
+      html += `<div class="leave-cal-cell ${cls} ${isActive}" onclick="selectLeaveDay('${key}', ${day})"><span class="leave-date-num">${day}</span><div class="leave-tags">${tags}</div></div>`;
     }
   }
   body.innerHTML = html;
 }
-
 function selectLeaveDay(key, day) {
   activeLeaveDay = key;
   const parts = key.split('-');
   const m = parseInt(parts[1]) + 1;
   const d = parseInt(parts[2]);
   document.getElementById('leavePickerDateLabel').textContent = `${m}/${d} 選擇休假人員`;
-
   const btnsContainer = document.getElementById('leaveNameBtns');
   btnsContainer.innerHTML = '';
   const leaveVal = getCacheField(leaveYear, leaveMonth, d, 'leave');
   const currentNames = leaveVal ? leaveVal.split('、').filter(n => n.trim()) : [];
-
   staff.forEach(name => {
     const btn = document.createElement('button');
     btn.className = 'leave-name-btn' + (currentNames.includes(name) ? ' selected' : '');
@@ -1177,35 +879,23 @@ function selectLeaveDay(key, day) {
     btn.onclick = () => toggleLeaveName(key, name, null, btn);
     btnsContainer.appendChild(btn);
   });
-
   document.getElementById('leaveNamePickerArea').classList.remove('hidden');
-  renderLeaveCal(); // 重繪以標記選中格
-  updateLeaveStats();
+  renderLeaveCal(); updateLeaveStats();
 }
-
 async function toggleLeaveName(key, name, e, btnEl) {
   if (e) e.stopPropagation();
   const parts = key.split('-');
   const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
   const leaveVal = getCacheField(y, jm, d, 'leave');
   let names = leaveVal ? leaveVal.split('、').filter(n => n.trim()) : [];
-
-  if (names.includes(name)) {
-    names = names.filter(n => n !== name);
-    if (btnEl) { btnEl.classList.remove('selected'); }
-  } else {
-    names.push(name);
-    if (btnEl) { btnEl.classList.add('selected'); }
-  }
-
+  if (names.includes(name)) { names = names.filter(n => n !== name); if (btnEl) btnEl.classList.remove('selected'); }
+  else { names.push(name); if (btnEl) btnEl.classList.add('selected'); }
   const newVal = names.join('、');
   setCacheField(y, jm, d, 'leave', newVal);
   await saveFieldToShiftSchedules(y, jm + 1, d, 'leave', newVal);
-  renderLeaveCal();
-  updateLeaveStats();
+  renderLeaveCal(); updateLeaveStats();
   showToast(`已更新 ${jm + 1}/${d} 休假名單 ✅`);
 }
-
 function updateLeaveStats() {
   const stats = {};
   staff.forEach(n => { stats[n] = 0; });
@@ -1214,16 +904,12 @@ function updateLeaveStats() {
     const leaveVal = getCacheField(leaveYear, leaveMonth, d, 'leave');
     if (leaveVal) leaveVal.split('、').filter(n => n.trim()).forEach(n => { if (stats[n] !== undefined) stats[n]++; });
   }
-  const html = Object.entries(stats)
-    .filter(([, c]) => c > 0)
-    .map(([n, c]) => `<div class="stat-card" style="background:#fff0f0;color:var(--accent-red);border-color:#fecaca;">${n} 休 ${c} 天</div>`)
-    .join('');
+  const html = Object.entries(stats).filter(([, c]) => c > 0)
+    .map(([n, c]) => `<div class="stat-card" style="background:#fff0f0;color:var(--accent-red);border-color:#fecaca;">${n} 休 ${c} 天</div>`).join('');
   document.getElementById('leaveStats').innerHTML = html || '<span class="text-sm text-[var(--ink-muted)] px-2">本月尚無休假資料</span>';
 }
 
-// ══════════════════════════════════════════
-//  快速輸入面板
-// ══════════════════════════════════════════
+// ── 快速輸入面板 ──
 const QUICK_TASKS = ["果汁","廁所","刷地","玻璃","白天","晚上"];
 let activeCell = null;
 
@@ -1232,13 +918,11 @@ function bindQuickButton(btn, text, type) {
   btn.addEventListener('mousedown', action);
   btn.addEventListener('touchstart', action, { passive: false });
 }
-
 function closeQuickInput() {
   const panel = document.getElementById('quick-input-panel');
   if (panel) panel.classList.add('hidden');
   activeCell = null;
 }
-
 function initQuickInput() {
   const tasksContainer = document.getElementById('quick-tasks-container');
   QUICK_TASKS.forEach(task => {
@@ -1248,19 +932,13 @@ function initQuickInput() {
     bindQuickButton(btn, task, 'task');
     tasksContainer.appendChild(btn);
   });
-
   document.querySelectorAll('#quick-colors-container .color-btn').forEach(btn => {
     const action = (e) => {
       e.preventDefault();
       const color = btn.getAttribute('data-color');
       if (!activeCell) return;
-      if (color === '#3d3d3d') {
-        document.execCommand('removeFormat', false, null);
-        document.execCommand('foreColor', false, '#2D3A31');
-      } else {
-        document.execCommand('styleWithCSS', false, true);
-        document.execCommand('foreColor', false, color);
-      }
+      if (color === '#3d3d3d') { document.execCommand('removeFormat', false, null); document.execCommand('foreColor', false, '#2D3A31'); }
+      else { document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, color); }
       const key = activeCell.getAttribute('data-key');
       const field = activeCell.getAttribute('data-field');
       if (field === 'duty' && key) saveShiftCell(activeCell);
@@ -1268,14 +946,9 @@ function initQuickInput() {
     btn.addEventListener('mousedown', action);
     btn.addEventListener('touchstart', action, { passive: false });
   });
-
   document.addEventListener('focusin', (e) => {
-    if (e.target.classList.contains('editable-cell')) {
-      activeCell = e.target;
-      showQuickInput(activeCell);
-    }
+    if (e.target.classList.contains('editable-cell')) { activeCell = e.target; showQuickInput(activeCell); }
   });
-
   const hidePanel = (e) => {
     const panel = document.getElementById('quick-input-panel');
     if (!panel.classList.contains('hidden')) {
@@ -1287,34 +960,49 @@ function initQuickInput() {
   window.addEventListener('scroll', closeQuickInput, true);
 }
 
-function updateQuickNamesPanel() {
+// 更新快速人員面板，依當前格日期標示休假人員
+function updateQuickNamesPanel(activeCellKey) {
   const namesContainer = document.getElementById('quick-names-container');
   if (!namesContainer) return;
   namesContainer.innerHTML = '';
-
+  let cellYear = null, cellJsMonth = null, cellDay = null;
+  if (activeCellKey) {
+    const parts = activeCellKey.split('-');
+    cellYear = parseInt(parts[0]); cellJsMonth = parseInt(parts[1]); cellDay = parseInt(parts[2]);
+  }
   staff.forEach(name => {
     const btn = document.createElement('button');
-    btn.className = 'quick-btn name-btn';
-    btn.innerText = name;
-    btn.style.cssText = getStaffStyle(name, true);
-    bindQuickButton(btn, name, 'name');
+    const isOnLeave = (cellYear !== null) && checkLeaveConflict(cellYear, cellJsMonth, cellDay, name);
+    if (isOnLeave) {
+      btn.className = 'quick-btn name-btn on-leave';
+      btn.innerText = name;
+      btn.title = `${name} 當天休假`;
+      const warnAction = (e) => {
+        e.preventDefault();
+        showLeaveWarn(`${name} 在 ${cellJsMonth+1}/${cellDay} 已排休假，無法安排當天班表。`);
+      };
+      btn.addEventListener('mousedown', warnAction);
+      btn.addEventListener('touchstart', warnAction, { passive: false });
+    } else {
+      btn.className = 'quick-btn name-btn';
+      btn.innerText = name;
+      btn.style.cssText = getStaffStyle(name, true);
+      bindQuickButton(btn, name, 'name');
+    }
     namesContainer.appendChild(btn);
   });
-
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-btn name-btn';
   closeBtn.style.cssText = getStaffStyle('店休', true);
   closeBtn.innerText = '店休';
   bindQuickButton(closeBtn, '店休', 'name');
   namesContainer.appendChild(closeBtn);
-
   const clearBtn = document.createElement('button');
   clearBtn.className = 'quick-btn name-btn';
   clearBtn.style.cssText = 'background-color:var(--cream);color:var(--ink-soft);border:1px solid var(--border-dark);';
   clearBtn.innerText = '✖ 清除';
   bindQuickButton(clearBtn, '', 'clear');
   namesContainer.appendChild(clearBtn);
-
   const templateBtn = document.createElement('button');
   templateBtn.className = 'quick-btn task-btn';
   templateBtn.style.cssText = 'background:var(--sage-pale);color:var(--sage);border:1px solid var(--sage-light);';
@@ -1326,10 +1014,12 @@ function updateQuickNamesPanel() {
 function showQuickInput(cell) {
   const panel = document.getElementById('quick-input-panel');
   const rect = cell.getBoundingClientRect();
-  const field = cell.getAttribute('data-field');
+  const field = cell.getAttribute('data-field') || cell.getAttribute('data-field-type');
   const colorSection = document.getElementById('quick-color-section');
   if (colorSection) colorSection.style.display = (field === 'duty') ? 'block' : 'none';
-
+  // 依當前格日期更新人員按鈕的休假狀態
+  const key = cell.getAttribute('data-key');
+  updateQuickNamesPanel(key);
   let topPos = rect.bottom + window.scrollY + 5;
   let leftPos = rect.left + window.scrollX;
   if (topPos + 200 > window.innerHeight + window.scrollY) topPos = rect.top + window.scrollY - (panel.offsetHeight || 200) - 5;
@@ -1351,14 +1041,26 @@ function placeCaretAtEnd(el) {
 
 async function insertTextToCell(text, type) {
   if (!activeCell) return;
-  const field = activeCell.getAttribute('data-field');
+  const field = activeCell.getAttribute('data-field') || activeCell.getAttribute('data-field-type');
+
+  // ── 快速面板點人名：先做休假衝突檢查，衝突則阻止寫入 ──
+  if (type === 'name' && text && text !== '店休' && text !== '') {
+    const key = activeCell.getAttribute('data-key');
+    if (key) {
+      const parts = key.split('-');
+      const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
+      if (checkLeaveConflict(y, jm, d, text)) {
+        showLeaveWarn(`${text} 在 ${jm + 1}/${d} 已排休假，無法安排當天班表。`);
+        return;
+      }
+    }
+  }
 
   if (field === 'duty' || field === 'at20') {
     let currentText = activeCell.innerText.trim();
     let currentHtml = activeCell.innerHTML;
-    if (type === 'clear') {
-      activeCell.innerHTML = '';
-    } else {
+    if (type === 'clear') { activeCell.innerHTML = ''; }
+    else {
       let appendHtml = '';
       if (type === 'task') {
         if (text === '玻璃') appendHtml = (currentText ? '<br>' : '') + '玻璃<br>';
@@ -1379,37 +1081,18 @@ async function insertTextToCell(text, type) {
   let currentVal = activeCell.innerText;
   if (currentVal === '未填' || currentVal === ' ') currentVal = '';
   let newVal = currentVal;
-
-  // ── 休假衝突檢查（只對人名類型） ──
-  if (type === 'name' && text && text !== '店休' && text !== '') {
-    const key = activeCell.getAttribute('data-key');
-    if (key) {
-      const parts = key.split('-');
-      const y = parseInt(parts[0]), jm = parseInt(parts[1]), d = parseInt(parts[2]);
-      if (checkLeaveConflict(y, jm, d, text)) {
-        showLeaveWarn(`${text} 在 ${jm + 1}/${d} 已排休假，無法安排當天班表。`);
-        return;
-      }
-    }
-  }
-
   if (type === 'clear') newVal = '';
-  else if (field === 'opener') {
-    newVal = (currentVal === '') ? text : (!currentVal.includes(text) ? currentVal + '、' + text : currentVal);
-  } else if (field === 'close') {
-    newVal = text;
-  } else if (type === 'task') {
+  else if (field === 'opener') { newVal = (currentVal === '') ? text : (!currentVal.includes(text) ? currentVal + '、' + text : currentVal); }
+  else if (field === 'close') { newVal = text; }
+  else if (type === 'task') {
     if (text === '玻璃') newVal += (newVal.trim() ? '\n' : '') + '玻璃\n';
     else newVal += (newVal.trim() && !newVal.endsWith('\n') ? '\n' : '') + text + '：';
-  } else if (type === 'template') {
-    newVal += (newVal.trim() ? '\n' : '') + text;
-  } else {
+  } else if (type === 'template') { newVal += (newVal.trim() ? '\n' : '') + text; }
+  else {
     if (newVal.endsWith('：') || newVal.endsWith('\n') || newVal.trim() === '') newVal += text;
     else newVal += '、' + text;
   }
-
   const key = activeCell.getAttribute('data-key');
-
   if (field === 'opener' || field === 'close') {
     activeCell.innerText = newVal || (field === 'opener' ? '未填' : ' ');
     activeCell.style.cssText = getStaffStyle(newVal);
@@ -1425,33 +1108,19 @@ async function insertTextToCell(text, type) {
   placeCaretAtEnd(activeCell);
 }
 
-// ══════════════════════════════════════════
-//  列印
-// ══════════════════════════════════════════
 function printSchedule() { window.print(); }
 
-// ══════════════════════════════════════════
-//  初始化 — 從 shift_schedules 載入全部資料
-// ══════════════════════════════════════════
+// ── 初始化 ──
 async function initApp() {
   updateCleanLabels();
   updateShiftLabels();
   initQuickInput();
-
-  // 1. 載入人員（還是從 schedule_data）
   const { data: generalData } = await supabaseClient.from('schedule_data').select('*');
-  if (generalData) {
-    generalData.forEach(row => {
-      if (row.type === 'staff') staff = row.data || [];
-    });
-  }
-
-  // 2. 從 shift_schedules 載入全部資料（包含 clean, dish, leave）
-  const { data: shiftDBData, error: shiftErr } = await supabaseClient
-    .from('shift_schedules').select('*');
+  if (generalData) { generalData.forEach(row => { if (row.type === 'staff') staff = row.data || []; }); }
+  const { data: shiftDBData, error: shiftErr } = await supabaseClient.from('shift_schedules').select('*');
   if (!shiftErr && shiftDBData) {
     shiftDBData.forEach(row => {
-      const jm = row.month - 1; // DB 1-12 → JS 0-11
+      const jm = row.month - 1;
       setCacheField(row.year, jm, row.day, 'clean',  row.clean  || '');
       setCacheField(row.year, jm, row.day, 'dish',   row.dish   || '');
       setCacheField(row.year, jm, row.day, 'leave',  row.leave  || '');
@@ -1462,7 +1131,6 @@ async function initApp() {
       setCacheField(row.year, jm, row.day, 'note',   row.notes  || '');
     });
   }
-
   switchTab('cleanPanel');
   setTimeout(() => updateTabLine(), 100);
   renderStaff();
@@ -1477,7 +1145,6 @@ async function startApp() {
   await initLiff();
   initApp();
 }
-
 startApp();
 </script>
 </body>
