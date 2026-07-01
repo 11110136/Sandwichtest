@@ -513,6 +513,22 @@
     let aiNoIncident  = false;
 
     // ══════════════════════════════════════════════
+    // 安全性輔助函式：清洗 / 轉義字串
+    // ══════════════════════════════════════════════
+    // 移除字串中的任何 HTML 標籤（用於清洗從資料庫/試算表讀進來的原始資料，
+    // 例如班表姓名可能被 Google 試算表的文字顏色格式包成 <span style="...">姓名</span>）
+    function stripHtml(str) {
+      return String(str ?? '').replace(/<[^>]*>/g, '').trim();
+    }
+    // 將字串中會破壞 HTML 屬性/結構的特殊字元轉成安全的 HTML 實體，
+    // 用於任何要插入 innerHTML 或 HTML 屬性中的動態文字（姓名、備註、AI 理由、事件描述等）
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    // ══════════════════════════════════════════════
     // 初始化
     // ══════════════════════════════════════════════
     async function initLiff() {
@@ -538,8 +554,10 @@
         if (error){ console.error('Supabase 錯誤:',error); return; }
         if (data) {
           let allPeople = [];
-          if (data.open)  allPeople.push(...data.open.split('、').map(n=>n.trim()));
-          if (data.shift) allPeople.push(...data.shift.split('、').map(n=>n.trim()));
+          // ── 先用 stripHtml 清掉可能混入的 <span style="..."> 等格式標籤，
+          //    再取姓名文字，避免髒資料帶著 HTML 進入 EMPLOYEES ──
+          if (data.open)  allPeople.push(...data.open.split('、').map(n=>stripHtml(n)));
+          if (data.shift) allPeople.push(...data.shift.split('、').map(n=>stripHtml(n)));
 
           // ── 偵測可柔是否在班 ──
           isKoujouAbsent = !allPeople.includes('可柔');
@@ -664,17 +682,18 @@
     function renderEmployeeList() {
       document.getElementById('employee-list').innerHTML = EMPLOYEES.map(emp=>{
         const grade=currentEvalData[emp.name]?.grade, gc=grade?GRADE_COLORS[grade]:null, done=!!grade;
+        const safeName = escapeHtml(emp.name);
         let btnC="snap-start flex-shrink-0 flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl transition-all border ";
         let icoC="w-8 h-8 rounded-full flex items-center justify-center transition-colors ";
         if(emp.name===currentSelectedEmp){ btnC+="bg-[#6C8673] text-white border-[#6C8673] shadow-lg shadow-[#6C8673]/20"; icoC+="bg-[#5A705F]"; }
         else if(done){ btnC+="bg-[#EAF0EB] text-[#2D3A31] border-[#D4DCD5] hover:bg-[#DDE3DE] hover:shadow-sm"; icoC+="bg-[#D4DCD5]/60"; }
         else { btnC+="bg-white text-[#4F6354] border-[#D4DCD5] hover:bg-[#F8FAF8] hover:shadow-sm"; icoC+="bg-[#F0F4F1]"; }
-        return `<button id="btn-emp-${emp.name}" onclick="selectEmployee('${emp.name}')" class="${btnC}">
+        return `<button id="btn-emp-${safeName}" onclick="selectEmployee('${safeName}')" class="${btnC}">
           <div class="flex items-center space-x-2 md:space-x-3">
             <div class="${icoC}"><i data-lucide="${done&&emp.name!==currentSelectedEmp?'check':'user'}" class="w-4 h-4"></i></div>
-            <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${emp.name}</span>
+            <span class="font-medium tracking-wide text-sm md:text-base whitespace-nowrap">${safeName}</span>
           </div>
-          <span id="grade-badge-${emp.name}" class="grade-badge ${grade?'grade-'+grade:'hidden'} ml-2" ${grade?`style="background:${gc.bg};color:${gc.text};"`:''}>${grade||''}</span>
+          <span id="grade-badge-${safeName}" class="grade-badge ${grade?'grade-'+grade:'hidden'} ml-2" ${grade?`style="background:${gc.bg};color:${gc.text};"`:''}>${grade||''}</span>
         </button>`;
       }).join('');
       lucide.createIcons();
@@ -707,7 +726,7 @@
             </div>
             <div class="relative">
               <i data-lucide="message-square" class="absolute top-2.5 left-3 w-4 h-4 text-[#8FA192]"></i>
-              <input type="text" placeholder="新增備註 (選填)..." value="${d.note}" onchange="updateNote('${stId}','${c.id}',this.value)"
+              <input type="text" placeholder="新增備註 (選填)..." value="${escapeHtml(d.note)}" onchange="updateNote('${stId}','${c.id}',this.value)"
                 class="w-full pl-9 pr-4 py-2 bg-white border border-[#D4DCD5] rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-[#8FA192]/30 focus:outline-none text-[#2D3A31]"/>
             </div>
           </div>
@@ -861,8 +880,9 @@
     function renderCleaningModule() {
       document.getElementById('cleaning-emp-selector').innerHTML = ALL_EMPLOYEES.map(emp=>{
         const sel=cleaningData[emp.name]?.selected;
-        return `<button id="clean-sel-${emp.name}" onclick="toggleCleaningEmp('${emp.name}')"
-          class="px-3 py-1.5 rounded-full text-sm border transition-all ${sel?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${emp.name}</button>`;
+        const safeName = escapeHtml(emp.name);
+        return `<button id="clean-sel-${safeName}" onclick="toggleCleaningEmp('${safeName}')"
+          class="px-3 py-1.5 rounded-full text-sm border transition-all ${sel?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${safeName}</button>`;
       }).join('');
       renderCleaningSelectedList();
     }
@@ -877,13 +897,14 @@
       if(!sel.length){ c.innerHTML=`<p class="text-center text-[#8FA192] text-sm py-8">請從上方選擇今日例行清潔人員</p>`; return; }
       c.innerHTML=sel.map(emp=>{
         const stars=cleaningData[emp.name].stars||0;
+        const safeName = escapeHtml(emp.name);
         return `<div class="flex items-center justify-between p-4 rounded-2xl bg-[#F8FAF8] border border-[#E5EBE6]">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-[#E5EBE6] flex items-center justify-center text-[#3F5144] font-medium text-sm">${emp.name.charAt(0)}</div>
-            <span class="font-medium text-[#2D3A31]">${emp.name}</span>
+            <div class="w-9 h-9 rounded-full bg-[#E5EBE6] flex items-center justify-center text-[#3F5144] font-medium text-sm">${escapeHtml(emp.name.charAt(0))}</div>
+            <span class="font-medium text-[#2D3A31]">${safeName}</span>
           </div>
-          <div class="star-rating" id="stars-${emp.name}">
-            ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=stars?'active':''}" onclick="setStars('${emp.name}',${n})"><i data-lucide="star" class="w-6 h-6 ${n<=stars?'fill-current':''}"></i></button>`).join('')}
+          <div class="star-rating" id="stars-${safeName}">
+            ${[1,2,3,4,5].map(n=>`<button class="star-btn ${n<=stars?'active':''}" onclick="setStars('${safeName}',${n})"><i data-lucide="star" class="w-6 h-6 ${n<=stars?'fill-current':''}"></i></button>`).join('')}
           </div>
         </div>`;
       }).join('');
@@ -1061,14 +1082,14 @@
           <div>
             <p class="text-[10px] font-bold text-[#8FA192] uppercase tracking-widest mb-2">涉及人員（可多選）</p>
             <div class="flex flex-wrap gap-1.5">
-              ${EMPLOYEES.map(emp=>`<button onclick="toggleIncidentPerson(${inc.id},'${emp.name}')"
-                class="px-3 py-1 rounded-full text-xs font-medium border transition-all ${inc.who.includes(emp.name)?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${emp.name}</button>`).join('')}
+              ${EMPLOYEES.map(emp=>{ const safeName=escapeHtml(emp.name); return `<button onclick="toggleIncidentPerson(${inc.id},'${safeName}')"
+                class="px-3 py-1 rounded-full text-xs font-medium border transition-all ${inc.who.includes(emp.name)?'bg-[#6C8673] text-white border-[#6C8673]':'bg-white text-[#4F6354] border-[#D4DCD5] hover:border-[#8FA192]'}">${safeName}</button>`; }).join('')}
             </div>
           </div>
           <div>
             <p class="text-[10px] font-bold text-[#8FA192] uppercase tracking-widest mb-2">事件描述</p>
             <input type="text" placeholder="例：遺漏打包餐具、客人抱怨等候過久..."
-              value="${inc.description}" oninput="setIncidentDesc(${inc.id},this.value)"
+              value="${escapeHtml(inc.description)}" oninput="setIncidentDesc(${inc.id},this.value)"
               class="w-full px-3 py-2.5 rounded-xl border border-[#D4DCD5] text-sm text-[#2D3A31] focus:outline-none focus:ring-2 focus:ring-[#6C8673]/25 bg-white"/>
           </div>
           <div>
@@ -1109,7 +1130,7 @@
       【評分規則】分數範圍：40~75 分
       • 無事件員工：60~75 分（以 66±4 為中心浮動）
       • 輕微問題（小失誤、小遲到、小誤差）：扣 3~8 分
-      • 中等問題（客訴、品質失誤、協調不足）：扣 8~15 分git add performance.html
+      • 中等問題（客訴、品質失誤、協調不足）：扣 8~15 分
       • 嚴重問題（重大失誤、態度不佳、造成損失）：扣 15~25 分
       • 同一員工多事件：累積扣分，最低 40 分
       • 必須為每一位值班員工給分
@@ -1146,7 +1167,8 @@
       let total=0, count=0;
       c.innerHTML=EMPLOYEES.map(emp=>{
         const r=result.scores[emp.name];
-        if(!r) return `<div class="ai-score-card"><div class="ai-score-bubble bg-[#E5EBE6] text-[#8FA192]">?</div><div class="flex-1"><p class="font-semibold text-[#2D3A31] text-sm">${emp.name}</p><p class="text-xs text-[#8FA192] mt-0.5">AI 未返回此員工評分</p></div></div>`;
+        const safeName=escapeHtml(emp.name);
+        if(!r) return `<div class="ai-score-card"><div class="ai-score-bubble bg-[#E5EBE6] text-[#8FA192]">?</div><div class="flex-1"><p class="font-semibold text-[#2D3A31] text-sm">${safeName}</p><p class="text-xs text-[#8FA192] mt-0.5">AI 未返回此員工評分</p></div></div>`;
         const score=Math.round(r.score); total+=score; count++;
         let bg,tc;
         if(score>=70){ bg='#dcfce7'; tc='#166534'; }
@@ -1156,8 +1178,8 @@
         return `<div class="ai-score-card">
           <div class="ai-score-bubble" style="background:${bg};color:${tc}">${score}</div>
           <div class="flex-1 min-w-0">
-            <p class="font-semibold text-[#2D3A31] text-sm">${emp.name}</p>
-            <p class="text-xs text-[#687A6B] mt-0.5 leading-relaxed">${r.reason}</p>
+            <p class="font-semibold text-[#2D3A31] text-sm">${safeName}</p>
+            <p class="text-xs text-[#687A6B] mt-0.5 leading-relaxed">${escapeHtml(r.reason)}</p>
           </div>
         </div>`;
       }).join('');
