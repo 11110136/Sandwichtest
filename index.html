@@ -485,6 +485,13 @@
         const LIFF_ID = "2010172685-ZAaPpejo"; 
         let lineUserProfile = null; 
 
+        // 加入這個小工具：用來把帶有顏色的 HTML 標籤濾掉，只保留純文字
+        function stripHtmlTags(str) {
+            if (!str) return '';
+            // 將所有 <...> 的標籤替換成空字串
+            return str.replace(/<[^>]*>?/gm, '');
+        }
+
         const year = 2026;
         const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; 
         const weekNamesZh = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]; 
@@ -653,7 +660,7 @@
                         <div inputmode="none" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-semibold text-[var(--sage)] ${openWarningClass}" oninput="updateData(${i}, 'open', this.innerText, this)">${dayData.open || ''}</div>
                     </td>
                     <td data-label="當天值班">
-                        <div inputmode="none" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-bold text-[var(--ink)]" oninput="updateData(${i}, 'shift', this.innerText, this)">${dayData.shift || ''}</div>
+                        <div inputmode="none" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center font-bold text-[var(--ink)]" oninput="updateData(${i}, 'shift', this.innerText, this)">${stripHtmlTags(dayData.shift) || ''}</div>
                     </td>
                     <td data-label="20:00">
                         <div inputmode="none" data-day="${i}" contenteditable="${isEditMode}" class="editable text-center text-[var(--ink-soft)]" oninput="updateData(${i}, 't20', this.innerText, this)">${dayData.t20 || ''}</div>
