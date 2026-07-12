@@ -138,11 +138,17 @@
       font-weight:700; font-size:18px;
     }
     #ai-eval-modal {
-      width:95%; max-width:520px; max-height:88dvh;
-      height:auto; display:flex; flex-direction:column;
-      border-radius:24px; overflow:hidden; padding:0;
+      width:95%; 
+      max-width:520px; 
+      max-height:88dvh;
+      /*height:auto; display:flex; flex-direction:column;*/
+      border-radius:24px; 
+      overflow:hidden; 
+      padding:0;
     }
-    #ai-eval-modal[open] { display:flex; }
+
+    #ai-eval-modal[open] 
+    { display:block; }
     .ai-modal-body {
       flex:1 1 auto; min-height:0; overflow-y:auto;
       -webkit-overflow-scrolling:touch;
@@ -293,6 +299,9 @@
     </dialog>
 
     <dialog id="ai-eval-modal">
+
+      <!-- 新增這一層 Wrapper 來處理 Flex 排版 -->
+      <div class="flex flex-col h-full max-h-[88dvh]">
 
       <div class="ai-modal-header">
         <div class="flex items-center gap-3">
