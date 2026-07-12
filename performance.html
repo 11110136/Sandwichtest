@@ -94,7 +94,7 @@
       width: 28px; height: 28px; border-radius: 50%; background: #F0F4F1; transition: all 0.2s;
     }
     .station-btn.active .icon-wrapper { background: white; }
-    dialog { border: none; background: white; }
+    dialog { border: none; background: white; margin: auto; max-height: 90dvh; }
     dialog::backdrop { background: rgba(45,58,49,0.5); }
 
     /* ── AI 代評專屬樣式 ── */
@@ -138,13 +138,14 @@
       font-weight:700; font-size:18px;
     }
     #ai-eval-modal {
-      width:95%; max-width:520px; max-height:88vh;
-      flex-direction:column;
+      width:95%; max-width:520px; max-height:88dvh;
+      height:auto; display:flex; flex-direction:column;
       border-radius:24px; overflow:hidden; padding:0;
     }
     #ai-eval-modal[open] { display:flex; }
     .ai-modal-body {
-      flex:1; overflow-y:auto;
+      flex:1 1 auto; min-height:0; overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
       -ms-overflow-style:none; scrollbar-width:none;
     }
     .ai-modal-body::-webkit-scrollbar { display:none; }
