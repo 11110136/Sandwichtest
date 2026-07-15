@@ -7,7 +7,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
@@ -442,20 +441,35 @@ function getLeaveNames(year, jsMonth, day) {
   return leaveVal.split('、').map(n => n.trim()).filter(n => n);
 }
 
-// ── Supabase ──
-const { createClient } = supabase;
-const SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_SmmOUfpnYo_QNeGFNrh-gw_n442_5Ww';
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ── Railway API ──
+const API_BASE = 'https://food-stand-backend-production.up.railway.app/api';
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  if (!res.ok) throw new Error(`GET ${path} 失敗 (${res.status})`);
+  const json = await res.json();
+  return json.data ?? [];
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.json()).detail || ''; } catch (_) {}
+    throw new Error(`POST ${path} 失敗 (${res.status}) ${detail}`);
+  }
+  return res.json();
+}
 
 async function saveFieldToShiftSchedules(year, month, day, field, value) {
   try {
-    const { data: existing } = await supabaseClient.from('shift_schedules').select('year').eq('year', year).eq('month', month).eq('day', day).limit(1);
-    if (existing && existing.length > 0) {
-      await supabaseClient.from('shift_schedules').update({ [field]: value }).eq('year', year).eq('month', month).eq('day', day);
-    } else {
-      await supabaseClient.from('shift_schedules').insert({ year, month, day, [field]: value });
-    }
+    // 後端 /shifts/update 已用 UPSERT 一步處理「存在則更新、不存在則新增」，
+    // 取代原本前端「先 select 查存在、再 update 或 insert」的三步邏輯。
+    await apiPost('/shifts/update', { year, month, day, field_name: field, value });
   } catch (e) { console.error('saveFieldToShiftSchedules 失敗:', e); }
 }
 
@@ -554,14 +568,21 @@ async function addStaff() {
   if (name && !staff.includes(name)) {
     staff.push(name);
     renderStaff();
-    await supabaseClient.from('schedule_data').upsert({ id: 'staff_all', type: 'staff', date_key: 'all', data: staff }, { onConflict: 'id' });
+    await saveStaffToServer();
   }
   inp.value = '';
 }
 async function removeStaff(i) {
   staff.splice(i, 1);
   renderStaff();
-  await supabaseClient.from('schedule_data').upsert({ id: 'staff_all', type: 'staff', date_key: 'all', data: staff }, { onConflict: 'id' });
+  await saveStaffToServer();
+}
+
+// 員工清單寫回後端（對齊後端 ScheduleDataUpsert model）
+async function saveStaffToServer() {
+  try {
+    await apiPost('/schedule_data/upsert', { id: 'staff_all', type: 'staff', date_key: 'all', data: staff });
+  } catch (e) { console.error('saveStaffToServer 失敗:', e); }
 }
 
 // ── 休假標記 HTML ──
@@ -1115,10 +1136,24 @@ async function initApp() {
   updateCleanLabels();
   updateShiftLabels();
   initQuickInput();
-  const { data: generalData } = await supabaseClient.from('schedule_data').select('*');
-  if (generalData) { generalData.forEach(row => { if (row.type === 'staff') staff = row.data || []; }); }
-  const { data: shiftDBData, error: shiftErr } = await supabaseClient.from('shift_schedules').select('*');
-  if (!shiftErr && shiftDBData) {
+  let generalData = [], shiftDBData = [];
+  try {
+    [generalData, shiftDBData] = await Promise.all([
+      apiGet('/schedule_data'),
+      apiGet('/shifts'),
+    ]);
+  } catch (e) { console.error('初始化讀取失敗:', e); }
+  if (generalData) {
+    generalData.forEach(row => {
+      if (row.type === 'staff') {
+        // 相容後端 JSONB：可能回傳已解析陣列，也可能回傳 JSON 字串
+        let d = row.data;
+        if (typeof d === 'string') { try { d = JSON.parse(d); } catch (_) { d = []; } }
+        staff = Array.isArray(d) ? d : [];
+      }
+    });
+  }
+  if (shiftDBData) {
     shiftDBData.forEach(row => {
       const jm = row.month - 1;
       setCacheField(row.year, jm, row.day, 'clean',  row.clean  || '');
