@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
@@ -423,10 +422,14 @@
     // ── 雲端設定 ──
     const LIFF_ID = '2010172685-ojhA52eN';
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxW1YFhFSaKmGFmdsL2bXm3ntApxvprsd7yPskUHLLZ8J2-lCUoX3mZJFHaQnK0bleEBg/exec';
-    var SUPABASE_URL = 'https://etterymqkynymkutjwqw.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0dGVyeW1xa3lueW1rdXRqd3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxOTY3MjQsImV4cCI6MjA5MDc3MjcyNH0.IaiZKlUuDio4ZRq_5hQnc1FnVzzYKMMbx55xfCtSii4';
-    if (!window.supabaseClient) window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    var supabase = window.supabaseClient;
+    // ── 排班讀取改用 Railway 後端（績效/清潔紀錄仍走上方 GAS_API_URL，維持不變）──
+    const API_BASE = 'https://food-stand-backend-production.up.railway.app/api';
+    async function apiGet(path) {
+      const res = await fetch(`${API_BASE}${path}`);
+      if (!res.ok) throw new Error(`GET ${path} 失敗 (${res.status})`);
+      const json = await res.json();
+      return json.data ?? [];
+    }
 
     // ── 員工與崗位資料 ──
     const ALL_EMPLOYEES = [
@@ -545,14 +548,11 @@
     async function fetchTodayShift() {
       const today = new Date();
       try {
-        const { data, error } = await supabase
-          .from('shift_schedules')
-          .select('open, shift')
-          .eq('year',  today.getFullYear())
-          .eq('month', today.getMonth()+1)
-          .eq('day',   today.getDate())
-          .maybeSingle();
-        if (error){ console.error('Supabase 錯誤:',error); return; }
+        // 後端 /shifts?year= 回傳整年資料，前端再過濾出今天那一列
+        const rows = await apiGet(`/shifts?year=${today.getFullYear()}`);
+        const data = rows.find(r =>
+          r.month === today.getMonth()+1 && r.day === today.getDate()
+        );
         if (data) {
           let allPeople = [];
           // ── 先用 stripHtml 清掉可能混入的 <span style="..."> 等格式標籤，
