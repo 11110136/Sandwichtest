@@ -184,6 +184,16 @@
 </head>
 <body>
 
+<!-- 載入動畫遮罩：頁面初始化時顯示，資料讀取與渲染完成後淡出 -->
+<div id="app-loader" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--sage-pale,#f0f4ee);transition:opacity .4s ease;">
+  <div style="width:52px;height:52px;border:5px solid rgba(0,0,0,0.08);border-top-color:var(--sage,#6b8e5a);border-radius:50%;animation:appspin 0.8s linear infinite;"></div>
+  <div style="font-size:15px;font-weight:700;color:var(--ink-soft,#4a5443);letter-spacing:1px;">載入中…</div>
+</div>
+<style>
+@keyframes appspin { to { transform: rotate(360deg); } }
+#app-loader.loaded { opacity:0; pointer-events:none; }
+</style>
+
     <div class="topbar no-print">
         <div class="topbar-left relative">
             <button id="global-nav-btn" onclick="toggleGlobalMenu()" class="nav-btn">
@@ -204,12 +214,8 @@
                 <a href="inventory.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
                     <i data-lucide="package" class="w-4 h-4 text-[var(--ink-muted)]"></i> 庫存盤點
                 </a>
-                <a href="clean.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] border-b border-[var(--border)] transition-colors">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-[var(--ink-muted)]"></i> 清潔與值班管理
-                </a>
-                <a href="performance.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-soft)] hover:bg-[var(--sage-pale)] transition-colors">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-[var(--ink-muted)]"></i> 績效評估系統
-                </a>
+                <div class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-muted)] border-b border-[var(--border)] opacity-45 cursor-not-allowed select-none"><i data-lucide="sparkles" class="w-4 h-4"></i> 清潔與值班管理<span class="ml-auto text-[10px] font-medium bg-[var(--border)] text-[var(--ink-muted)] px-1.5 py-0.5 rounded">尚未開放</span></div>
+                <div class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--ink-muted)] opacity-45 cursor-not-allowed select-none"><i data-lucide="clipboard-list" class="w-4 h-4"></i> 績效評估系統<span class="ml-auto text-[10px] font-medium bg-[var(--border)] text-[var(--ink-muted)] px-1.5 py-0.5 rounded">尚未開放</span></div>
             </div>
         </div>
         <div class="hidden md:flex items-center gap-2 text-xs opacity-90">
@@ -545,15 +551,19 @@
             }
         }
 
-        function init() {
+        function hideAppLoader() {
+            const loader = document.getElementById('app-loader');
+            if (loader) { loader.classList.add('loaded'); setTimeout(() => loader.remove(), 400); }
+        }
+
+        async function init() {
             const now = new Date();
             if (now.getFullYear() === year) currentMonth = now.getMonth();
             monthSelect.value = currentMonth;
-            
-            updateLockIcon(); 
+
+            updateLockIcon();
             // 預設為今日模式，index = 0
             switchView('day', 0);
-            fetchFromSupabase();
 
             document.getElementById('stats-name-input').addEventListener('keypress', e => {
                 if (e.key === 'Enter') calculatePersonalStats();
@@ -562,7 +572,17 @@
                 if (e.key === 'Enter') verifyPin();
             });
 
+            // 不等待，與資料抓取並行
             initLiff();
+
+            try {
+                await fetchFromSupabase();
+            } catch (e) {
+                console.error('資料載入失敗:', e);
+            } finally {
+                // 一切就緒（或失敗），淡出載入動畫
+                hideAppLoader();
+            }
         }
 
         // ✅ 修正：用 JS 動態取得按鈕的實際位置與寬度，精確移動 slider
@@ -1131,6 +1151,8 @@
         initQuickInput();
         // 延遲一幀讓 DOM 完全渲染，確保 slider 能正確量到按鈕位置
         requestAnimationFrame(() => init());
+        // 保險：無論成功或失敗，最多 8 秒後強制移除載入動畫，避免永久卡住
+        setTimeout(hideAppLoader, 8000);
 
         function toggleGlobalMenu() {
             document.getElementById('global-nav-menu').classList.toggle('hidden');
